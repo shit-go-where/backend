@@ -1,0 +1,478 @@
+// Shit Go Where — data model. See PLAN.md §2.
+// Schema changes ONLY through `pnpm prisma migrate dev --name <change>`.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── enums ─────────────────────────────
+
+enum VenueType {
+  MRT_STATION
+  BUS_INTERCHANGE
+  MALL
+  HAWKER_CENTRE
+  COFFEESHOP
+  COMMUNITY_CLUB
+  PARK
+  LIBRARY
+  HOSPITAL
+  SPORTS_CENTRE
+  OTHER
+}
+
+enum VenueToiletStatus {
+  HAS_TOILETS
+  NONE
+  UNKNOWN
+  USES_NEARBY
+}
+
+enum DataSource {
+  FIELDWORK_2024
+  OSM
+  ONEMAP
+  DATAGOV
+  WIKIDATA
+  COMMUNITY
+  ADMIN
+}
+
+enum ToiletTier {
+  VERIFIED
+  COMMUNITY
+  IMPORTED
+}
+
+enum ToiletStatus {
+  ACTIVE
+  CLOSED
+  RENOVATION
+  PENDING
+  REJECTED
+}
+
+enum AreaType {
+  PAID_AREA
+  UNPAID_AREA
+  NOT_APPLICABLE
+  UNKNOWN
+}
+
+enum Feature {
+  TOILET_PAPER
+  HAND_TOWEL
+  HAND_DRYER
+  HAND_SOAP
+  SEAT_LINER
+  BIDET
+  AUTO_FLUSH
+  AUTO_TAP
+  AUTO_SOAP
+  COAT_HOOK
+  FEEDBACK_DEVICE
+  SIGNAGE
+  POSTERS
+  AMBULANT
+  ACCESSIBLE
+  CHILD
+  BABY_CHANGE
+  NURSING_ROOM
+  SHOWER
+  SITTING
+  SQUAT
+  MALE
+  FEMALE
+  UNISEX
+  FREE
+}
+
+enum SubmissionKind {
+  NEW_TOILET
+  EDIT_TOILET
+  CLOSE_TOILET
+  NEW_VENUE
+}
+
+enum SubmissionState {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_INFO
+  EXPIRED
+}
+
+enum VoteValue {
+  APPROVE
+  REJECT
+}
+
+enum StatusKind {
+  ALL_GOOD
+  NO_PAPER
+  NO_SOAP
+  LONG_QUEUE
+  BEING_CLEANED
+  BROKEN
+  CLOSED_NOW
+}
+
+enum Role {
+  USER
+  TRUSTED
+  MODERATOR
+  ADMIN
+}
+
+enum PointReason {
+  SUBMISSION_APPROVED
+  REVIEW_POSTED
+  REVIEW_WITH_PHOTO
+  STATUS_CONFIRMED
+  CHECK_IN
+  FIRST_CHECK_IN_AT_TOILET
+  VOTE_MATCHED_OUTCOME
+  SURVEY_COMPLETED
+}
+
+// ───────────────────────────── places ─────────────────────────────
+
+model Venue {
+  id           String            @id @default(cuid())
+  name         String
+  type         VenueType
+  latitude     Float
+  longitude    Float
+  address      String?
+  postalCode   String?
+  planningArea String?
+  lines        String[]
+  toiletStatus VenueToiletStatus @default(UNKNOWN)
+  note         String?
+  openingHours Json?
+  source       DataSource
+  sourceKey    String            @unique
+  externalIds  Json?
+  toilets      Toilet[]
+  submissions  Submission[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([type])
+  @@index([planningArea])
+}
+
+model Toilet {
+  id               String          @id @default(cuid())
+  venueId          String
+  venue            Venue           @relation(fields: [venueId], references: [id])
+  label            String?
+  latitude         Float
+  longitude        Float
+  level            String?
+  areaType         AreaType        @default(UNKNOWN)
+  nearestExit      String?
+  accessNote       String?
+  openingHours     Json?
+  tier             ToiletTier
+  status           ToiletStatus    @default(ACTIVE)
+  source           DataSource
+  sourceKey        String          @unique
+  lastVerifiedAt   DateTime?
+  needsResurvey    Boolean         @default(false)
+  createdById      String?
+  createdBy        User?           @relation("ToiletCreatedBy", fields: [createdById], references: [id])
+  scoreCleanliness Float?
+  reviewCount      Int             @default(0)
+  features         ToiletFeature[]
+  surveys          Survey[]
+  reviews          Review[]
+  statusReports    StatusReport[]
+  photos           Photo[]
+  checkIns         CheckIn[]
+  flags            Flag[]
+  submissions      Submission[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([status, tier])
+  @@index([venueId])
+}
+
+model ToiletFeature {
+  toiletId   String
+  toilet     Toilet     @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  feature    Feature
+  present    Boolean
+  source     DataSource
+  observedAt DateTime
+
+  @@id([toiletId, feature])
+  @@index([feature, present])
+}
+
+model Survey {
+  id           String   @id @default(cuid())
+  toiletId     String
+  toilet       Toilet   @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  surveyedAt   DateTime
+  surveyedById String?
+  surveyedBy   User?    @relation(fields: [surveyedById], references: [id])
+  phase        String?
+  cleanliness  Int
+  scent        Int
+  aesthetics   Int
+  music        Int
+  toiletries   Int
+  facilities   Int
+  total        Int
+  rasStars     Int?
+  remarks      String?
+  raw          Json
+  createdAt    DateTime @default(now())
+
+  @@index([toiletId, surveyedAt])
+}
+
+// ───────────────────────────── people ─────────────────────────────
+
+model User {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  googleSub        String?          @unique
+  handle           String?          @unique
+  displayName      String
+  avatarUrl        String?
+  role             Role             @default(USER)
+  trustScore       Int              @default(0)
+  leaderboardOptIn Boolean          @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  toiletsCreated   Toilet[]         @relation("ToiletCreatedBy")
+  submissions      Submission[]     @relation("SubmittedBy")
+  resolved         Submission[]     @relation("ResolvedBy")
+  votes            SubmissionVote[]
+  reviews          Review[]
+  statusReports    StatusReport[]
+  statusConfirms   StatusConfirmation[]
+  photos           Photo[]
+  flags            Flag[]
+  checkIns         CheckIn[]
+  points           PointsLedger[]
+  badges           UserBadge[]
+  surveys          Survey[]
+  photoApprovals   PhotoApproval[]
+}
+
+// ───────────────────────────── contributions ─────────────────────────────
+
+model Submission {
+  id            String           @id @default(cuid())
+  kind          SubmissionKind
+  state         SubmissionState  @default(PENDING)
+  toiletId      String?
+  toilet        Toilet?          @relation(fields: [toiletId], references: [id])
+  venueId       String?
+  venue         Venue?           @relation(fields: [venueId], references: [id])
+  payload       Json
+  submittedById String
+  submittedBy   User             @relation("SubmittedBy", fields: [submittedById], references: [id])
+  submittedLat  Float?
+  submittedLng  Float?
+  approvals     Int              @default(0)
+  rejections    Int              @default(0)
+  resolvedAt    DateTime?
+  resolvedById  String?
+  resolvedBy    User?            @relation("ResolvedBy", fields: [resolvedById], references: [id])
+  resolution    String?
+  votes         SubmissionVote[]
+  photos        Photo[]
+  createdAt     DateTime         @default(now())
+  expiresAt     DateTime
+
+  @@index([state, createdAt])
+  @@index([submittedLat, submittedLng])
+}
+
+model SubmissionVote {
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  value        VoteValue
+  comment      String?
+  distanceM    Int?
+  weight       Int        @default(1)
+  createdAt    DateTime   @default(now())
+
+  @@id([submissionId, userId])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  toiletId    String
+  toilet      Toilet   @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  cleanliness Int
+  comment     String?
+  photos      Photo[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([toiletId, userId])
+  @@index([toiletId, createdAt])
+}
+
+model StatusReport {
+  id            String               @id @default(cuid())
+  toiletId      String
+  toilet        Toilet               @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                 @relation(fields: [userId], references: [id])
+  kind          StatusKind
+  confirmations Int                  @default(0)
+  confirmedBy   StatusConfirmation[]
+  createdAt     DateTime             @default(now())
+  expiresAt     DateTime
+
+  @@index([toiletId, expiresAt])
+  @@index([toiletId, userId, kind, createdAt])
+}
+
+model StatusConfirmation {
+  statusReportId String
+  statusReport   StatusReport @relation(fields: [statusReportId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@id([statusReportId, userId])
+}
+
+model Photo {
+  id           String      @id @default(cuid())
+  key          String      @unique
+  url          String
+  thumbUrl     String?
+  contentType  String
+  toiletId     String?
+  toilet       Toilet?     @relation(fields: [toiletId], references: [id], onDelete: SetNull)
+  submissionId String?
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  reviewId     String?
+  review       Review?     @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  uploadedById String
+  uploadedBy   User        @relation(fields: [uploadedById], references: [id])
+  confirmed    Boolean     @default(false)
+  approved     Boolean     @default(false)
+  approvals    Int         @default(0)
+  approvedBy   PhotoApproval[]
+  createdAt    DateTime    @default(now())
+
+  @@index([toiletId, approved])
+  @@index([approved, createdAt])
+}
+
+model PhotoApproval {
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([photoId, userId])
+}
+
+model Flag {
+  id         String    @id @default(cuid())
+  toiletId   String
+  toilet     Toilet    @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  reason     String
+  resolved   Boolean   @default(false)
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([resolved, createdAt])
+}
+
+// ───────────────────────────── gamification ─────────────────────────────
+
+model CheckIn {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  toiletId  String
+  toilet    Toilet   @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  distanceM Int
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([toiletId, createdAt])
+}
+
+model PointsLedger {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  delta     Int
+  reason    PointReason
+  refId     String
+  createdAt DateTime    @default(now())
+
+  @@unique([userId, reason, refId])
+  @@index([userId])
+  @@index([createdAt, userId])
+}
+
+model Badge {
+  id          String      @id
+  name        String
+  description String
+  icon        String
+  rule        Json
+  users       UserBadge[]
+}
+
+model UserBadge {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  awardedAt DateTime @default(now())
+
+  @@id([userId, badgeId])
+}
+
+// ───────────────────────────── ops ─────────────────────────────
+
+model ImportRun {
+  id         String     @id @default(cuid())
+  source     DataSource
+  command    String
+  startedAt  DateTime   @default(now())
+  finishedAt DateTime?
+  inserted   Int        @default(0)
+  updated    Int        @default(0)
+  skipped    Int        @default(0)
+  log        Json?
+}
+
+// Small cache for things like the OneMap token, so cold serverless instances don't re-auth.
+model KeyValue {
+  key       String    @id
+  value     Json
+  expiresAt DateTime?
+  updatedAt DateTime  @updatedAt
+}
