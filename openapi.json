@@ -562,6 +562,28 @@
             }
           },
           {
+            "name": "areaType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AreaType"
+            }
+          },
+          {
+            "name": "openNow",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
             "name": "includePending",
             "required": false,
             "in": "query",
@@ -583,6 +605,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ToiletPinListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "toilets"
+        ]
+      }
+    },
+    "/toilets/sitemap": {
+      "get": {
+        "operationId": "ToiletsController_sitemap",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToiletSitemapDto_Output"
                 }
               }
             }
@@ -1892,6 +1935,57 @@
           "admin"
         ]
       }
+    },
+    "/areas": {
+      "get": {
+        "operationId": "AreasController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AreaListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "areas"
+        ]
+      }
+    },
+    "/areas/{slug}": {
+      "get": {
+        "operationId": "AreasController_detail",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AreaDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "areas"
+        ]
+      }
     }
   },
   "info": {
@@ -2443,7 +2537,12 @@
           "MALE",
           "FEMALE",
           "UNISEX",
-          "FREE"
+          "FREE",
+          "SANITARY_BIN",
+          "PERIOD_PRODUCTS",
+          "MIRROR",
+          "WATER_REFILL",
+          "ABLUTION"
         ]
       },
       "ActiveStatus_Output": {
@@ -2624,6 +2723,34 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ToiletPin_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletSitemapDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "updatedAt"
+              ],
+              "additionalProperties": false
             }
           }
         },
@@ -3228,6 +3355,17 @@
         ],
         "additionalProperties": false
       },
+      "Purpose": {
+        "type": "string",
+        "enum": [
+          "PEE",
+          "POO",
+          "BABY",
+          "SHOWER",
+          "FRESHEN_UP",
+          "PERIOD"
+        ]
+      },
       "Feature": {
         "type": "string",
         "enum": [
@@ -3255,7 +3393,12 @@
           "MALE",
           "FEMALE",
           "UNISEX",
-          "FREE"
+          "FREE",
+          "SANITARY_BIN",
+          "PERIOD_PRODUCTS",
+          "MIRROR",
+          "WATER_REFILL",
+          "ABLUTION"
         ]
       },
       "AreaType": {
@@ -3283,8 +3426,11 @@
           "urgent": {
             "type": "boolean"
           },
+          "purpose": {
+            "$ref": "#/components/schemas/Purpose"
+          },
           "require": {
-            "maxItems": 25,
+            "maxItems": 40,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Feature"
@@ -3634,7 +3780,12 @@
                         "MALE",
                         "FEMALE",
                         "UNISEX",
-                        "FREE"
+                        "FREE",
+                        "SANITARY_BIN",
+                        "PERIOD_PRODUCTS",
+                        "MIRROR",
+                        "WATER_REFILL",
+                        "ABLUTION"
                       ]
                     },
                     "additionalProperties": {
@@ -3747,7 +3898,12 @@
                             "MALE",
                             "FEMALE",
                             "UNISEX",
-                            "FREE"
+                            "FREE",
+                            "SANITARY_BIN",
+                            "PERIOD_PRODUCTS",
+                            "MIRROR",
+                            "WATER_REFILL",
+                            "ABLUTION"
                           ]
                         },
                         "additionalProperties": {
@@ -3847,37 +4003,6 @@
               "kind",
               "payload"
             ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "NEW_VENUE"
-              },
-              "payload": {},
-              "toiletId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "lat": {
-                "type": "number",
-                "minimum": -90,
-                "maximum": 90
-              },
-              "lng": {
-                "type": "number",
-                "minimum": -180,
-                "maximum": 180
-              },
-              "force": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "kind",
-              "payload"
-            ]
           }
         ]
       },
@@ -3892,8 +4017,7 @@
             "enum": [
               "NEW_TOILET",
               "EDIT_TOILET",
-              "CLOSE_TOILET",
-              "NEW_VENUE"
+              "CLOSE_TOILET"
             ]
           },
           "state": {
@@ -4009,7 +4133,12 @@
                         "MALE",
                         "FEMALE",
                         "UNISEX",
-                        "FREE"
+                        "FREE",
+                        "SANITARY_BIN",
+                        "PERIOD_PRODUCTS",
+                        "MIRROR",
+                        "WATER_REFILL",
+                        "ABLUTION"
                       ]
                     },
                     "additionalProperties": {
@@ -4093,7 +4222,12 @@
                             "MALE",
                             "FEMALE",
                             "UNISEX",
-                            "FREE"
+                            "FREE",
+                            "SANITARY_BIN",
+                            "PERIOD_PRODUCTS",
+                            "MIRROR",
+                            "WATER_REFILL",
+                            "ABLUTION"
                           ]
                         },
                         "additionalProperties": {
@@ -4390,8 +4524,7 @@
                   "enum": [
                     "NEW_TOILET",
                     "EDIT_TOILET",
-                    "CLOSE_TOILET",
-                    "NEW_VENUE"
+                    "CLOSE_TOILET"
                   ]
                 },
                 "state": {
@@ -4507,7 +4640,12 @@
                               "MALE",
                               "FEMALE",
                               "UNISEX",
-                              "FREE"
+                              "FREE",
+                              "SANITARY_BIN",
+                              "PERIOD_PRODUCTS",
+                              "MIRROR",
+                              "WATER_REFILL",
+                              "ABLUTION"
                             ]
                           },
                           "additionalProperties": {
@@ -4591,7 +4729,12 @@
                                   "MALE",
                                   "FEMALE",
                                   "UNISEX",
-                                  "FREE"
+                                  "FREE",
+                                  "SANITARY_BIN",
+                                  "PERIOD_PRODUCTS",
+                                  "MIRROR",
+                                  "WATER_REFILL",
+                                  "ABLUTION"
                                 ]
                               },
                               "additionalProperties": {
@@ -5016,7 +5159,12 @@
                 "MALE",
                 "FEMALE",
                 "UNISEX",
-                "FREE"
+                "FREE",
+                "SANITARY_BIN",
+                "PERIOD_PRODUCTS",
+                "MIRROR",
+                "WATER_REFILL",
+                "ABLUTION"
               ]
             }
           }
@@ -5846,7 +5994,12 @@
                 "MALE",
                 "FEMALE",
                 "UNISEX",
-                "FREE"
+                "FREE",
+                "SANITARY_BIN",
+                "PERIOD_PRODUCTS",
+                "MIRROR",
+                "WATER_REFILL",
+                "ABLUTION"
               ]
             },
             "additionalProperties": {
@@ -6047,6 +6200,263 @@
         },
         "required": [
           "counts"
+        ],
+        "additionalProperties": false
+      },
+      "AreaSummary_Output": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Region_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toiletCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "verifiedCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "venueCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "indexable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "region",
+          "toiletCount",
+          "verifiedCount",
+          "venueCount",
+          "indexable"
+        ],
+        "additionalProperties": false
+      },
+      "Region_Output": {
+        "type": "string",
+        "enum": [
+          "CENTRAL",
+          "EAST",
+          "NORTH",
+          "NORTH_EAST",
+          "WEST"
+        ]
+      },
+      "AreaListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AreaSummary_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "AreaVenue_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/VenueType_Output"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "toiletStatus": {
+            "$ref": "#/components/schemas/VenueToiletStatus_Output"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "near": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "$ref": "#/components/schemas/VenueType_Output"
+                  },
+                  "distanceM": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "name",
+                  "type",
+                  "distanceM"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toilets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToiletSummary_Output"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "lines",
+          "lat",
+          "lng",
+          "toiletStatus",
+          "note",
+          "address",
+          "near",
+          "toilets"
+        ],
+        "additionalProperties": false
+      },
+      "AreaDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Region_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toiletCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "verifiedCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "venueCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "indexable": {
+            "type": "boolean"
+          },
+          "pendingCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "center": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "lat",
+                  "lng"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "venues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AreaVenue_Output"
+            }
+          },
+          "noToiletVenues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueLite_Output"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "region",
+          "toiletCount",
+          "verifiedCount",
+          "venueCount",
+          "indexable",
+          "pendingCount",
+          "center",
+          "venues",
+          "noToiletVenues"
         ],
         "additionalProperties": false
       }

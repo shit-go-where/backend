@@ -20,7 +20,9 @@ type Feature =
   | 'TOILET_PAPER' | 'HAND_TOWEL' | 'HAND_DRYER' | 'HAND_SOAP' | 'SEAT_LINER'
   | 'BIDET' | 'AUTO_FLUSH' | 'AUTO_TAP' | 'AUTO_SOAP' | 'COAT_HOOK' | 'FEEDBACK_DEVICE'
   | 'SIGNAGE' | 'POSTERS' | 'AMBULANT' | 'ACCESSIBLE' | 'CHILD' | 'BABY_CHANGE'
-  | 'NURSING_ROOM' | 'SHOWER' | 'SITTING' | 'SQUAT' | 'MALE' | 'FEMALE' | 'UNISEX' | 'FREE';
+  | 'NURSING_ROOM' | 'SHOWER' | 'SITTING' | 'SQUAT' | 'MALE' | 'FEMALE' | 'UNISEX' | 'FREE'
+  | 'SANITARY_BIN' | 'PERIOD_PRODUCTS' | 'MIRROR' | 'WATER_REFILL' | 'ABLUTION';
+type Purpose = 'PEE' | 'POO' | 'BABY' | 'SHOWER' | 'FRESHEN_UP' | 'PERIOD';
 type VenueType = 'MRT_STATION' | 'BUS_INTERCHANGE' | 'MALL' | 'HAWKER_CENTRE' | 'COFFEESHOP'
   | 'COMMUNITY_CLUB' | 'PARK' | 'LIBRARY' | 'HOSPITAL' | 'SPORTS_CENTRE' | 'OTHER';
 type VenueToiletStatus = 'HAS_TOILETS' | 'NONE' | 'UNKNOWN' | 'USES_NEARBY';
@@ -114,7 +116,7 @@ interface Me {
 
 interface SubmissionView {
   id: string;
-  kind: 'NEW_TOILET' | 'EDIT_TOILET' | 'CLOSE_TOILET' | 'NEW_VENUE';
+  kind: 'NEW_TOILET' | 'EDIT_TOILET' | 'CLOSE_TOILET';
   state: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_INFO' | 'EXPIRED';
   payload: NewToiletPayload | EditToiletPayload | CloseToiletPayload;
   toilet: { id: string; label: string | null; venueName: string; lat: number; lng: number } | null;
@@ -156,6 +158,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
   Toilets at venues with `toiletStatus=NONE` are never returned (here, in-bounds, recommend). `features` = all must be present.
   `openNow=true` drops only toilets that are definitely closed; unknown hours (`openNow: null`) stay.
 - `GET /toilets/in-bounds?minLat&maxLat&minLng&maxLng&features=...&includePending=true` → `{ items: ToiletPin[] }` (cap 3000).
+- `GET /toilets/sitemap` → `{ items: { id: string; updatedAt: string }[] }`: every ACTIVE / CLOSED / RENOVATION toilet not at a NONE venue, for the frontend's sitemap.xml.
 - `GET /toilets/:id` → `ToiletDetail` (optional auth for `myReview`).
 - `GET /toilets/:id/reviews?cursor&limit=20` (limit max 50) → `{ items: Review[], nextCursor }` newest first; `nextCursor` is the last item's id. Public review photos are approved ones only.
 - `POST /toilets/:id/reviews` (auth) `{ cleanliness: 1-5, comment?: string<=1000, photoIds?: string[] (max 10) }` → `Review` (201, upsert, one per user per toilet). Awards REVIEW_POSTED, plus REVIEW_WITH_PHOTO if photos.
@@ -172,9 +175,21 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
 - `GET /venues/search?q&lat?&lng?` → `{ items: VenueLite[] }` (name ILIKE, max 20, nearest first when lat/lng given).
 - `GET /venues/:id` → `VenueLite & { address, planningArea, toilets: ToiletSummary[] }`
 
+### Areas (browse by URA planning area)
+- `AreaSummary` = `{ slug, name, region: 'CENTRAL'|'EAST'|'NORTH'|'NORTH_EAST'|'WEST'|null, toiletCount, verifiedCount, venueCount, indexable }`.
+  `slug` is the kebab-cased `Venue.planningArea` ("Downtown Core" → `downtown-core`). Counts are ACTIVE toilets not at NONE venues.
+  `indexable` = `toiletCount >= 3`; thinner area pages render but are `noindex` and left out of the sitemap.
+- `GET /areas` → `{ items: AreaSummary[] }` A to Z, areas with at least one ACTIVE toilet.
+- `GET /areas/:slug` → `AreaSummary & { pendingCount, center: { lat, lng } | null, venues: AreaVenue[], noToiletVenues: VenueLite[] }`, 404 for an unknown slug.
+  `AreaVenue` = `VenueLite & { address, near: { name, type, distanceM } | null, toilets: ToiletSummary[] }`: places with ACTIVE / CLOSED / RENOVATION
+  toilets (never PENDING), best toilet first (open, then tier, then cleanliness), places ranked by their best toilet. `near` is the closest
+  non-OTHER place within 1.5 km (in any area), set only when the place has no address. `center` is the area's namesake MRT station, else the
+  listed place nearest the middle. `noToiletVenues` are NONE / USES_NEARBY places in the area.
+
 ### Routing (owner: finder agent)
-- `POST /routing/recommend` `{ lat, lng, urgent?: boolean, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number } }`
+- `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number } }`
   → `{ items: { toilet: ToiletSummary; score: number; walkSeconds: number; walkDistanceM: number; reasons: string[]; route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null }[]; searchedRadiusM: number; skippedVenues: { name: string; toiletStatus: VenueToiletStatus; note: string | null; distanceM: number }[] }`
+  `purpose` adds soft preferences (src/routing/purposes.ts): missing features add cost, nothing is filtered out.
   Top 3. Toilets that are definitely closed now (openNow === false) are never recommended; unknown hours stay eligible. Route only computed for the top 3 via OneMap when configured; else `route: null` and `walkSeconds` / `walkDistanceM` are estimates (straight line × 1.3).
   `score` is 0-100, higher = better. Hard filters (also in urgent mode): `require`, `areaType`, `openNow` (definitely-closed only), ACTIVE only,
   no unexpired CLOSED_NOW/BROKEN report that is confirmed or reported twice. Urgent: radius 800 → 1500 → 3000 until ≥1 result, `radiusM`/`weights` ignored.
@@ -205,7 +220,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
 
 ### Submissions (owner: contributions agent)
 - `POST /submissions` (auth) `{ kind, toiletId?, lat?, lng?, payload, force?: boolean }` → 201 `SubmissionView`. `lat/lng` = where the submitter stands.
-  `payload` is validated per `kind` (discriminated union). `NEW_VENUE` → 400 "use NEW_TOILET with newVenue".
+  `payload` is validated per `kind` (discriminated union). There is no separate venue kind: a new place is created through NEW_TOILET's `newVenue`.
   NEW_TOILET: `photoIds` (>= 1) must be the user's own confirmed photos not attached to another submission (400);
   location must be inside Singapore (400). Venue: `venueId`, else `newVenue` creates a COMMUNITY venue, else snaps to the
   nearest venue within 60 m, else creates a COMMUNITY venue (type OTHER, named after `label`).
@@ -213,6 +228,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
   → 409 `{ statusCode, message, candidateIds: string[], candidates: ToiletSummary[] }`; resend with `force: true` to override.
   Creates a Toilet with status PENDING, tier COMMUNITY, so it can show as a dashed pin. Expires after 60 days.
   EDIT_TOILET / CLOSE_TOILET need `toiletId` of an ACTIVE toilet (404 / 400). EDIT `changes` must not be empty.
+  EDIT_TOILET also needs `lat/lng` within 150 m of the toilet (400 when missing or farther): only someone there can edit it.
   429 when the user already has 10 open (PENDING/NEEDS_INFO, unexpired) submissions.
 - `GET /submissions/queue?lat&lng&radius=3000` (auth; lat/lng required, radius 50-20000) → `{ items: SubmissionView[] }`
   PENDING/NEEDS_INFO, unexpired, not own, within radius of the toilet, nearest first, max 50, `distanceM` filled.
