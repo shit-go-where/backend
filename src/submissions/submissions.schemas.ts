@@ -81,8 +81,6 @@ export const CreateSubmissionSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal(SubmissionKind.NEW_TOILET), payload: NewToiletPayloadSchema, ...submissionBase }),
   z.object({ kind: z.literal(SubmissionKind.EDIT_TOILET), payload: EditToiletPayloadSchema, ...submissionBase }),
   z.object({ kind: z.literal(SubmissionKind.CLOSE_TOILET), payload: CloseToiletPayloadSchema, ...submissionBase }),
-  // Out of scope for v1; accepted by the schema so the API can explain what to do instead.
-  z.object({ kind: z.literal(SubmissionKind.NEW_VENUE), payload: z.unknown(), ...submissionBase }),
 ]);
 export type CreateSubmissionBody = z.infer<typeof CreateSubmissionSchema>;
 

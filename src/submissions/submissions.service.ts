@@ -26,7 +26,7 @@ import {
 } from '../generated/prisma/enums.js';
 import { bboxAround, haversineM, inSingapore, type LatLng } from '../common/geo.js';
 import { recomputeToiletScore } from '../toilets/scoring.js';
-import { evaluateQuorum } from './quorum.js';
+import { NEAR_VOTE_M, evaluateQuorum } from './quorum.js';
 import {
   EditToiletPayloadSchema,
   CloseToiletPayloadSchema,
@@ -166,9 +166,6 @@ export class SubmissionsService {
   /* ─────────────── create ─────────────── */
 
   async create(me: User, body: CreateSubmissionBody): Promise<SubmissionView> {
-    if (body.kind === 'NEW_VENUE') {
-      throw new BadRequestException('NEW_VENUE is not supported; use NEW_TOILET with newVenue');
-    }
     const open = await this.prisma.submission.count({
       where: { submittedById: me.id, state: { in: OPEN_STATES }, expiresAt: { gt: new Date() } },
     });
@@ -314,9 +311,21 @@ export class SubmissionsService {
     at: LatLng | null,
   ): Promise<string> {
     if (!toiletId) throw new BadRequestException(`${kind} needs toiletId`);
-    const toilet = await this.prisma.toilet.findUnique({ where: { id: toiletId }, select: { id: true, status: true, venueId: true } });
+    const toilet = await this.prisma.toilet.findUnique({
+      where: { id: toiletId },
+      select: { id: true, status: true, venueId: true, latitude: true, longitude: true },
+    });
     if (!toilet) throw new NotFoundException('Toilet not found');
     if (toilet.status !== ToiletStatus.ACTIVE) throw new BadRequestException('Only active toilets can be edited or closed');
+    // Edits describe what's inside, so only someone standing at the toilet can propose one,
+    // within the same radius as check-ins and nearby votes.
+    if (kind === 'EDIT_TOILET') {
+      if (!at) throw new BadRequestException('EDIT_TOILET needs lat/lng: you must be at the toilet to edit it');
+      const distanceM = Math.round(haversineM(at, { lat: toilet.latitude, lng: toilet.longitude }));
+      if (distanceM > NEAR_VOTE_M) {
+        throw new BadRequestException(`You are ${distanceM} m from this toilet; you need to be within ${NEAR_VOTE_M} m to edit it`);
+      }
+    }
     const photoIds = 'changes' in payload ? await this.assertPhotos(me.id, payload.photoIds ?? []) : [];
     return this.prisma.$transaction(async (tx) => {
       const submission = await tx.submission.create({

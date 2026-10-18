@@ -64,13 +64,8 @@ describe('Submissions (e2e)', () => {
     await http().get('/submissions/mine').expect(401);
   });
 
-  it('rejects NEW_VENUE, missing photos, outside Singapore and foreign photos', async () => {
-    const r1 = await http()
-      .post('/submissions')
-      .set('Cookie', alice.cookie)
-      .send({ kind: 'NEW_VENUE', payload: {} })
-      .expect(400);
-    expect(r1.body.message).toMatch(/NEW_TOILET with newVenue/);
+  it('rejects an unknown kind, missing photos, outside Singapore and foreign photos', async () => {
+    await http().post('/submissions').set('Cookie', alice.cookie).send({ kind: 'NEW_VENUE', payload: {} }).expect(400);
 
     await newToilet(400, alice, base, { photoIds: [] });
     await newToilet(400, alice, { lat: 1.0, lng: 103.0 });
@@ -220,11 +215,24 @@ describe('Submissions (e2e)', () => {
     await http().post(`/submissions/${subId}/votes`).set('Cookie', tina.cookie).send({ value: 'APPROVE' }).expect(409);
   });
 
+  it('only takes an EDIT_TOILET from someone at the toilet', async () => {
+    const edit = { kind: 'EDIT_TOILET', toiletId, payload: { changes: { features: { BIDET: false } } } };
+    const noGps = await http().post('/submissions').set('Cookie', bob.cookie).send(edit).expect(400);
+    expect(noGps.body.message).toMatch(/must be at the toilet/);
+    const far = await http()
+      .post('/submissions')
+      .set('Cookie', bob.cookie)
+      .send({ ...edit, ...offset(base, 400) })
+      .expect(400);
+    expect(far.body.message).toMatch(/within 150 m/);
+    expect(await prisma.submission.count({ where: { kind: 'EDIT_TOILET', toiletId } })).toBe(0);
+  });
+
   it('applies an EDIT_TOILET on one TRUSTED approval', async () => {
     await http()
       .post('/submissions')
       .set('Cookie', bob.cookie)
-      .send({ kind: 'EDIT_TOILET', payload: { changes: {} } , toiletId })
+      .send({ kind: 'EDIT_TOILET', payload: { changes: {} } , toiletId, ...offset(base, 10) })
       .expect(400);
     const r = await http()
       .post('/submissions')
@@ -232,6 +240,7 @@ describe('Submissions (e2e)', () => {
       .send({
         kind: 'EDIT_TOILET',
         toiletId,
+        ...offset(base, 20),
         payload: { changes: { label: 'Back corridor', features: { BIDET: false, HAND_SOAP: true } }, note: 'checked today' },
       })
       .expect(201);
