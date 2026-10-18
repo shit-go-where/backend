@@ -1,0 +1,6055 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/auth/google": {
+      "get": {
+        "operationId": "AuthController_google",
+        "parameters": [
+          {
+            "name": "redirect",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to Google"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/callback": {
+      "get": {
+        "operationId": "AuthController_callback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 2048,
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Sets the session cookie and redirects to the app"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Session cookie cleared"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/dev-login": {
+      "post": {
+        "operationId": "AuthController_devLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevLoginBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "UsersController_me",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_remove",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Account deleted and contributions anonymised"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/me/activity": {
+      "get": {
+        "operationId": "UsersController_activity",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityPageDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/venues/nearby": {
+      "get": {
+        "operationId": "VenuesController_nearby",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "radius",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 5000,
+              "exclusiveMinimum": 0,
+              "default": 1000,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueNearbyListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "venues"
+        ]
+      }
+    },
+    "/venues/search": {
+      "get": {
+        "operationId": "VenuesController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "lat",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueLiteListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "venues"
+        ]
+      }
+    },
+    "/venues/{id}": {
+      "get": {
+        "operationId": "VenuesController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VenueDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "venues"
+        ]
+      }
+    },
+    "/toilets/nearby": {
+      "get": {
+        "operationId": "ToiletsController_nearby",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "radius",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 5000,
+              "exclusiveMinimum": 0,
+              "default": 1000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "features",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tier",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "areaType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AreaType"
+            }
+          },
+          {
+            "name": "openNow",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "includePending",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToiletSummaryListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "toilets"
+        ]
+      }
+    },
+    "/toilets/in-bounds": {
+      "get": {
+        "operationId": "ToiletsController_inBounds",
+        "parameters": [
+          {
+            "name": "minLat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxLat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minLng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxLng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "features",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tier",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includePending",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "1",
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToiletPinListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "toilets"
+        ]
+      }
+    },
+    "/toilets/{id}": {
+      "get": {
+        "operationId": "ToiletsController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToiletDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "toilets"
+        ]
+      }
+    },
+    "/leaderboard/toilets": {
+      "get": {
+        "operationId": "ToiletLeaderboardController_leaderboard",
+        "parameters": [
+          {
+            "name": "area",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToiletLeaderboardDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "leaderboard"
+        ]
+      }
+    },
+    "/routing/recommend": {
+      "post": {
+        "operationId": "RoutingController_recommend",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "routing"
+        ]
+      }
+    },
+    "/routing/walk": {
+      "get": {
+        "operationId": "RoutingController_walk",
+        "parameters": [
+          {
+            "name": "fromLat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "fromLng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "toLat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "toLng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalkResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "routing"
+        ]
+      }
+    },
+    "/geo/search": {
+      "get": {
+        "operationId": "GeoController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoSearchResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "routing"
+        ]
+      }
+    },
+    "/submissions": {
+      "post": {
+        "operationId": "SubmissionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
+      }
+    },
+    "/submissions/queue": {
+      "get": {
+        "operationId": "SubmissionsController_queue",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "radius",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 50,
+              "maximum": 20000,
+              "default": 3000,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
+      }
+    },
+    "/submissions/mine": {
+      "get": {
+        "operationId": "SubmissionsController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
+      }
+    },
+    "/submissions/{id}": {
+      "get": {
+        "operationId": "SubmissionsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
+      }
+    },
+    "/submissions/{id}/votes": {
+      "post": {
+        "operationId": "SubmissionsController_vote",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
+      }
+    },
+    "/submissions/{id}/resolve": {
+      "post": {
+        "operationId": "SubmissionsController_resolve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
+      }
+    },
+    "/toilets/{id}/check-ins": {
+      "post": {
+        "operationId": "GamificationController_checkIn",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckInResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/toilets/{id}/verify": {
+      "post": {
+        "operationId": "GamificationController_verify",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/me/passport": {
+      "get": {
+        "operationId": "GamificationController_passport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/leaderboard/users": {
+      "get": {
+        "operationId": "GamificationController_leaderboard",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "week",
+              "type": "string",
+              "enum": [
+                "week",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/badges": {
+      "get": {
+        "operationId": "GamificationController_badges",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgeListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/toilets/{id}/reviews": {
+      "get": {
+        "operationId": "ReviewsController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewPageDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reviews"
+        ]
+      },
+      "post": {
+        "operationId": "ReviewsController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sgw_session": []
+          }
+        ],
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/toilets/{id}/status": {
+      "get": {
+        "operationId": "StatusController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusReportListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "status"
+        ]
+      },
+      "post": {
+        "operationId": "StatusController_report",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusReportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sgw_session": []
+          }
+        ],
+        "tags": [
+          "status"
+        ]
+      }
+    },
+    "/status/{id}/confirm": {
+      "post": {
+        "operationId": "StatusController_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusReportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sgw_session": []
+          }
+        ],
+        "tags": [
+          "status"
+        ]
+      }
+    },
+    "/toilets/{id}/flags": {
+      "post": {
+        "operationId": "FlagsController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFlagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagCreatedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sgw_session": []
+          }
+        ],
+        "tags": [
+          "flags"
+        ]
+      }
+    },
+    "/media/presign": {
+      "post": {
+        "operationId": "MediaController_presign",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresignResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/media/{id}/upload": {
+      "put": {
+        "operationId": "MediaController_upload",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Stored (local dev storage only)"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/media/{id}/confirm": {
+      "post": {
+        "operationId": "MediaController_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPhotoRefDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/admin/jobs/{name}": {
+      "post": {
+        "operationId": "AdminJobsController_run",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-cron-secret",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/flags": {
+      "get": {
+        "operationId": "AdminController_flags",
+        "parameters": [
+          {
+            "name": "resolved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "false",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFlagListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/flags/{id}/resolve": {
+      "post": {
+        "operationId": "AdminController_resolveFlag",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOkDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/photos/pending": {
+      "get": {
+        "operationId": "AdminController_pendingPhotos",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingPhotoListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/photos/{id}/approve": {
+      "post": {
+        "operationId": "AdminController_approvePhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoApprovalDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/photos/{id}/reject": {
+      "post": {
+        "operationId": "AdminController_rejectPhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOkDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/toilets/{id}": {
+      "patch": {
+        "operationId": "AdminController_patchToilet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminToiletPatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminIdDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/users/{id}/role": {
+      "patch": {
+        "operationId": "AdminController_setRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RolePatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoleResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/imports": {
+      "get": {
+        "operationId": "AdminController_imports",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRunListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/admin/data-quality": {
+      "get": {
+        "operationId": "AdminController_dataQuality",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualityDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Shit Go Where API",
+    "description": "Find, rate and route to toilets in Singapore.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sgw_session"
+      }
+    },
+    "schemas": {
+      "DevLoginBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "MeDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "handle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "TRUSTED",
+              "MODERATOR",
+              "ADMIN"
+            ]
+          },
+          "trustScore": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "leaderboardOptIn": {
+            "type": "boolean"
+          },
+          "points": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "awardedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "icon"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "needsHandle": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "handle",
+          "displayName",
+          "avatarUrl",
+          "role",
+          "trustScore",
+          "leaderboardOptIn",
+          "points",
+          "badges",
+          "needsHandle"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateMeDto": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{3,20}$"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "leaderboardOptIn": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ActivityPageDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "delta": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "SUBMISSION_APPROVED",
+                    "REVIEW_POSTED",
+                    "REVIEW_WITH_PHOTO",
+                    "STATUS_CONFIRMED",
+                    "CHECK_IN",
+                    "FIRST_CHECK_IN_AT_TOILET",
+                    "VOTE_MATCHED_OUTCOME",
+                    "SURVEY_COMPLETED"
+                  ]
+                },
+                "refId": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "delta",
+                "reason",
+                "refId",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "VenueType_Output": {
+        "type": "string",
+        "enum": [
+          "MRT_STATION",
+          "BUS_INTERCHANGE",
+          "MALL",
+          "HAWKER_CENTRE",
+          "COFFEESHOP",
+          "COMMUNITY_CLUB",
+          "PARK",
+          "LIBRARY",
+          "HOSPITAL",
+          "SPORTS_CENTRE",
+          "OTHER"
+        ]
+      },
+      "VenueToiletStatus_Output": {
+        "type": "string",
+        "enum": [
+          "HAS_TOILETS",
+          "NONE",
+          "UNKNOWN",
+          "USES_NEARBY"
+        ]
+      },
+      "VenueNearbyListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "$ref": "#/components/schemas/VenueType_Output"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "lat": {
+                  "type": "number"
+                },
+                "lng": {
+                  "type": "number"
+                },
+                "toiletStatus": {
+                  "$ref": "#/components/schemas/VenueToiletStatus_Output"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "distanceM": {
+                  "type": "number"
+                },
+                "toiletCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "type",
+                "lines",
+                "lat",
+                "lng",
+                "toiletStatus",
+                "note",
+                "distanceM",
+                "toiletCount"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "VenueLite_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/VenueType_Output"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "toiletStatus": {
+            "$ref": "#/components/schemas/VenueToiletStatus_Output"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "lines",
+          "lat",
+          "lng",
+          "toiletStatus",
+          "note"
+        ],
+        "additionalProperties": false
+      },
+      "VenueLiteListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VenueLite_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletSummary_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "venue": {
+            "$ref": "#/components/schemas/VenueLite_Output"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "level": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "areaType": {
+            "$ref": "#/components/schemas/AreaType_Output"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/ToiletTier_Output"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ToiletStatus_Output"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feature_Output"
+            }
+          },
+          "scoreCleanliness": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "surveyTotal": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rasStars": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reviewCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "activeStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveStatus_Output"
+            }
+          },
+          "lastVerifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "needsResurvey": {
+            "type": "boolean"
+          },
+          "openNow": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "photoThumb": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "distanceM": {
+            "type": "number"
+          },
+          "walkSecondsEstimate": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "venue",
+          "lat",
+          "lng",
+          "level",
+          "areaType",
+          "tier",
+          "status",
+          "features",
+          "scoreCleanliness",
+          "surveyTotal",
+          "rasStars",
+          "reviewCount",
+          "activeStatus",
+          "lastVerifiedAt",
+          "needsResurvey",
+          "openNow",
+          "photoThumb"
+        ],
+        "additionalProperties": false
+      },
+      "AreaType_Output": {
+        "type": "string",
+        "enum": [
+          "PAID_AREA",
+          "UNPAID_AREA",
+          "NOT_APPLICABLE",
+          "UNKNOWN"
+        ]
+      },
+      "ToiletTier_Output": {
+        "type": "string",
+        "enum": [
+          "VERIFIED",
+          "COMMUNITY",
+          "IMPORTED"
+        ]
+      },
+      "ToiletStatus_Output": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "CLOSED",
+          "RENOVATION",
+          "PENDING",
+          "REJECTED"
+        ]
+      },
+      "Feature_Output": {
+        "type": "string",
+        "enum": [
+          "TOILET_PAPER",
+          "HAND_TOWEL",
+          "HAND_DRYER",
+          "HAND_SOAP",
+          "SEAT_LINER",
+          "BIDET",
+          "AUTO_FLUSH",
+          "AUTO_TAP",
+          "AUTO_SOAP",
+          "COAT_HOOK",
+          "FEEDBACK_DEVICE",
+          "SIGNAGE",
+          "POSTERS",
+          "AMBULANT",
+          "ACCESSIBLE",
+          "CHILD",
+          "BABY_CHANGE",
+          "NURSING_ROOM",
+          "SHOWER",
+          "SITTING",
+          "SQUAT",
+          "MALE",
+          "FEMALE",
+          "UNISEX",
+          "FREE"
+        ]
+      },
+      "ActiveStatus_Output": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/StatusKind_Output"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "latestAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "count",
+          "latestAt"
+        ],
+        "additionalProperties": false
+      },
+      "StatusKind_Output": {
+        "type": "string",
+        "enum": [
+          "ALL_GOOD",
+          "NO_PAPER",
+          "NO_SOAP",
+          "LONG_QUEUE",
+          "BEING_CLEANED",
+          "BROKEN",
+          "CLOSED_NOW"
+        ]
+      },
+      "VenueDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/VenueType_Output"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "toiletStatus": {
+            "$ref": "#/components/schemas/VenueToiletStatus_Output"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planningArea": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toilets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToiletSummary_Output"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "lines",
+          "lat",
+          "lng",
+          "toiletStatus",
+          "note",
+          "address",
+          "planningArea",
+          "toilets"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletSummaryListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToiletSummary_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletPin_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/ToiletTier_Output"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ToiletStatus_Output"
+          },
+          "scoreCleanliness": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "hasIssue": {
+            "type": "boolean"
+          },
+          "venueType": {
+            "$ref": "#/components/schemas/VenueType_Output"
+          }
+        },
+        "required": [
+          "id",
+          "lat",
+          "lng",
+          "tier",
+          "status",
+          "scoreCleanliness",
+          "hasIssue",
+          "venueType"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletPinListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToiletPin_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "OpeningHours_Output": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "always"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "weekly"
+              },
+              "periods": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "open": {
+                      "type": "string"
+                    },
+                    "close": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "days",
+                    "open",
+                    "close"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "inferred": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "type",
+              "periods"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "osm"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Survey_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "surveyedAt": {
+            "type": "string"
+          },
+          "phase": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cleanliness": {
+            "type": "number"
+          },
+          "scent": {
+            "type": "number"
+          },
+          "aesthetics": {
+            "type": "number"
+          },
+          "music": {
+            "type": "number"
+          },
+          "toiletries": {
+            "type": "number"
+          },
+          "facilities": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "rasStars": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "remarks": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "surveyedAt",
+          "phase",
+          "cleanliness",
+          "scent",
+          "aesthetics",
+          "music",
+          "toiletries",
+          "facilities",
+          "total",
+          "rasStars",
+          "remarks"
+        ],
+        "additionalProperties": false
+      },
+      "Review_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cleanliness": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "comment": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "handle": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "avatarUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "handle",
+              "avatarUrl"
+            ],
+            "additionalProperties": false
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoRef_Output"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "cleanliness",
+          "comment",
+          "createdAt",
+          "user",
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "PhotoRef_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "thumbUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "thumbUrl"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "venue": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "$ref": "#/components/schemas/VenueType_Output"
+              },
+              "lines": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              },
+              "toiletStatus": {
+                "$ref": "#/components/schemas/VenueToiletStatus_Output"
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "address": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "planningArea": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "type",
+              "lines",
+              "lat",
+              "lng",
+              "toiletStatus",
+              "note",
+              "address",
+              "planningArea"
+            ],
+            "additionalProperties": false
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "areaType": {
+            "$ref": "#/components/schemas/AreaType_Output"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/ToiletTier_Output"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ToiletStatus_Output"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feature_Output"
+            }
+          },
+          "scoreCleanliness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "surveyTotal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rasStars": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "activeStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveStatus_Output"
+            }
+          },
+          "lastVerifiedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "needsResurvey": {
+            "type": "boolean"
+          },
+          "openNow": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photoThumb": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distanceM": {
+            "type": "number"
+          },
+          "walkSecondsEstimate": {
+            "type": "number"
+          },
+          "accessNote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nearestExit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "openingHours": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpeningHours_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "featureDetails": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "feature": {
+                  "$ref": "#/components/schemas/Feature_Output"
+                },
+                "present": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "observedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "feature",
+                "present",
+                "source",
+                "observedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "latestSurvey": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Survey_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "surveyCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review_Output"
+            }
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoRef_Output"
+            }
+          },
+          "myReview": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Review_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "venue",
+          "lat",
+          "lng",
+          "level",
+          "areaType",
+          "tier",
+          "status",
+          "features",
+          "scoreCleanliness",
+          "surveyTotal",
+          "rasStars",
+          "reviewCount",
+          "activeStatus",
+          "lastVerifiedAt",
+          "needsResurvey",
+          "openNow",
+          "photoThumb",
+          "accessNote",
+          "nearestExit",
+          "openingHours",
+          "featureDetails",
+          "latestSurvey",
+          "surveyCount",
+          "reviews",
+          "photos",
+          "myReview",
+          "source",
+          "attribution"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletLeaderboardDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rank": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "toilet": {
+                  "$ref": "#/components/schemas/ToiletSummary_Output"
+                },
+                "score": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "rank",
+                "toilet",
+                "score"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "areas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "areas"
+        ],
+        "additionalProperties": false
+      },
+      "Feature": {
+        "type": "string",
+        "enum": [
+          "TOILET_PAPER",
+          "HAND_TOWEL",
+          "HAND_DRYER",
+          "HAND_SOAP",
+          "SEAT_LINER",
+          "BIDET",
+          "AUTO_FLUSH",
+          "AUTO_TAP",
+          "AUTO_SOAP",
+          "COAT_HOOK",
+          "FEEDBACK_DEVICE",
+          "SIGNAGE",
+          "POSTERS",
+          "AMBULANT",
+          "ACCESSIBLE",
+          "CHILD",
+          "BABY_CHANGE",
+          "NURSING_ROOM",
+          "SHOWER",
+          "SITTING",
+          "SQUAT",
+          "MALE",
+          "FEMALE",
+          "UNISEX",
+          "FREE"
+        ]
+      },
+      "AreaType": {
+        "type": "string",
+        "enum": [
+          "PAID_AREA",
+          "UNPAID_AREA",
+          "NOT_APPLICABLE",
+          "UNKNOWN"
+        ]
+      },
+      "RecommendBodyDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "urgent": {
+            "type": "boolean"
+          },
+          "require": {
+            "maxItems": 25,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Feature"
+            }
+          },
+          "areaType": {
+            "$ref": "#/components/schemas/AreaType"
+          },
+          "openNow": {
+            "type": "boolean"
+          },
+          "radiusM": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 5000
+          },
+          "weights": {
+            "type": "object",
+            "properties": {
+              "distance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "cleanliness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "freshness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "RecommendResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "toilet": {
+                  "$ref": "#/components/schemas/ToiletSummary_Output"
+                },
+                "score": {
+                  "type": "number"
+                },
+                "walkSeconds": {
+                  "type": "number"
+                },
+                "walkDistanceM": {
+                  "type": "number"
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "route": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "polyline": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "prefixItems": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ],
+                            "items": false,
+                            "minItems": 2,
+                            "maxItems": 2
+                          }
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "onemap",
+                            "estimate"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "polyline",
+                        "source"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "toilet",
+                "score",
+                "walkSeconds",
+                "walkDistanceM",
+                "reasons",
+                "route"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "searchedRadiusM": {
+            "type": "number"
+          },
+          "skippedVenues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "toiletStatus": {
+                  "$ref": "#/components/schemas/VenueToiletStatus_Output"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "distanceM": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "toiletStatus",
+                "note",
+                "distanceM"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items",
+          "searchedRadiusM",
+          "skippedVenues"
+        ],
+        "additionalProperties": false
+      },
+      "WalkResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "distanceM": {
+            "type": "number"
+          },
+          "durationS": {
+            "type": "number"
+          },
+          "polyline": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "onemap",
+              "estimate"
+            ]
+          }
+        },
+        "required": [
+          "distanceM",
+          "durationS",
+          "polyline",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "GeoSearchResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "lat": {
+                  "type": "number"
+                },
+                "lng": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "address",
+                "lat",
+                "lng"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "CreateSubmissionDto": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "NEW_TOILET"
+              },
+              "payload": {
+                "type": "object",
+                "properties": {
+                  "venueId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "newVenue": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "MRT_STATION",
+                          "BUS_INTERCHANGE",
+                          "MALL",
+                          "HAWKER_CENTRE",
+                          "COFFEESHOP",
+                          "COMMUNITY_CLUB",
+                          "PARK",
+                          "LIBRARY",
+                          "HOSPITAL",
+                          "SPORTS_CENTRE",
+                          "OTHER"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "type"
+                    ]
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "lat": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "lng": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "level": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "areaType": {
+                    "type": "string",
+                    "enum": [
+                      "PAID_AREA",
+                      "UNPAID_AREA",
+                      "NOT_APPLICABLE",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "accessNote": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "features": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": [
+                        "TOILET_PAPER",
+                        "HAND_TOWEL",
+                        "HAND_DRYER",
+                        "HAND_SOAP",
+                        "SEAT_LINER",
+                        "BIDET",
+                        "AUTO_FLUSH",
+                        "AUTO_TAP",
+                        "AUTO_SOAP",
+                        "COAT_HOOK",
+                        "FEEDBACK_DEVICE",
+                        "SIGNAGE",
+                        "POSTERS",
+                        "AMBULANT",
+                        "ACCESSIBLE",
+                        "CHILD",
+                        "BABY_CHANGE",
+                        "NURSING_ROOM",
+                        "SHOWER",
+                        "SITTING",
+                        "SQUAT",
+                        "MALE",
+                        "FEMALE",
+                        "UNISEX",
+                        "FREE"
+                      ]
+                    },
+                    "additionalProperties": {
+                      "type": "boolean"
+                    }
+                  },
+                  "photoIds": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "lat",
+                  "lng",
+                  "features",
+                  "photoIds"
+                ]
+              },
+              "toiletId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "force": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind",
+              "payload"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "EDIT_TOILET"
+              },
+              "payload": {
+                "type": "object",
+                "properties": {
+                  "changes": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "level": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 20
+                      },
+                      "areaType": {
+                        "type": "string",
+                        "enum": [
+                          "PAID_AREA",
+                          "UNPAID_AREA",
+                          "NOT_APPLICABLE",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "accessNote": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "features": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "enum": [
+                            "TOILET_PAPER",
+                            "HAND_TOWEL",
+                            "HAND_DRYER",
+                            "HAND_SOAP",
+                            "SEAT_LINER",
+                            "BIDET",
+                            "AUTO_FLUSH",
+                            "AUTO_TAP",
+                            "AUTO_SOAP",
+                            "COAT_HOOK",
+                            "FEEDBACK_DEVICE",
+                            "SIGNAGE",
+                            "POSTERS",
+                            "AMBULANT",
+                            "ACCESSIBLE",
+                            "CHILD",
+                            "BABY_CHANGE",
+                            "NURSING_ROOM",
+                            "SHOWER",
+                            "SITTING",
+                            "SQUAT",
+                            "MALE",
+                            "FEMALE",
+                            "UNISEX",
+                            "FREE"
+                          ]
+                        },
+                        "additionalProperties": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "photoIds": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "changes"
+                ]
+              },
+              "toiletId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "force": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind",
+              "payload"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "CLOSE_TOILET"
+              },
+              "payload": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "CLOSED",
+                      "RENOVATION"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "status",
+                  "reason"
+                ]
+              },
+              "toiletId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "force": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind",
+              "payload"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "NEW_VENUE"
+              },
+              "payload": {},
+              "toiletId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lng": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "force": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind",
+              "payload"
+            ]
+          }
+        ]
+      },
+      "SubmissionViewDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "NEW_TOILET",
+              "EDIT_TOILET",
+              "CLOSE_TOILET",
+              "NEW_VENUE"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "NEEDS_INFO",
+              "EXPIRED"
+            ]
+          },
+          "payload": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "venueId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "newVenue": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "MRT_STATION",
+                          "BUS_INTERCHANGE",
+                          "MALL",
+                          "HAWKER_CENTRE",
+                          "COFFEESHOP",
+                          "COMMUNITY_CLUB",
+                          "PARK",
+                          "LIBRARY",
+                          "HOSPITAL",
+                          "SPORTS_CENTRE",
+                          "OTHER"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "lat": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "lng": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "level": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "areaType": {
+                    "type": "string",
+                    "enum": [
+                      "PAID_AREA",
+                      "UNPAID_AREA",
+                      "NOT_APPLICABLE",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "accessNote": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "features": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": [
+                        "TOILET_PAPER",
+                        "HAND_TOWEL",
+                        "HAND_DRYER",
+                        "HAND_SOAP",
+                        "SEAT_LINER",
+                        "BIDET",
+                        "AUTO_FLUSH",
+                        "AUTO_TAP",
+                        "AUTO_SOAP",
+                        "COAT_HOOK",
+                        "FEEDBACK_DEVICE",
+                        "SIGNAGE",
+                        "POSTERS",
+                        "AMBULANT",
+                        "ACCESSIBLE",
+                        "CHILD",
+                        "BABY_CHANGE",
+                        "NURSING_ROOM",
+                        "SHOWER",
+                        "SITTING",
+                        "SQUAT",
+                        "MALE",
+                        "FEMALE",
+                        "UNISEX",
+                        "FREE"
+                      ]
+                    },
+                    "additionalProperties": {
+                      "type": "boolean"
+                    }
+                  },
+                  "photoIds": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "lat",
+                  "lng",
+                  "features",
+                  "photoIds"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "changes": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "level": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 20
+                      },
+                      "areaType": {
+                        "type": "string",
+                        "enum": [
+                          "PAID_AREA",
+                          "UNPAID_AREA",
+                          "NOT_APPLICABLE",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "accessNote": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "features": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "enum": [
+                            "TOILET_PAPER",
+                            "HAND_TOWEL",
+                            "HAND_DRYER",
+                            "HAND_SOAP",
+                            "SEAT_LINER",
+                            "BIDET",
+                            "AUTO_FLUSH",
+                            "AUTO_TAP",
+                            "AUTO_SOAP",
+                            "COAT_HOOK",
+                            "FEEDBACK_DEVICE",
+                            "SIGNAGE",
+                            "POSTERS",
+                            "AMBULANT",
+                            "ACCESSIBLE",
+                            "CHILD",
+                            "BABY_CHANGE",
+                            "NURSING_ROOM",
+                            "SHOWER",
+                            "SITTING",
+                            "SQUAT",
+                            "MALE",
+                            "FEMALE",
+                            "UNISEX",
+                            "FREE"
+                          ]
+                        },
+                        "additionalProperties": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "photoIds": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "changes"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "CLOSED",
+                      "RENOVATION"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "status",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "toilet": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "venueName": {
+                    "type": "string"
+                  },
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "venueName",
+                  "lat",
+                  "lng"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "venue": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "MRT_STATION",
+                      "BUS_INTERCHANGE",
+                      "MALL",
+                      "HAWKER_CENTRE",
+                      "COFFEESHOP",
+                      "COMMUNITY_CLUB",
+                      "PARK",
+                      "LIBRARY",
+                      "HOSPITAL",
+                      "SPORTS_CENTRE",
+                      "OTHER"
+                    ]
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  },
+                  "toiletStatus": {
+                    "type": "string",
+                    "enum": [
+                      "HAS_TOILETS",
+                      "NONE",
+                      "UNKNOWN",
+                      "USES_NEARBY"
+                    ]
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "type",
+                  "lines",
+                  "lat",
+                  "lng",
+                  "toiletStatus",
+                  "note"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submittedBy": {
+            "type": "object",
+            "properties": {
+              "handle": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "handle"
+            ],
+            "additionalProperties": false
+          },
+          "approvals": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "rejections": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "resolvedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distanceM": {
+            "type": "number"
+          },
+          "myVote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "APPROVE",
+                  "REJECT"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "thumbUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "url",
+                "thumbUrl"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "canVote": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "state",
+          "payload",
+          "toilet",
+          "venue",
+          "submittedBy",
+          "approvals",
+          "rejections",
+          "createdAt",
+          "expiresAt",
+          "resolvedAt",
+          "resolution",
+          "myVote",
+          "photos",
+          "canVote"
+        ],
+        "additionalProperties": false
+      },
+      "SubmissionListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "NEW_TOILET",
+                    "EDIT_TOILET",
+                    "CLOSE_TOILET",
+                    "NEW_VENUE"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "APPROVED",
+                    "REJECTED",
+                    "NEEDS_INFO",
+                    "EXPIRED"
+                  ]
+                },
+                "payload": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "venueId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "newVenue": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "MRT_STATION",
+                                "BUS_INTERCHANGE",
+                                "MALL",
+                                "HAWKER_CENTRE",
+                                "COFFEESHOP",
+                                "COMMUNITY_CLUB",
+                                "PARK",
+                                "LIBRARY",
+                                "HOSPITAL",
+                                "SPORTS_CENTRE",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "type"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "lat": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "lng": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "level": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20
+                        },
+                        "areaType": {
+                          "type": "string",
+                          "enum": [
+                            "PAID_AREA",
+                            "UNPAID_AREA",
+                            "NOT_APPLICABLE",
+                            "UNKNOWN"
+                          ]
+                        },
+                        "accessNote": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "features": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "enum": [
+                              "TOILET_PAPER",
+                              "HAND_TOWEL",
+                              "HAND_DRYER",
+                              "HAND_SOAP",
+                              "SEAT_LINER",
+                              "BIDET",
+                              "AUTO_FLUSH",
+                              "AUTO_TAP",
+                              "AUTO_SOAP",
+                              "COAT_HOOK",
+                              "FEEDBACK_DEVICE",
+                              "SIGNAGE",
+                              "POSTERS",
+                              "AMBULANT",
+                              "ACCESSIBLE",
+                              "CHILD",
+                              "BABY_CHANGE",
+                              "NURSING_ROOM",
+                              "SHOWER",
+                              "SITTING",
+                              "SQUAT",
+                              "MALE",
+                              "FEMALE",
+                              "UNISEX",
+                              "FREE"
+                            ]
+                          },
+                          "additionalProperties": {
+                            "type": "boolean"
+                          }
+                        },
+                        "photoIds": {
+                          "minItems": 1,
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng",
+                        "features",
+                        "photoIds"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "changes": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "level": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "areaType": {
+                              "type": "string",
+                              "enum": [
+                                "PAID_AREA",
+                                "UNPAID_AREA",
+                                "NOT_APPLICABLE",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "accessNote": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 500
+                            },
+                            "features": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "enum": [
+                                  "TOILET_PAPER",
+                                  "HAND_TOWEL",
+                                  "HAND_DRYER",
+                                  "HAND_SOAP",
+                                  "SEAT_LINER",
+                                  "BIDET",
+                                  "AUTO_FLUSH",
+                                  "AUTO_TAP",
+                                  "AUTO_SOAP",
+                                  "COAT_HOOK",
+                                  "FEEDBACK_DEVICE",
+                                  "SIGNAGE",
+                                  "POSTERS",
+                                  "AMBULANT",
+                                  "ACCESSIBLE",
+                                  "CHILD",
+                                  "BABY_CHANGE",
+                                  "NURSING_ROOM",
+                                  "SHOWER",
+                                  "SITTING",
+                                  "SQUAT",
+                                  "MALE",
+                                  "FEMALE",
+                                  "UNISEX",
+                                  "FREE"
+                                ]
+                              },
+                              "additionalProperties": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "photoIds": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        }
+                      },
+                      "required": [
+                        "changes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "CLOSED",
+                            "RENOVATION"
+                          ]
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "toilet": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "venueName": {
+                          "type": "string"
+                        },
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label",
+                        "venueName",
+                        "lat",
+                        "lng"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "venue": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MRT_STATION",
+                            "BUS_INTERCHANGE",
+                            "MALL",
+                            "HAWKER_CENTRE",
+                            "COFFEESHOP",
+                            "COMMUNITY_CLUB",
+                            "PARK",
+                            "LIBRARY",
+                            "HOSPITAL",
+                            "SPORTS_CENTRE",
+                            "OTHER"
+                          ]
+                        },
+                        "lines": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        },
+                        "toiletStatus": {
+                          "type": "string",
+                          "enum": [
+                            "HAS_TOILETS",
+                            "NONE",
+                            "UNKNOWN",
+                            "USES_NEARBY"
+                          ]
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "type",
+                        "lines",
+                        "lat",
+                        "lng",
+                        "toiletStatus",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "submittedBy": {
+                  "type": "object",
+                  "properties": {
+                    "handle": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "handle"
+                  ],
+                  "additionalProperties": false
+                },
+                "approvals": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "rejections": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "expiresAt": {
+                  "type": "string"
+                },
+                "resolvedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resolution": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "distanceM": {
+                  "type": "number"
+                },
+                "myVote": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "APPROVE",
+                        "REJECT"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "photos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      },
+                      "thumbUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "url",
+                      "thumbUrl"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "canVote": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "state",
+                "payload",
+                "toilet",
+                "venue",
+                "submittedBy",
+                "approvals",
+                "rejections",
+                "createdAt",
+                "expiresAt",
+                "resolvedAt",
+                "resolution",
+                "myVote",
+                "photos",
+                "canVote"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "VoteDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT"
+            ]
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "ResolveDto": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "NEEDS_INFO"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "CheckInDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "CheckInResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "distanceM": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pointsAwarded": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newBadges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "awardedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "icon"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "verifyPrompt": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "TOILET_PAPER",
+                "HAND_TOWEL",
+                "HAND_DRYER",
+                "HAND_SOAP",
+                "SEAT_LINER",
+                "BIDET",
+                "AUTO_FLUSH",
+                "AUTO_TAP",
+                "AUTO_SOAP",
+                "COAT_HOOK",
+                "FEEDBACK_DEVICE",
+                "SIGNAGE",
+                "POSTERS",
+                "AMBULANT",
+                "ACCESSIBLE",
+                "CHILD",
+                "BABY_CHANGE",
+                "NURSING_ROOM",
+                "SHOWER",
+                "SITTING",
+                "SQUAT",
+                "MALE",
+                "FEMALE",
+                "UNISEX",
+                "FREE"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "distanceM",
+          "pointsAwarded",
+          "newBadges",
+          "verifyPrompt"
+        ],
+        "additionalProperties": false
+      },
+      "VerifyDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "accurate": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "lat",
+          "lng",
+          "accurate"
+        ]
+      },
+      "OkDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "PassportDto_Output": {
+        "type": "object",
+        "properties": {
+          "stamped": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "stations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "venueId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stampedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "venueId",
+                "name",
+                "lines",
+                "stampedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "stamped",
+          "total",
+          "stations"
+        ],
+        "additionalProperties": false
+      },
+      "LeaderboardDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rank": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "handle": {
+                  "type": "string"
+                },
+                "avatarUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "points": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "rank",
+                "handle",
+                "avatarUrl",
+                "points"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "me": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "rank": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "points": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "rank",
+                  "points"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "me"
+        ],
+        "additionalProperties": false
+      },
+      "BadgeListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "awardedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "icon"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewPageDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review_Output"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "cleanliness": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "photoIds": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "cleanliness"
+        ]
+      },
+      "ReviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cleanliness": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "handle": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "avatarUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "handle",
+              "avatarUrl"
+            ],
+            "additionalProperties": false
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhotoRef_Output"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "cleanliness",
+          "comment",
+          "createdAt",
+          "user",
+          "photos"
+        ],
+        "additionalProperties": false
+      },
+      "StatusReport_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StatusKind_Output"
+          },
+          "confirmations": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "confirmedByMe": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "confirmations",
+          "createdAt",
+          "expiresAt",
+          "confirmedByMe"
+        ],
+        "additionalProperties": false
+      },
+      "StatusReportListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusReport_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "StatusKind": {
+        "type": "string",
+        "enum": [
+          "ALL_GOOD",
+          "NO_PAPER",
+          "NO_SOAP",
+          "LONG_QUEUE",
+          "BEING_CLEANED",
+          "BROKEN",
+          "CLOSED_NOW"
+        ]
+      },
+      "CreateStatusDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/StatusKind"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "StatusReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StatusKind_Output"
+          },
+          "confirmations": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "confirmedByMe": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "confirmations",
+          "createdAt",
+          "expiresAt",
+          "confirmedByMe"
+        ],
+        "additionalProperties": false
+      },
+      "CreateFlagDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "FlagCreatedDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "PresignDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 5000000
+          }
+        },
+        "required": [
+          "contentType",
+          "size"
+        ]
+      },
+      "PresignResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "photoId": {
+            "type": "string"
+          },
+          "uploadUrl": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "const": "PUT"
+          },
+          "headers": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "photoId",
+          "uploadUrl",
+          "method",
+          "headers"
+        ],
+        "additionalProperties": false
+      },
+      "MediaPhotoRefDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "thumbUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "thumbUrl"
+        ],
+        "additionalProperties": false
+      },
+      "JobResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "affected": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "ok",
+          "affected"
+        ],
+        "additionalProperties": false
+      },
+      "AdminFlagListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "resolved": {
+                  "type": "boolean"
+                },
+                "toilet": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "venueName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label",
+                    "venueName"
+                  ],
+                  "additionalProperties": false
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "handle": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "handle"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "reason",
+                "createdAt",
+                "resolved",
+                "toilet",
+                "user"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "AdminOkDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "PendingPhotoListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "thumbUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "toiletId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "submissionId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reviewId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "approvals": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "id",
+                "url",
+                "thumbUrl",
+                "createdAt",
+                "toiletId",
+                "submissionId",
+                "reviewId",
+                "approvals"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "PhotoApprovalDto_Output": {
+        "type": "object",
+        "properties": {
+          "approved": {
+            "type": "boolean"
+          },
+          "approvals": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "approved",
+          "approvals"
+        ],
+        "additionalProperties": false
+      },
+      "AdminToiletPatchDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CLOSED",
+              "RENOVATION",
+              "PENDING",
+              "REJECTED"
+            ]
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "areaType": {
+            "type": "string",
+            "enum": [
+              "PAID_AREA",
+              "UNPAID_AREA",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ]
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accessNote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "needsResurvey": {
+            "type": "boolean"
+          },
+          "features": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "TOILET_PAPER",
+                "HAND_TOWEL",
+                "HAND_DRYER",
+                "HAND_SOAP",
+                "SEAT_LINER",
+                "BIDET",
+                "AUTO_FLUSH",
+                "AUTO_TAP",
+                "AUTO_SOAP",
+                "COAT_HOOK",
+                "FEEDBACK_DEVICE",
+                "SIGNAGE",
+                "POSTERS",
+                "AMBULANT",
+                "ACCESSIBLE",
+                "CHILD",
+                "BABY_CHANGE",
+                "NURSING_ROOM",
+                "SHOWER",
+                "SITTING",
+                "SQUAT",
+                "MALE",
+                "FEMALE",
+                "UNISEX",
+                "FREE"
+              ]
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdminIdDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "RolePatchDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "TRUSTED",
+              "MODERATOR",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "RoleResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "TRUSTED",
+              "MODERATOR",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "ImportRunListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "FIELDWORK_2024",
+                    "OSM",
+                    "ONEMAP",
+                    "DATAGOV",
+                    "WIKIDATA",
+                    "COMMUNITY",
+                    "ADMIN"
+                  ]
+                },
+                "command": {
+                  "type": "string"
+                },
+                "startedAt": {
+                  "type": "string"
+                },
+                "finishedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "inserted": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "updated": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "skipped": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "log": {}
+              },
+              "required": [
+                "id",
+                "source",
+                "command",
+                "startedAt",
+                "finishedAt",
+                "inserted",
+                "updated",
+                "skipped",
+                "log"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "DataQualityDto_Output": {
+        "type": "object",
+        "properties": {
+          "counts": {
+            "type": "object",
+            "properties": {
+              "toilets": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "venues": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "pending": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "flagsOpen": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "photosPending": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "noFeatures": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "stale365d": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "needsResurvey": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "unknownAreaType": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "toilets",
+              "venues",
+              "pending",
+              "flagsOpen",
+              "photosPending",
+              "noFeatures",
+              "stale365d",
+              "needsResurvey",
+              "unknownAreaType"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "counts"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
