@@ -163,7 +163,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  nestjs-zod@5.5.0: e0b159dd4e1200b50a4b56d6ac2d81e11c8e2d8f98ff2819bac64ddba067eb3c
+  nestjs-zod@5.5.0: 406324c9d8593fba53b0216ae6d6b1aae30f6c755b342025d582e3baf34b486b
 
 importers:
 
@@ -201,7 +201,7 @@ importers:
         version: 7.0.3
       nestjs-zod:
         specifier: ^5.5.0
-        version: 5.5.0(patch_hash=e0b159dd4e1200b50a4b56d6ac2d81e11c8e2d8f98ff2819bac64ddba067eb3c)(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.3)(reflect-metadata@0.2.2)(typescript@6.0.3))(rxjs@7.8.2)(zod@4.6.7)
+        version: 5.5.0(patch_hash=406324c9d8593fba53b0216ae6d6b1aae30f6c755b342025d582e3baf34b486b)(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.3)(reflect-metadata@0.2.2)(typescript@6.0.3))(rxjs@7.8.2)(zod@4.6.7)
       pg:
         specifier: ^8.23.1
         version: 8.23.1
@@ -4996,7 +4996,7 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  nestjs-zod@5.5.0(patch_hash=e0b159dd4e1200b50a4b56d6ac2d81e11c8e2d8f98ff2819bac64ddba067eb3c)(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.3)(reflect-metadata@0.2.2)(typescript@6.0.3))(rxjs@7.8.2)(zod@4.6.7):
+  nestjs-zod@5.5.0(patch_hash=406324c9d8593fba53b0216ae6d6b1aae30f6c755b342025d582e3baf34b486b)(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/swagger@12.0.2(@nestjs/common@12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.1.3)(reflect-metadata@0.2.2)(typescript@6.0.3))(rxjs@7.8.2)(zod@4.6.7):
     dependencies:
       '@nestjs/common': 12.1.3(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
       deepmerge: 4.3.1

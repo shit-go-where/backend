@@ -39,19 +39,27 @@ index b01e7e7d7ca3fc93a9eb88857d715ba409edfe96..e3455490561ed036435c94bc67ac079b
  			type: propertySchema.type || ""
  		};
 diff --git a/dist/index.mjs b/dist/index.mjs
-index 8ad522d97404f767232b7bba06abe7eb21b67587..f1829c95c54de831f9e20fcbc7e0f5a76e7ff388 100644
+index 8ad522d97404f767232b7bba06abe7eb21b67587..2bd35f8ed69fbb532e9b079a0ab96b9da6789783 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
-@@ -474,8 +474,11 @@ function getSchemaNameFromRef(ref) {
+@@ -1,3 +1,4 @@
++import { ApiResponse as __SgwSwaggerApiResponse } from "@nestjs/swagger";
+ import { a as convertToOpenApi3Point0, c as EMPTY_TYPE_KEY, d as PARENT_ID_KEY, f as PARENT_METADATA_KEY, g as assert, h as USES_THREE_POINT_ONE_SYNTAX_KEY, i as zodV3ToOpenAPI, l as PARENT_ADDITIONAL_PROPERTIES_KEY, m as UNWRAP_ROOT_KEY, n as isZodDto, o as fixAllRefs, p as SELF_REQUIRED_KEY, r as ioSymbol, s as DEFS_KEY, t as createZodDto, u as PARENT_HAS_REFS_KEY } from "./dto-CHeB-l1i.mjs";
+ import { createRequire } from "node:module";
+ import deepmerge from "deepmerge";
+@@ -473,10 +474,11 @@ function getSchemaNameFromRef(ref) {
+ }
  //#endregion
  //#region src/response.ts
- let ApiResponse;
-+// patched (shit-go-where): load the optional peer with ESM import(). @nestjs/swagger 12 is
-+// ESM-only, and require() of ESM fails under Vercel's function loader (ERR_REQUIRE_ESM), which
-+// made this silently report "ZodResponse requires @nestjs/swagger to be installed".
- try {
+-let ApiResponse;
+-try {
 -	ApiResponse = __require("@nestjs/swagger").ApiResponse;
-+	ApiResponse = (await import("@nestjs/swagger")).ApiResponse;
- } catch {}
+-} catch {}
++// patched (shit-go-where): import the optional peer statically. @nestjs/swagger 12 is ESM-only,
++// and require() of ESM fails under Vercel's function loader (ERR_REQUIRE_ESM), which made this
++// silently report "ZodResponse requires @nestjs/swagger to be installed". A static import also
++// avoids top-level await, which can stall Vercel cold starts. Swagger is always installed here.
++const ApiResponse = __SgwSwaggerApiResponse;
  function ZodResponse({ status, description, type }) {
  	assert(ApiResponse, "ZodResponse requires @nestjs/swagger to be installed");
+ 	if (Array.isArray(type)) {
