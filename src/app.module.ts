@@ -17,6 +17,7 @@ import { FlagsModule } from './flags/flags.module.js';
 import { MediaModule } from './media/media.module.js';
 import { GamificationModule } from './gamification/gamification.module.js';
 import { AdminModule } from './admin/admin.module.js';
+import { AreasModule } from './areas/areas.module.js';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AdminModule } from './admin/admin.module.js';
     MediaModule,
     GamificationModule,
     AdminModule,
+    AreasModule,
   ],
   controllers: [HealthController],
   providers: [
