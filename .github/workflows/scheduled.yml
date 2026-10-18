@@ -36,6 +36,7 @@ on:
           - backup
           - weekly-osm
           - monthly-imports
+          - seed
 
 permissions:
   contents: read
@@ -160,6 +161,37 @@ jobs:
         run: pnpm cli import:osm
       - name: Recompute scores
         run: pnpm cli recompute-scores
+
+  # Manual only: first load (and reload) of the full dataset from the committed raw files
+  # (fieldwork + OSM + data.gov.sg + Wikidata). Idempotent; never overwrites community/admin edits.
+  seed:
+    if: inputs.job == 'seed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: sgw-imports
+      cancel-in-progress: false
+    env: *cli-env
+    steps:
+      - uses: actions/checkout@v7
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -p "'version=' + (require('./package.json').packageManager ? '' : '12.14.0')" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check the database secret
+        run: test -n "$DIRECT_URL" || { echo "::error::secrets.DIRECT_URL is not set"; exit 1; }
+      - name: Apply migrations
+        run: pnpm prisma migrate deploy
+      - name: Load the full dataset from committed files
+        run: pnpm cli all --offline
 
   monthly-gate:
     if: github.event.schedule == '0 21 28-31 * *' || inputs.job == 'monthly-imports'
