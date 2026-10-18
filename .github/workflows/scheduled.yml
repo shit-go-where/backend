@@ -1,0 +1,212 @@
+# All scheduled work for the API (PLAN.md §9). Nothing here runs inside Vercel.
+#
+# Times are UTC; Singapore is UTC+8.
+#   nightly  03:00 SGT  -> 19:00 UTC previous day   maintenance jobs + pg_dump backup to R2
+#   weekly   Mon 04:00  -> Sun 20:00 UTC            OSM import + score recompute
+#   monthly  1st 05:00  -> 21:00 UTC on the last day of the previous month
+#            (cron has no "last day", so it fires on the 28th-31st and a gate step checks
+#             that tomorrow is the 1st)
+#
+# GitHub disables scheduled workflows after 60 days without repository activity; re-enable
+# from the Actions tab if that happens.
+#
+# Secrets: DIRECT_URL, CRON_SECRET, R2_BACKUP_ACCESS_KEY_ID, R2_BACKUP_SECRET_ACCESS_KEY,
+#          optional ONEMAP_EMAIL, ONEMAP_PASSWORD
+# Vars:    API_URL (API project production URL, no trailing slash, e.g. https://sgw-api.vercel.app),
+#          R2_ACCOUNT_ID, R2_BACKUP_BUCKET, optional PG_DUMP_IMAGE (default postgres:17-alpine;
+#          must be >= the Neon server's major version)
+
+name: Scheduled
+
+on:
+  schedule:
+    - cron: '0 19 * * *'
+    - cron: '0 20 * * 0'
+    - cron: '0 21 28-31 * *'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run
+        type: choice
+        required: true
+        default: nightly
+        options:
+          - nightly
+          - maintenance
+          - backup
+          - weekly-osm
+          - monthly-imports
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+# Job `if:`s compare github.event.schedule against the literal cron strings above; keep them in sync.
+jobs:
+  maintenance:
+    if: >-
+      github.event.schedule == '0 19 * * *' ||
+      inputs.job == 'nightly' || inputs.job == 'maintenance'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      API_URL: ${{ vars.API_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Expire stale submissions and archive old status reports
+        run: |
+          test -n "$API_URL" || { echo "::error::vars.API_URL is not set"; exit 1; }
+          test -n "$CRON_SECRET" || { echo "::error::secrets.CRON_SECRET is not set"; exit 1; }
+          for job in expire-submissions archive-status; do
+            echo "POST /admin/jobs/$job"
+            curl --fail-with-body --silent --show-error \
+              --retry 3 --retry-all-errors --retry-delay 10 --max-time 120 \
+              -X POST \
+              -H "x-cron-secret: $CRON_SECRET" \
+              -H 'content-type: application/json' \
+              "$API_URL/admin/jobs/$job"
+            echo
+          done
+
+  backup:
+    needs: maintenance
+    if: >-
+      !cancelled() && (
+        github.event.schedule == '0 19 * * *' ||
+        inputs.job == 'nightly' || inputs.job == 'backup'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      PG_DUMP_IMAGE: ${{ vars.PG_DUMP_IMAGE || 'postgres:17-alpine' }}
+      BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
+      R2_ENDPOINT: https://${{ vars.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      # Newer AWS CLI versions send extra checksum headers by default; keep them to what R2 needs.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      RETENTION_DAYS: '30'
+    steps:
+      - name: Dump database
+        run: |
+          test -n "$DIRECT_URL" || { echo "::error::secrets.DIRECT_URL is not set"; exit 1; }
+          stamp=$(date -u +%Y-%m-%dT%H%MZ)
+          file="sgw-$stamp.sql.gz"
+          docker run --rm -e PGURL="$DIRECT_URL" "$PG_DUMP_IMAGE" \
+            sh -c 'pg_dump --no-owner --no-privileges --dbname="$PGURL"' \
+            | gzip -9 > "$file"
+          gzip -t "$file"
+          size=$(stat -c %s "$file")
+          if [ "$size" -lt 1024 ]; then echo "::error::dump is only $size bytes"; exit 1; fi
+          echo "FILE=$file" >> "$GITHUB_ENV"
+          echo "Dump $file: $size bytes"
+
+      - name: Upload to R2
+        run: |
+          aws s3 cp "$FILE" "s3://$BUCKET/db/$FILE" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+          echo "Uploaded s3://$BUCKET/db/$FILE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete backups older than retention
+        run: |
+          cutoff=$(date -u -d "$RETENTION_DAYS days ago" +%Y-%m-%d)
+          # `aws s3 ls` prints: <date> <time> <size> <key>
+          aws s3 ls "s3://$BUCKET/db/" --endpoint-url "$R2_ENDPOINT" \
+            | while read -r day _time _size key; do
+                [ -n "$key" ] || continue
+                if [[ "$day" < "$cutoff" ]]; then
+                  echo "delete db/$key ($day)"
+                  aws s3 rm "s3://$BUCKET/db/$key" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+                fi
+              done
+
+  weekly-osm:
+    if: github.event.schedule == '0 20 * * 0' || inputs.job == 'weekly-osm'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: sgw-imports
+      cancel-in-progress: false
+    env: &cli-env
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DIRECT_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      # env.ts requires AUTH_SECRET; the CLI never signs sessions.
+      AUTH_SECRET: scheduled-cli-placeholder-secret
+      ONEMAP_EMAIL: ${{ secrets.ONEMAP_EMAIL }}
+      ONEMAP_PASSWORD: ${{ secrets.ONEMAP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
+      # (passing both makes pnpm/action-setup fail).
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -p "'version=' + (require('./package.json').packageManager ? '' : '12.14.0')" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Import OpenStreetMap toilets
+        run: pnpm cli import:osm
+      - name: Recompute scores
+        run: pnpm cli recompute-scores
+
+  monthly-gate:
+    if: github.event.schedule == '0 21 28-31 * *' || inputs.job == 'monthly-imports'
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          # 21:00 UTC on the last day of the month is 05:00 SGT on the 1st.
+          if [ "$EVENT" = "workflow_dispatch" ] || [ "$(date -u -d tomorrow +%d)" = "01" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Not the last day of the month; skipping."
+          fi
+
+  monthly-imports:
+    needs: monthly-gate
+    if: needs.monthly-gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: sgw-imports
+      cancel-in-progress: false
+    env: *cli-env
+    steps:
+      - uses: actions/checkout@v7
+      # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
+      # (passing both makes pnpm/action-setup fail).
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -p "'version=' + (require('./package.json').packageManager ? '' : '12.14.0')" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Import data.gov.sg datasets
+        run: pnpm cli import:datagov --dataset all
+      - name: Import Wikidata stations
+        run: pnpm cli import:wikidata
+      - name: Recompute scores
+        run: pnpm cli recompute-scores

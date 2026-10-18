@@ -1,0 +1,40 @@
+diff --git a/dist/dto-CHeB-l1i.mjs b/dist/dto-CHeB-l1i.mjs
+index 71150dbea8fed02a5f524d4db5c0193bd77f0e65..16e9fe1f5fb202e1173c8df7989ef643b849eb01 100644
+--- a/dist/dto-CHeB-l1i.mjs
++++ b/dist/dto-CHeB-l1i.mjs
+@@ -337,7 +337,14 @@ function openApiMetadataFactory({ schema, io }) {
+ 	const { hasRefs, usesThreePointOneSyntax } = getSchemaMetadata(jsonSchema);
+ 	const properties = {};
+ 	for (const [propertyKey, propertySchema] of Object.entries(jsonSchema.properties || {})) {
+-		const newPropertySchema = {
++		// patched (shit-go-where): zod 4 emits nullable as `type: [T, "null"]`; @nestjs/swagger reads any
++		// type array as "isArray", so rewrite type lists as anyOf before swagger sees them.
++		const { type: rawType, ...propertyRest } = propertySchema;
++		const newPropertySchema = Array.isArray(rawType) ? {
++			...propertyRest,
++			anyOf: rawType.map((t) => ({ type: t })),
++			type: ""
++		} : {
+ 			...propertySchema,
+ 			type: propertySchema.type || ""
+ 		};
+diff --git a/dist/dto-sWxCeI9D.cjs b/dist/dto-sWxCeI9D.cjs
+index b01e7e7d7ca3fc93a9eb88857d715ba409edfe96..e3455490561ed036435c94bc67ac079b22d99379 100644
+--- a/dist/dto-sWxCeI9D.cjs
++++ b/dist/dto-sWxCeI9D.cjs
+@@ -360,7 +360,14 @@ function openApiMetadataFactory({ schema, io }) {
+ 	const { hasRefs, usesThreePointOneSyntax } = getSchemaMetadata(jsonSchema);
+ 	const properties = {};
+ 	for (const [propertyKey, propertySchema] of Object.entries(jsonSchema.properties || {})) {
+-		const newPropertySchema = {
++		// patched (shit-go-where): zod 4 emits nullable as `type: [T, "null"]`; @nestjs/swagger reads any
++		// type array as "isArray", so rewrite type lists as anyOf before swagger sees them.
++		const { type: rawType, ...propertyRest } = propertySchema;
++		const newPropertySchema = Array.isArray(rawType) ? {
++			...propertyRest,
++			anyOf: rawType.map((t) => ({ type: t })),
++			type: ""
++		} : {
+ 			...propertySchema,
+ 			type: propertySchema.type || ""
+ 		};

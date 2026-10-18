@@ -1,0 +1,144 @@
+# Neon database branch per pull request.
+#
+# Recommended setup: install Neon's Vercel integration on the API project instead. It creates a
+# `preview/<git-branch>` Neon branch for every Vercel preview deployment and injects
+# DATABASE_URL (pooled) and DATABASE_URL_UNPOOLED (direct) into that deployment automatically.
+# If you use the integration, disable this workflow (Actions tab -> Preview DB -> Disable) so
+# PRs do not get two branches each.
+#
+# This workflow is the no-integration fallback. It creates `preview/pr-<n>`, migrates it and,
+# when VERCEL_TOKEN is configured, writes the branch's connection strings into the API
+# project's Preview env vars scoped to the PR's git branch. The first Vercel preview build of a
+# PR may start before this finishes; redeploy it (or push again) to pick up the branch URLs.
+#
+# Secrets: NEON_API_KEY, optional VERCEL_TOKEN
+# Vars:    NEON_PROJECT_ID, optional VERCEL_ORG_ID, VERCEL_PROJECT_ID (API project),
+#          optional PREVIEW_SEED=true to run `pnpm db:seed` on a freshly created branch.
+
+name: Preview DB
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-db-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  BRANCH_NAME: preview/pr-${{ github.event.pull_request.number }}
+  GIT_BRANCH: ${{ github.event.pull_request.head.ref }}
+  VERCEL_CLI: vercel@62.0.0
+
+jobs:
+  create:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
+      # (passing both makes pnpm/action-setup fail).
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -p "'version=' + (require('./package.json').packageManager ? '' : '12.14.0')" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Create (or reuse) Neon branch
+        id: neon
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch_name: ${{ env.BRANCH_NAME }}
+          database: sgw
+          role: neondb_owner
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
+        run: pnpm prisma migrate deploy
+
+      # The branch is a copy of the parent (production) branch, so it normally already has
+      # data. Seed only when explicitly enabled and the branch was just created.
+      - name: Seed
+        if: vars.PREVIEW_SEED == 'true' && steps.neon.outputs.created == 'true'
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+          DIRECT_URL: ${{ steps.neon.outputs.db_url }}
+          AUTH_SECRET: preview-seed-placeholder-secret
+        run: pnpm db:seed
+
+      - name: Point the Vercel preview at this branch
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          POOLED: ${{ steps.neon.outputs.db_url_pooled }}
+          DIRECT: ${{ steps.neon.outputs.db_url }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "VERCEL_TOKEN / VERCEL_PROJECT_ID not set; skipping (use Neon's Vercel integration or set the vars)."
+            exit 0
+          fi
+          for pair in "DATABASE_URL=$POOLED" "DIRECT_URL=$DIRECT"; do
+            name="${pair%%=*}"; value="${pair#*=}"
+            npx -y "$VERCEL_CLI" env add "$name" preview --git-branch "$GIT_BRANCH" \
+              --value "$value" --sensitive --force --yes --token "$VERCEL_TOKEN"
+          done
+
+      - name: Summary
+        env:
+          BRANCH_ID: ${{ steps.neon.outputs.branch_id }}
+          HOST: ${{ steps.neon.outputs.db_host }}
+        run: |
+          {
+            echo "### Neon preview branch"
+            echo "- name: \`$BRANCH_NAME\`"
+            echo "- id: \`$BRANCH_ID\`"
+            echo "- host: \`$HOST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  delete:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete Neon branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: ${{ env.BRANCH_NAME }}
+
+      - name: Remove branch-scoped Vercel env vars
+        continue-on-error: true
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then exit 0; fi
+          for name in DATABASE_URL DIRECT_URL; do
+            npx -y "$VERCEL_CLI" env rm "$name" preview "$GIT_BRANCH" --yes --token "$VERCEL_TOKEN" || true
+          done

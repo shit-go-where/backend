@@ -1,0 +1,9 @@
+allowBuilds:
+  '@prisma/engines': true
+  prisma: true
+  esbuild: true
+  '@scarf/scarf': false
+  '@nestjs/core': false
+  sharp: true
+patchedDependencies:
+  nestjs-zod@5.5.0: patches/nestjs-zod@5.5.0.patch

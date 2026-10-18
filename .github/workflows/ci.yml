@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  ci:
+    name: lint, typecheck, test, e2e, drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      # Database the migrations and e2e tests run against.
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: sgw
+          POSTGRES_PASSWORD: sgw
+          POSTGRES_DB: sgw
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sgw"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+      # Throwaway shadow database for `prisma migrate diff --from-migrations`.
+      shadow:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: sgw
+          POSTGRES_PASSWORD: sgw
+          POSTGRES_DB: sgw_shadow
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U sgw"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://sgw:sgw@localhost:5432/sgw
+      DIRECT_URL: postgresql://sgw:sgw@localhost:5432/sgw
+      SHADOW_DATABASE_URL: postgresql://sgw:sgw@localhost:5434/sgw_shadow
+      PORT: 4000
+      FRONTEND_ORIGIN: http://localhost:3000
+      PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: ci-only-auth-secret-not-used-anywhere-else
+      DEV_LOGIN_ENABLED: 'true'
+      CRON_SECRET: ci-cron-secret
+      ADMIN_EMAILS: admin@example.com
+      S3_REGION: auto
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
+      # (passing both makes pnpm/action-setup fail).
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -p "'version=' + (require('./package.json').packageManager ? '' : '12.14.0')" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Apply migrations
+        run: pnpm prisma migrate deploy
+
+      # Fails if schema.prisma has changes that are not captured in a migration.
+      # The shadow DB comes from SHADOW_DATABASE_URL via prisma.config.ts.
+      - name: Schema drift guard
+        run: |
+          set +e
+          pnpm prisma migrate diff             --from-migrations prisma/migrations             --to-schema prisma/schema.prisma             --exit-code
+          code=$?
+          set -e
+          if [ "$code" -eq 2 ]; then
+            echo "::error::prisma/schema.prisma differs from prisma/migrations. Run 'pnpm db:migrate' locally and commit the new migration."
+            exit 1
+          fi
+          exit "$code"
+
+      - name: E2E tests
+        run: pnpm test:e2e
+
+      - name: Generate OpenAPI spec
+        run: pnpm openapi
+
+      - name: Upload openapi.json
+        uses: actions/upload-artifact@v7
+        with:
+          name: openapi
+          path: openapi.json
+          if-no-files-found: error
+          retention-days: 30
