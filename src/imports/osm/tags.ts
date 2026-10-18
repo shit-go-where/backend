@@ -76,6 +76,10 @@ export function featuresFromTags(tags: Tags): Partial<Record<FeatureName, boolea
   if (/electric_hand_dryer|hand_dryer/.test(drying)) f.HAND_DRYER = true;
   if (/paper_towel/.test(drying)) f.HAND_TOWEL = true;
   if (yes(tags['toilets:bidet'] ?? tags['bidet'])) f.BIDET = true;
+  // "limited" (e.g. a vending machine) still means you can get some.
+  const menstrual = tags['toilets:menstrual_products'];
+  set('PERIOD_PRODUCTS', menstrual?.trim().toLowerCase() === 'limited' ? true : tri(menstrual));
+  set('WATER_REFILL', tri(tags['drinking_water']));
   return f;
 }
 

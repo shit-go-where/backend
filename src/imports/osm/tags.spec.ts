@@ -37,6 +37,16 @@ describe('featuresFromTags', () => {
   it('ignores wheelchair=limited', () => {
     expect(featuresFromTags({ wheelchair: 'limited' })).toEqual({});
   });
+  it('period products (limited counts) and drinking water', () => {
+    expect(featuresFromTags({ 'toilets:menstrual_products': 'limited', drinking_water: 'yes' })).toEqual({
+      PERIOD_PRODUCTS: true,
+      WATER_REFILL: true,
+    });
+    expect(featuresFromTags({ 'toilets:menstrual_products': 'no', drinking_water: 'no' })).toEqual({
+      PERIOD_PRODUCTS: false,
+      WATER_REFILL: false,
+    });
+  });
 });
 
 describe('access / hours / level / venue type', () => {

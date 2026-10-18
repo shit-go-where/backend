@@ -41,6 +41,11 @@ export const FEATURES = [
   'FEMALE',
   'UNISEX',
   'FREE',
+  'SANITARY_BIN',
+  'PERIOD_PRODUCTS',
+  'MIRROR',
+  'WATER_REFILL',
+  'ABLUTION',
 ] as const;
 export type FeatureName = (typeof FEATURES)[number];
 

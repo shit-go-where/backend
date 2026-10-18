@@ -91,13 +91,17 @@ enum Feature {
   FEMALE
   UNISEX
   FREE
+  SANITARY_BIN
+  PERIOD_PRODUCTS
+  MIRROR
+  WATER_REFILL
+  ABLUTION
 }
 
 enum SubmissionKind {
   NEW_TOILET
   EDIT_TOILET
   CLOSE_TOILET
-  NEW_VENUE
 }
 
 enum SubmissionState {
