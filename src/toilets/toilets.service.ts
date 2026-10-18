@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { AreaType, Feature, ToiletTier } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { bboxAround, haversineM, type LatLng } from '../common/geo.js';
+import { isOpenAt } from '../common/opening-hours.js';
 import { ToiletPresenter } from './toilet-presenter.service.js';
 import type { ToiletDetail, ToiletPin, ToiletSummary } from './toilet.schemas.js';
 
@@ -46,11 +47,23 @@ export class ToiletsService {
 
   async inBounds(
     bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number },
-    o: { features?: Feature[]; tier?: ToiletTier[]; includePending?: boolean },
+    o: {
+      features?: Feature[];
+      tier?: ToiletTier[];
+      areaType?: AreaType;
+      openNow?: boolean;
+      includePending?: boolean;
+    },
     now = new Date(),
   ): Promise<ToiletPin[]> {
     const rows = await this.prisma.toilet.findMany({
-      where: ToiletPresenter.where({ ...o, bbox: bounds }),
+      where: ToiletPresenter.where({
+        features: o.features,
+        tier: o.tier,
+        areaType: o.areaType,
+        includePending: o.includePending,
+        bbox: bounds,
+      }),
       select: {
         id: true,
         latitude: true,
@@ -58,12 +71,26 @@ export class ToiletsService {
         tier: true,
         status: true,
         scoreCleanliness: true,
-        venue: { select: { type: true } },
+        openingHours: true,
+        venue: { select: { type: true, openingHours: true } },
         statusReports: { where: { expiresAt: { gt: now } }, select: { kind: true } },
       },
       take: IN_BOUNDS_CAP,
     });
-    return rows.map((t) => this.presenter.toPin(t));
+    // Same rule as nearby: only toilets known to be closed drop out; unknown hours stay.
+    return rows
+      .filter((t) => !(o.openNow && isOpenAt(ToiletPresenter.effectiveHours(t), now) === false))
+      .map((t) => this.presenter.toPin(t));
+  }
+
+  /** Toilets worth a search result: not pending or rejected, and not at a "no toilet" venue. */
+  async sitemap() {
+    const rows = await this.prisma.toilet.findMany({
+      where: { status: { in: ['ACTIVE', 'CLOSED', 'RENOVATION'] }, venue: { toiletStatus: { not: 'NONE' } } },
+      select: { id: true, updatedAt: true },
+      orderBy: { id: 'asc' },
+    });
+    return rows.map((r) => ({ id: r.id, updatedAt: r.updatedAt.toISOString() }));
   }
 
   async detail(id: string, userId: string | null): Promise<ToiletDetail> {

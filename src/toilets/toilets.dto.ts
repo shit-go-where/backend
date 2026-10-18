@@ -33,6 +33,8 @@ export const InBoundsQuerySchema = z
     maxLng: lng,
     features: commaList(Feature).optional(),
     tier: commaList(ToiletTier).optional(),
+    areaType: AreaTypeSchema.optional(),
+    openNow: queryBool.optional(),
     includePending: queryBool.optional(),
   })
   .refine((q) => q.minLat <= q.maxLat && q.minLng <= q.maxLng, {
@@ -47,6 +49,9 @@ export class ToiletSummaryListDto extends createZodDto(
   z.object({ items: z.array(ToiletSummarySchema) }),
 ) {}
 export class ToiletPinListDto extends createZodDto(z.object({ items: z.array(ToiletPinSchema) })) {}
+export class ToiletSitemapDto extends createZodDto(
+  z.object({ items: z.array(z.object({ id: z.string(), updatedAt: z.string() })) }),
+) {}
 // Root DTO schemas must not carry a meta id (nestjs-zod would emit it twice), hence `.shape`.
 export class ToiletDetailDto extends createZodDto(z.object(ToiletDetailSchema.shape)) {}
 export class ToiletLeaderboardDto extends createZodDto(

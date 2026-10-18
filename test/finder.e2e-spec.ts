@@ -109,6 +109,14 @@ describe('Finder (e2e)', () => {
     await http().get('/toilets/in-bounds?minLat=1.36&maxLat=1.34&minLng=103.84&maxLng=103.86').expect(400);
   });
 
+  it('GET /toilets/in-bounds applies openNow and areaType like nearby', async () => {
+    const box = 'minLat=1.34&maxLat=1.36&minLng=103.84&maxLng=103.86';
+    const open = await http().get(`/toilets/in-bounds?${box}&openNow=true`).expect(200);
+    expect(open.body.items.map((p: { id: string }) => p.id).sort()).toEqual([fx.toilets.a1.id, fx.toilets.b1.id].sort());
+    const paid = await http().get(`/toilets/in-bounds?${box}&areaType=PAID_AREA`).expect(200);
+    expect(paid.body.items.map((p: { id: string }) => p.id)).toEqual([fx.toilets.a2.id]);
+  });
+
   describe('GET /toilets/:id', () => {
     it('returns detail with survey, features, attribution', async () => {
       const res = await http().get(`/toilets/${fx.toilets.a1.id}`).expect(200);

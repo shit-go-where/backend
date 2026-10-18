@@ -11,6 +11,7 @@ import {
   ToiletDetailDto,
   ToiletLeaderboardDto,
   ToiletPinListDto,
+  ToiletSitemapDto,
   ToiletSummaryListDto,
 } from './toilets.dto.js';
 
@@ -31,6 +32,13 @@ export class ToiletsController {
   async inBounds(@Query() q: InBoundsQueryDto) {
     const items = await this.toilets.inBounds(q, q);
     return { items };
+  }
+
+  /** Every toilet with a public page, for the frontend's sitemap.xml. */
+  @Get('sitemap')
+  @ZodResponse({ status: 200, type: ToiletSitemapDto })
+  async sitemap() {
+    return { items: await this.toilets.sitemap() };
   }
 
   @Get(':id')
