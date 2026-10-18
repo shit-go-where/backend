@@ -1,0 +1,139 @@
+import { Injectable } from '@nestjs/common';
+import type { AreaType, Feature } from '../generated/prisma/enums.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { bboxAround, estimateWalkSeconds, haversineM, type LatLng } from '../common/geo.js';
+import { ToiletPresenter } from '../toilets/toilet-presenter.service.js';
+import type { ToiletSummary } from '../toilets/toilet.schemas.js';
+import { OneMapService } from './onemap.service.js';
+import { rank, reasons, resolveWeights, walkingMetres, type RankCandidate, type Ranked } from './ranking.js';
+
+export const URGENT_RADII = [800, 1500, 3000];
+export const DEFAULT_RADIUS = 1500;
+export const MAX_RADIUS = 5000;
+const TOP_N = 3;
+const MAX_SKIPPED = 10;
+
+export interface RecommendInput {
+  lat: number;
+  lng: number;
+  urgent?: boolean;
+  require?: Feature[];
+  areaType?: AreaType;
+  openNow?: boolean;
+  radiusM?: number;
+  weights?: { distance?: number; cleanliness?: number; freshness?: number };
+}
+
+export interface RecommendItem {
+  toilet: ToiletSummary;
+  score: number;
+  walkSeconds: number;
+  walkDistanceM: number;
+  reasons: string[];
+  route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null;
+}
+
+@Injectable()
+export class RecommendService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly presenter: ToiletPresenter,
+    private readonly onemap: OneMapService,
+  ) {}
+
+  async recommend(input: RecommendInput, now = new Date()) {
+    const origin: LatLng = { lat: input.lat, lng: input.lng };
+    const urgent = input.urgent ?? false;
+    const radii = urgent
+      ? URGENT_RADII
+      : [Math.min(input.radiusM ?? DEFAULT_RADIUS, MAX_RADIUS)];
+    const maxRadius = radii[radii.length - 1];
+    const required = input.require ?? [];
+
+    // One query at the widest radius; widen in memory.
+    const rows = await this.presenter.findSummaries(
+      ToiletPresenter.where({
+        features: required,
+        areaType: input.areaType,
+        bbox: bboxAround(origin, maxRadius),
+      }),
+      now,
+    );
+    const pool = rows
+      .map((row) => {
+        const summary = this.presenter.toSummary(row, now, origin);
+        const candidate: RankCandidate & { summary: ToiletSummary } = {
+          id: row.id,
+          distanceM: haversineM(origin, { lat: row.latitude, lng: row.longitude }),
+          scoreCleanliness: row.scoreCleanliness,
+          tier: row.tier,
+          source: row.source,
+          lastVerifiedAt: row.lastVerifiedAt,
+          features: summary.features,
+          reports: row.statusReports,
+          summary,
+        };
+        return candidate;
+      })
+      // Never route anyone to a toilet that is definitely closed right now (e.g. an MRT station
+      // after 00:30), whether or not openNow was requested. Unknown hours (null) stay eligible,
+      // since most imported toilets have no hours; `openNow` is kept for API compatibility.
+      .filter((c) => c.summary.openNow !== false);
+
+    const weights = resolveWeights(urgent, input.weights);
+    let searchedRadiusM = radii[0];
+    let ranked: Ranked<(typeof pool)[number]>[] = [];
+    for (const r of radii) {
+      searchedRadiusM = r;
+      ranked = rank(
+        pool.filter((c) => c.distanceM <= r),
+        r,
+        weights,
+        now,
+      );
+      if (ranked.length > 0) break;
+    }
+
+    const top = ranked.slice(0, TOP_N);
+    const routes = await Promise.all(
+      top.map(({ candidate: c }) => this.onemap.walk(origin, { lat: c.summary.lat, lng: c.summary.lng })),
+    );
+    const items: RecommendItem[] = top.map(({ candidate: c, score }, i) => {
+      const route = routes[i];
+      const walkSeconds = route?.durationS ?? estimateWalkSeconds(c.distanceM);
+      return {
+        toilet: c.summary,
+        score,
+        walkSeconds,
+        walkDistanceM: route?.distanceM ?? walkingMetres(c.distanceM),
+        reasons: reasons(c, walkSeconds, required, now),
+        route: route ? { polyline: route.polyline, source: route.source } : null,
+      };
+    });
+
+    return { items, searchedRadiusM, skippedVenues: await this.skippedVenues(origin, searchedRadiusM) };
+  }
+
+  /** Venues in range that have no toilet of their own, so the UI can explain the gap. */
+  private async skippedVenues(origin: LatLng, radius: number) {
+    const b = bboxAround(origin, radius);
+    const venues = await this.prisma.venue.findMany({
+      where: {
+        toiletStatus: { in: ['NONE', 'USES_NEARBY'] },
+        latitude: { gte: b.minLat, lte: b.maxLat },
+        longitude: { gte: b.minLng, lte: b.maxLng },
+      },
+      select: { name: true, toiletStatus: true, note: true, latitude: true, longitude: true },
+    });
+    return venues
+      .map((v) => ({
+        name: v.name,
+        toiletStatus: v.toiletStatus,
+        note: v.note,
+        distanceM: Math.round(haversineM(origin, { lat: v.latitude, lng: v.longitude })),
+      }))
+      .filter((v) => v.distanceM <= radius)
+      .sort((a, b) => a.distanceM - b.distanceM)
+      .slice(0, MAX_SKIPPED);
+  }
+}
