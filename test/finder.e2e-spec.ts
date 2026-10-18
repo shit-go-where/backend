@@ -215,6 +215,15 @@ describe('Finder (e2e)', () => {
       expect(res.body.items[0].reasons).toContain('Toilet paper');
     });
 
+    it('a purpose adds soft preferences without filtering', async () => {
+      const plain = await http().post('/routing/recommend').send(ORIGIN).expect(200);
+      const poo = await http().post('/routing/recommend').send({ ...ORIGIN, purpose: 'POO' }).expect(200);
+      const ids = (r: typeof plain) => r.body.items.map((i: { toilet: { id: string } }) => i.toilet.id).sort();
+      expect(ids(poo)).toEqual(ids(plain));
+      expect(plain.body.items[0].reasons).not.toContain('Toilet paper');
+      expect(poo.body.items[0].reasons).toContain('Toilet paper');
+    });
+
     it('urgent mode widens the radius until something is found', async () => {
       const res = await http()
         .post('/routing/recommend')
@@ -246,6 +255,7 @@ describe('Finder (e2e)', () => {
     it('validates the body', async () => {
       await http().post('/routing/recommend').send({ lat: 'x' }).expect(400);
       await http().post('/routing/recommend').send({ ...ORIGIN, require: ['NOPE'] }).expect(400);
+      await http().post('/routing/recommend').send({ ...ORIGIN, purpose: 'NOPE' }).expect(400);
     });
   });
 

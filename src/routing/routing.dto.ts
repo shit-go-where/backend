@@ -8,14 +8,18 @@ import {
   lat,
   lng,
 } from '../toilets/toilet.schemas.js';
+import { PURPOSES } from './purposes.js';
 
 const weight = z.number().min(0).max(1);
+export const PurposeSchema = z.enum(PURPOSES).meta({ id: 'Purpose' });
 
 export const RecommendBodySchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   urgent: z.boolean().optional(),
-  require: z.array(FeatureSchema).max(25).optional(),
+  /** Why they're going: soft preferences on top of `require`. */
+  purpose: PurposeSchema.optional(),
+  require: z.array(FeatureSchema).max(40).optional(),
   areaType: AreaTypeSchema.optional(),
   openNow: z.boolean().optional(),
   radiusM: z.number().positive().max(5000).optional(),

@@ -5,6 +5,7 @@ import { bboxAround, estimateWalkSeconds, haversineM, type LatLng } from '../com
 import { ToiletPresenter } from '../toilets/toilet-presenter.service.js';
 import type { ToiletSummary } from '../toilets/toilet.schemas.js';
 import { OneMapService } from './onemap.service.js';
+import { PURPOSE_NEEDS, type Purpose } from './purposes.js';
 import { rank, reasons, resolveWeights, walkingMetres, type RankCandidate, type Ranked } from './ranking.js';
 
 export const URGENT_RADII = [800, 1500, 3000];
@@ -17,6 +18,7 @@ export interface RecommendInput {
   lat: number;
   lng: number;
   urgent?: boolean;
+  purpose?: Purpose;
   require?: Feature[];
   areaType?: AreaType;
   openNow?: boolean;
@@ -81,6 +83,8 @@ export class RecommendService {
       .filter((c) => c.summary.openNow !== false);
 
     const weights = resolveWeights(urgent, input.weights);
+    const needs = input.purpose ? PURPOSE_NEEDS[input.purpose] : undefined;
+    const preferred = Object.keys(needs?.prefer ?? {}) as Feature[];
     let searchedRadiusM = radii[0];
     let ranked: Ranked<(typeof pool)[number]>[] = [];
     for (const r of radii) {
@@ -90,6 +94,7 @@ export class RecommendService {
         r,
         weights,
         now,
+        needs,
       );
       if (ranked.length > 0) break;
     }
@@ -106,7 +111,7 @@ export class RecommendService {
         score,
         walkSeconds,
         walkDistanceM: route?.distanceM ?? walkingMetres(c.distanceM),
-        reasons: reasons(c, walkSeconds, required, now),
+        reasons: reasons(c, walkSeconds, required, now, preferred),
         route: route ? { polyline: route.polyline, source: route.source } : null,
       };
     });

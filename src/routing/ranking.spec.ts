@@ -5,11 +5,13 @@ import {
   cost,
   isBlocked,
   issuePenalty,
+  needPenalty,
   rank,
   reasons,
   resolveWeights,
   type RankCandidate,
 } from './ranking.js';
+import { PURPOSES, PURPOSE_NEEDS } from './purposes.js';
 
 const now = new Date('2026-10-18T12:00:00Z');
 const minsAgo = (m: number) => new Date(now.getTime() - m * 60_000);
@@ -126,6 +128,39 @@ describe('rank', () => {
   });
 });
 
+describe('purpose needs', () => {
+  it('needPenalty is the missing share of preferred importance', () => {
+    const prefer = { BABY_CHANGE: 3, NURSING_ROOM: 1 } as const;
+    expect(needPenalty(['BABY_CHANGE', 'NURSING_ROOM'], prefer)).toBe(0);
+    expect(needPenalty(['BABY_CHANGE'], prefer)).toBe(0.25);
+    expect(needPenalty([], prefer)).toBe(1);
+    expect(needPenalty([], {})).toBe(0);
+  });
+  it('without needs, cost is unchanged', () => {
+    const c = cand({ features: ['SHOWER'] });
+    expect(cost(c, 1500, DEFAULT_WEIGHTS, now, undefined)).toBe(cost(c, 1500, DEFAULT_WEIGHTS, now));
+  });
+  it('shower purpose puts a further toilet with a shower first', () => {
+    const near = cand({ id: 'near', distanceM: 100 });
+    const far = cand({ id: 'far', distanceM: 1400, features: ['SHOWER'] });
+    expect(rank([near, far], 1500, DEFAULT_WEIGHTS, now)[0].candidate.id).toBe('near');
+    expect(rank([near, far], 1500, DEFAULT_WEIGHTS, now, PURPOSE_NEEDS.SHOWER)[0].candidate.id).toBe('far');
+  });
+  it('every purpose keeps a toilet with a must-have-free profile rankable', () => {
+    for (const p of PURPOSES) {
+      const k = cost(cand(), 1500, DEFAULT_WEIGHTS, now, PURPOSE_NEEDS[p]);
+      expect(k).toBeGreaterThanOrEqual(0);
+      expect(k).toBeLessThanOrEqual(1);
+    }
+  });
+  it('a quick pee shrugs off no paper but not a queue', () => {
+    const noPaper = [{ kind: 'NO_PAPER' as const, createdAt: now, confirmations: 0 }];
+    expect(issuePenalty(noPaper, PURPOSE_NEEDS.PEE.issues)).toBeLessThan(issuePenalty(noPaper));
+    const queue = [{ kind: 'LONG_QUEUE' as const, createdAt: now, confirmations: 0 }];
+    expect(issuePenalty(queue, PURPOSE_NEEDS.PEE.issues)).toBeGreaterThan(issuePenalty(queue));
+  });
+});
+
 describe('resolveWeights', () => {
   it('urgent ignores overrides', () => {
     expect(resolveWeights(true, { cleanliness: 1 })).toEqual(URGENT_WEIGHTS);
@@ -151,6 +186,16 @@ describe('reasons', () => {
       'Bidet',
       'Clean 8.2/10',
       'Reported: no paper 40 min ago',
+      'Verified 2024 survey',
+    ]);
+  });
+  it('lists preferred features after required ones', () => {
+    const c = cand({ features: ['MIRROR', 'HAND_SOAP', 'BIDET'], scoreCleanliness: null });
+    expect(reasons(c, 60, [], now, ['HAND_SOAP', 'MIRROR', 'HAND_DRYER'])).toEqual([
+      '1 min walk',
+      'Soap',
+      'Mirror',
+      'Bidet',
       'Verified 2024 survey',
     ]);
   });

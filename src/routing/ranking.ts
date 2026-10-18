@@ -29,6 +29,19 @@ export const URGENT_WEIGHTS: RankWeights = {
   freshness: 0,
 };
 
+/**
+ * Soft preferences for why someone is going (see purposes.ts). Nothing is filtered out: missing
+ * features only add cost, because most toilets have no record of them at all.
+ */
+export interface RankNeeds {
+  /** Feature -> relative importance. */
+  prefer: Partial<Record<Feature, number>>;
+  /** Weight of the preference term, on the same scale as RankWeights. */
+  weight: number;
+  /** Overrides for the default issue penalties (no paper barely matters for a quick pee). */
+  issues?: Partial<Record<StatusKind, number>>;
+}
+
 /** Used when a toilet has no cleanliness data at all. Neutral-ish, slightly below average. */
 export const NEUTRAL_CLEANLINESS = 6;
 const ISSUE_PENALTY: Partial<Record<StatusKind, number>> = {
@@ -71,22 +84,37 @@ export function isBlocked(reports: RankReport[]): boolean {
   return false;
 }
 
-export function issuePenalty(reports: RankReport[]): number {
+export function issuePenalty(
+  reports: RankReport[],
+  overrides?: Partial<Record<StatusKind, number>>,
+): number {
+  const table = overrides ? { ...ISSUE_PENALTY, ...overrides } : ISSUE_PENALTY;
   const kinds = new Set(reports.map((r) => r.kind));
   let p = 0;
-  for (const k of kinds) p += ISSUE_PENALTY[k] ?? 0;
+  for (const k of kinds) p += table[k] ?? 0;
   return Math.min(1, p);
+}
+
+/** Share of preferred importance the toilet is missing: 0 = has everything, 1 = has none. */
+export function needPenalty(features: Feature[], prefer: RankNeeds['prefer']): number {
+  const entries = Object.entries(prefer) as [Feature, number][];
+  const total = entries.reduce((s, [, w]) => s + w, 0);
+  if (total <= 0) return 0;
+  const have = new Set(features);
+  return entries.reduce((s, [f, w]) => s + (have.has(f) ? 0 : w), 0) / total;
 }
 
 /** Straight-line distance * detour factor; matches estimateWalkSeconds' assumption. */
 export const walkingMetres = (straightM: number) => Math.round(straightM * 1.3);
 
-export function cost(c: RankCandidate, radiusM: number, w: RankWeights, now: Date): number {
-  const total = w.distance + w.cleanliness + w.issues + w.tier + w.freshness || 1;
+export function cost(c: RankCandidate, radiusM: number, w: RankWeights, now: Date, needs?: RankNeeds): number {
+  const needW = needs?.weight ?? 0;
+  const total = w.distance + w.cleanliness + w.issues + w.tier + w.freshness + needW || 1;
   // Normalised by the search radius (walking detour factor cancels out).
   const dist = Math.min(1, c.distanceM / radiusM);
   const clean = (10 - (c.scoreCleanliness ?? NEUTRAL_CLEANLINESS)) / 10;
-  const issues = issuePenalty(c.reports);
+  const issues = issuePenalty(c.reports, needs?.issues);
+  const need = needs ? needPenalty(c.features, needs.prefer) : 0;
   const tier = TIER_PENALTY[c.tier];
   const stale = c.lastVerifiedAt
     ? Math.min(1, Math.max(0, now.getTime() - c.lastVerifiedAt.getTime()) / (STALE_DAYS * DAY_MS))
@@ -96,7 +124,8 @@ export function cost(c: RankCandidate, radiusM: number, w: RankWeights, now: Dat
       w.cleanliness * clean +
       w.issues * issues +
       w.tier * tier +
-      w.freshness * stale) /
+      w.freshness * stale +
+      needW * need) /
     total
   );
 }
@@ -142,6 +171,12 @@ const FEATURE_TEXT: Partial<Record<Feature, string>> = {
   UNISEX: 'Unisex',
   AMBULANT: 'Ambulant',
   CHILD: 'Child-friendly',
+  HAND_DRYER: 'Hand dryer',
+  SANITARY_BIN: 'Sanitary bin',
+  PERIOD_PRODUCTS: 'Pads or tampons',
+  MIRROR: 'Mirror',
+  WATER_REFILL: 'Water refill',
+  ABLUTION: 'Ablution area',
 };
 /** Features worth calling out even if not required. */
 const HIGHLIGHT: Feature[] = ['BIDET', 'ACCESSIBLE', 'BABY_CHANGE'];
@@ -174,10 +209,11 @@ export function reasons(
   walkSeconds: number,
   required: Feature[],
   now: Date,
+  preferred: Feature[] = [],
 ): string[] {
   const out = [minutesText(walkSeconds)];
   const shown = new Set<Feature>();
-  for (const f of [...required, ...HIGHLIGHT]) {
+  for (const f of [...required, ...preferred, ...HIGHLIGHT]) {
     if (!shown.has(f) && c.features.includes(f)) {
       shown.add(f);
       out.push(FEATURE_TEXT[f] ?? f);
@@ -210,11 +246,12 @@ export function rank<C extends RankCandidate>(
   radiusM: number,
   w: RankWeights,
   now: Date,
+  needs?: RankNeeds,
 ): Ranked<C>[] {
   return candidates
     .filter((c) => !isBlocked(c.reports))
     .map((c) => {
-      const k = cost(c, radiusM, w, now);
+      const k = cost(c, radiusM, w, now, needs);
       return { candidate: c, cost: k, score: toScore(k) };
     })
     .sort((a, b) => a.cost - b.cost || a.candidate.distanceM - b.candidate.distanceM);
