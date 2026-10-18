@@ -33,7 +33,7 @@ export async function createAccountsApp() {
       import('@nestjs/common'),
       import('@nestjs/core'),
       import('@nestjs/testing'),
-      import('@nestjs/throttler'),
+      import('../src/common/throttle.js'),
       import('nestjs-zod'),
       import('cookie-parser'),
     ]);
@@ -49,7 +49,6 @@ export async function createAccountsApp() {
   class AccountsTestModule {}
   Module({
     imports: [
-      throttler.ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
       PrismaModule,
       PointsModule,
       AuthModule,
@@ -60,7 +59,7 @@ export async function createAccountsApp() {
     providers: [
       { provide: APP_PIPE, useClass: nz.ZodValidationPipe },
       { provide: APP_INTERCEPTOR, useClass: nz.ZodSerializerInterceptor },
-      { provide: APP_GUARD, useClass: throttler.ThrottlerGuard },
+      { provide: APP_GUARD, useClass: throttler.ThrottleGuard },
     ],
   })(AccountsTestModule);
 

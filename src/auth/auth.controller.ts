@@ -11,7 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiFoundResponse, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle } from '../common/throttle.js';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import type { Request, Response } from 'express';

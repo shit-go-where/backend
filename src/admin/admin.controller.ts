@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { SkipThrottle } from '@nestjs/throttler';
+import { SkipThrottle } from '../common/throttle.js';
 import { ZodResponse } from 'nestjs-zod';
 import { CurrentUser, MinRole, RolesGuard } from '../common/auth/auth.guard.js';
 import type { User } from '../generated/prisma/client.js';

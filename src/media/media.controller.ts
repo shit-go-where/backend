@@ -19,7 +19,7 @@ import {
   ApiNoContentResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle } from '../common/throttle.js';
 import { ZodResponse } from 'nestjs-zod';
 import type { Request, Response } from 'express';
 import { AuthGuard, CurrentUser } from '../common/auth/auth.guard.js';

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle } from '../common/throttle.js';
 import { ZodResponse } from 'nestjs-zod';
 import type { User } from '../generated/prisma/client.js';
 import { AuthGuard, CurrentUser, OptionalAuthGuard } from '../common/auth/auth.guard.js';

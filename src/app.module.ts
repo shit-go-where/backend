@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ThrottleGuard } from './common/throttle.js';
 import { PointsModule } from './gamification/points.module.js';
 import { HealthController } from './health/health.controller.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -21,7 +21,6 @@ import { AreasModule } from './areas/areas.module.js';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
     PrismaModule,
     PointsModule,
     AuthModule,
@@ -42,7 +41,7 @@ import { AreasModule } from './areas/areas.module.js';
   providers: [
     { provide: APP_PIPE, useClass: ZodValidationPipe },
     { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: ThrottleGuard },
   ],
 })
 export class AppModule {}

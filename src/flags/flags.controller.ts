@@ -1,6 +1,6 @@
 import { Body, Controller, NotFoundException, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { Throttle } from '../common/throttle.js';
 import { ZodResponse, createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import type { User } from '../generated/prisma/client.js';
