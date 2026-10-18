@@ -1,0 +1,19 @@
+{
+  "query": "105 Yishun Ring Road",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CHONG PANG MARKET & FOOD CENTRE",
+      "BLK_NO": "105",
+      "ROAD_NAME": "YISHUN RING ROAD",
+      "BUILDING": "CHONG PANG MARKET & FOOD CENTRE",
+      "ADDRESS": "105 YISHUN RING ROAD CHONG PANG MARKET & FOOD CENTRE SINGAPORE 760105",
+      "POSTAL": "760105",
+      "X": "27420.83723995276",
+      "Y": "45937.66034944914",
+      "LATITUDE": "1.431718366628382",
+      "LONGITUDE": "103.8281142569749"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "Millenia Walk",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MILLENIA WALK",
+      "BLK_NO": "9",
+      "ROAD_NAME": "RAFFLES BOULEVARD",
+      "BUILDING": "MILLENIA WALK",
+      "ADDRESS": "9 RAFFLES BOULEVARD MILLENIA WALK SINGAPORE 039596",
+      "POSTAL": "039596",
+      "X": "30938.80020679068",
+      "Y": "30555.27697627991",
+      "LATITUDE": "1.292605444624933",
+      "LONGITUDE": "103.8597249444427"
+    }
+  ]
+}

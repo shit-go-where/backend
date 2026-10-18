@@ -1,0 +1,5634 @@
+{
+  "fetchedAt": "2026-10-17",
+  "licence": "CC0 (Wikidata)",
+  "stations": [
+    {
+      "qid": "Q254212",
+      "label": "Pasir Ris MRT station",
+      "name": "Pasir Ris",
+      "lng": 103.949369444,
+      "lat": 1.372411111,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "CR5",
+        "EW1"
+      ],
+      "opening": "1989-12-16",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q612284",
+      "label": "Farrer Park MRT station",
+      "name": "Farrer Park",
+      "lng": 103.854027777,
+      "lat": 1.312313888,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE8"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1055296",
+      "label": "Redhill MRT station",
+      "name": "Redhill",
+      "lng": 103.816666666,
+      "lat": 1.289722222,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW18"
+      ],
+      "opening": "1988-03-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089339",
+      "label": "Tai Seng MRT station",
+      "name": "Tai Seng",
+      "lng": 103.887942,
+      "lat": 1.335833,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC11"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089345",
+      "label": "Lorong Chuan MRT station",
+      "name": "Lorong Chuan",
+      "lng": 103.863888888,
+      "lat": 1.351666666,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC14"
+      ],
+      "opening": "2009-05-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089352",
+      "label": "Dakota MRT station",
+      "name": "Dakota",
+      "lng": 103.888611111,
+      "lat": 1.308333333,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC8"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089363",
+      "label": "Promenade MRT station",
+      "name": "Promenade",
+      "lng": 103.860833333,
+      "lat": 1.2925,
+      "lines": [
+        "CCL",
+        "DTL"
+      ],
+      "codes": [
+        "CC4",
+        "DT15"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089377",
+      "label": "Mountbatten MRT station",
+      "name": "Mountbatten",
+      "lng": 103.882531,
+      "lat": 1.306306,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC7"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089384",
+      "label": "Bras Basah MRT station",
+      "name": "Bras Basah",
+      "lng": 103.850631,
+      "lat": 1.296931,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC2"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089389",
+      "label": "MacPherson MRT station",
+      "name": "MacPherson",
+      "lng": 103.890019,
+      "lat": 1.32665,
+      "lines": [
+        "CCL",
+        "DTL"
+      ],
+      "codes": [
+        "CC10",
+        "DT26"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089392",
+      "label": "Esplanade MRT station",
+      "name": "Esplanade",
+      "lng": 103.855555555,
+      "lat": 1.293333333,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC3"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089462",
+      "label": "Bartley MRT station",
+      "name": "Bartley",
+      "lng": 103.88,
+      "lat": 1.3425,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC12"
+      ],
+      "opening": "2009-05-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089469",
+      "label": "Stadium MRT station",
+      "name": "Stadium",
+      "lng": 103.875306,
+      "lat": 1.302856,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC6"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1089474",
+      "label": "Marymount MRT station",
+      "name": "Marymount",
+      "lng": 103.839492,
+      "lat": 1.349078,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC16"
+      ],
+      "opening": "2009-05-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1096333",
+      "label": "Tanjong Pagar railway station",
+      "name": "Tanjong Pagar railway",
+      "lng": 103.838055555,
+      "lat": 1.272777777,
+      "lines": [],
+      "codes": [],
+      "opening": "1932-01-01",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "former railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q1097449",
+      "label": "one-north MRT station",
+      "name": "one-north",
+      "lng": 103.787067,
+      "lat": 1.299331,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC23"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1097460",
+      "label": "Holland Village MRT station",
+      "name": "Holland Village",
+      "lng": 103.796208,
+      "lat": 1.312078,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC21"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1106644",
+      "label": "Bayfront MRT station",
+      "name": "Bayfront",
+      "lng": 103.859444444,
+      "lat": 1.2825,
+      "lines": [
+        "CCL",
+        "DTL"
+      ],
+      "codes": [
+        "CE1",
+        "DT16"
+      ],
+      "opening": "2012-01-14",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1115504",
+      "label": "Cashew MRT station",
+      "name": "Cashew",
+      "lng": 103.764803,
+      "lat": 1.368975,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1117735",
+      "label": "Rochor MRT station",
+      "name": "Rochor",
+      "lng": 103.852581,
+      "lat": 1.303764,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT13"
+      ],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1901870",
+      "label": "City Hall MRT station",
+      "name": "City Hall",
+      "lng": 103.852219444,
+      "lat": 1.293238888,
+      "lines": [
+        "EWL",
+        "NSL"
+      ],
+      "codes": [
+        "EW13",
+        "NS25"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1903146",
+      "label": "Yio Chu Kang MRT station",
+      "name": "Yio Chu Kang",
+      "lng": 103.844817,
+      "lat": 1.381906,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS15"
+      ],
+      "opening": "1987-11-07",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q1914874",
+      "label": "Braddell MRT station",
+      "name": "Braddell",
+      "lng": 103.846725,
+      "lat": 1.340339,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS18"
+      ],
+      "opening": "1987-11-07",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2007528",
+      "label": "Kovan MRT station",
+      "name": "Kovan",
+      "lng": 103.884864,
+      "lat": 1.360214,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE13"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2012051",
+      "label": "Clarke Quay MRT station",
+      "name": "Clarke Quay",
+      "lng": 103.84653,
+      "lat": 1.28838,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE5"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2030579",
+      "label": "Potong Pasir MRT station",
+      "name": "Potong Pasir",
+      "lng": 103.869058333,
+      "lat": 1.331161111,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE10"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2057180",
+      "label": "Hougang MRT station",
+      "name": "Hougang",
+      "lng": 103.892161111,
+      "lat": 1.371291666,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE14"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2057489",
+      "label": "Bukit Batok MRT station",
+      "name": "Bukit Batok",
+      "lng": 103.749722222,
+      "lat": 1.349166666,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS2"
+      ],
+      "opening": "1990-03-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2152805",
+      "label": "Khatib MRT station",
+      "name": "Khatib",
+      "lng": 103.8329,
+      "lat": 1.417167,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS14"
+      ],
+      "opening": "1988-12-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2208305",
+      "label": "Somerset MRT station",
+      "name": "Somerset",
+      "lng": 103.839028,
+      "lat": 1.300514,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS23"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2236720",
+      "label": "Choa Chu Kang MRT/LRT station",
+      "name": "Choa Chu Kang",
+      "lng": 103.744322,
+      "lat": 1.385092,
+      "lines": [
+        "BPLRT",
+        "NSL"
+      ],
+      "codes": [
+        "BP1",
+        "JS1",
+        "NS4"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2246144",
+      "label": "Bukit Gombak MRT station",
+      "name": "Bukit Gombak",
+      "lng": 103.751786111,
+      "lat": 1.358702777,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS3"
+      ],
+      "opening": "1990-03-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2266049",
+      "label": "Ang Mo Kio MRT station",
+      "name": "Ang Mo Kio",
+      "lng": 103.84945,
+      "lat": 1.370016666,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS16"
+      ],
+      "opening": "1987-11-07",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2285411",
+      "label": "Yew Tee MRT station",
+      "name": "Yew Tee",
+      "lng": 103.7475,
+      "lat": 1.3975,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS5"
+      ],
+      "opening": "1996-02-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2292422",
+      "label": "Marina Bay station",
+      "name": "Marina Bay",
+      "lng": 103.854722222,
+      "lat": 1.275277777,
+      "lines": [
+        "CCL",
+        "NSL",
+        "TEL"
+      ],
+      "codes": [
+        "CC33",
+        "NS27",
+        "TE20"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2295436",
+      "label": "Serangoon MRT station",
+      "name": "Serangoon",
+      "lng": 103.873092,
+      "lat": 1.349944,
+      "lines": [
+        "CCL",
+        "NEL"
+      ],
+      "codes": [
+        "CC13",
+        "NE12"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2346222",
+      "label": "Marsiling MRT station",
+      "name": "Marsiling",
+      "lng": 103.774283333,
+      "lat": 1.432636111,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS8"
+      ],
+      "opening": "1996-02-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2398515",
+      "label": "Woodleigh MRT station",
+      "name": "Woodleigh",
+      "lng": 103.870833333,
+      "lat": 1.339166666,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE11"
+      ],
+      "opening": "2011-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2404134",
+      "label": "Novena MRT station",
+      "name": "Novena",
+      "lng": 103.843689,
+      "lat": 1.320394,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS20"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2512039",
+      "label": "Boon Keng MRT station",
+      "name": "Boon Keng",
+      "lng": 103.862022,
+      "lat": 1.320153,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE9"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2524803",
+      "label": "Outram Park MRT station",
+      "name": "Outram Park",
+      "lng": 103.84,
+      "lat": 1.280555555,
+      "lines": [
+        "EWL",
+        "NEL",
+        "TEL"
+      ],
+      "codes": [
+        "EW16",
+        "NE3",
+        "TE17"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2591642",
+      "label": "Sembawang MRT station",
+      "name": "Sembawang",
+      "lng": 103.820152777,
+      "lat": 1.449025,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS11"
+      ],
+      "opening": "1996-02-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2598513",
+      "label": "Kranji MRT station",
+      "name": "Kranji",
+      "lng": 103.761853,
+      "lat": 1.425047,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS7"
+      ],
+      "opening": "1996-02-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2641398",
+      "label": "Orchard MRT station",
+      "name": "Orchard",
+      "lng": 103.831388888,
+      "lat": 1.303055555,
+      "lines": [
+        "NSL",
+        "TEL"
+      ],
+      "codes": [
+        "NS22",
+        "TS14"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2672672",
+      "label": "Toa Payoh MRT station",
+      "name": "Toa Payoh",
+      "lng": 103.8475,
+      "lat": 1.332777777,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS19"
+      ],
+      "opening": "1987-11-07",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2782342",
+      "label": "Newton MRT station",
+      "name": "Newton",
+      "lng": 103.838442,
+      "lat": 1.312956,
+      "lines": [
+        "DTL",
+        "NSL"
+      ],
+      "codes": [
+        "DT11",
+        "NS21"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q2944154",
+      "label": "Yishun MRT station",
+      "name": "Yishun",
+      "lng": 103.835238888,
+      "lat": 1.429463888,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS13"
+      ],
+      "opening": "1988-12-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3121386",
+      "label": "Jurong East MRT station",
+      "name": "Jurong East",
+      "lng": 103.742119444,
+      "lat": 1.333413888,
+      "lines": [
+        "EWL",
+        "NSL"
+      ],
+      "codes": [
+        "EW24",
+        "JE5",
+        "NS1"
+      ],
+      "opening": "1988-11-05",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3194232",
+      "label": "Little India MRT station",
+      "name": "Little India",
+      "lng": 103.849175,
+      "lat": 1.306725,
+      "lines": [
+        "DTL",
+        "NEL"
+      ],
+      "codes": [
+        "DT12",
+        "NE7"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3232625",
+      "label": "Punggol station",
+      "name": "Punggol",
+      "lng": 103.9025,
+      "lat": 1.405277777,
+      "lines": [
+        "NEL",
+        "PGLRT"
+      ],
+      "codes": [
+        "NE17",
+        "PTC"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3234147",
+      "label": "Sengkang station",
+      "name": "Sengkang",
+      "lng": 103.895555555,
+      "lat": 1.391666666,
+      "lines": [
+        "NEL",
+        "SKLRT"
+      ],
+      "codes": [
+        "NE16",
+        "STC"
+      ],
+      "opening": "2003-01-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3234430",
+      "label": "Raffles Place MRT station",
+      "name": "Raffles Place",
+      "lng": 103.851388888,
+      "lat": 1.283888888,
+      "lines": [
+        "EWL",
+        "NSL"
+      ],
+      "codes": [
+        "EW14",
+        "NS26"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3234439",
+      "label": "Chinatown MRT station",
+      "name": "Chinatown",
+      "lng": 103.844006,
+      "lat": 1.28485,
+      "lines": [
+        "DTL",
+        "NEL"
+      ],
+      "codes": [
+        "DT19",
+        "NE4"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3234475",
+      "label": "Dhoby Ghaut MRT station",
+      "name": "Dhoby Ghaut",
+      "lng": 103.845736111,
+      "lat": 1.299155555,
+      "lines": [
+        "CCL",
+        "NEL",
+        "NSL"
+      ],
+      "codes": [
+        "CC1",
+        "NE6",
+        "NS24"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3234658",
+      "label": "Bishan MRT station",
+      "name": "Bishan",
+      "lng": 103.848456,
+      "lat": 1.351236,
+      "lines": [
+        "CCL",
+        "NSL"
+      ],
+      "codes": [
+        "CC15",
+        "NS17"
+      ],
+      "opening": "1987-11-07",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3267838",
+      "label": "Woodlands station",
+      "name": "Woodlands",
+      "lng": 103.786483,
+      "lat": 1.437094,
+      "lines": [
+        "NSL",
+        "TEL"
+      ],
+      "codes": [
+        "NS9",
+        "TE2"
+      ],
+      "opening": "1996-02-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3267849",
+      "label": "Admiralty MRT station",
+      "name": "Admiralty",
+      "lng": 103.800933,
+      "lat": 1.440689,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS10"
+      ],
+      "opening": "1996-02-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3268514",
+      "label": "Expo station",
+      "name": "Expo",
+      "lng": 103.961767,
+      "lat": 1.335469,
+      "lines": [
+        "DTL",
+        "EWL"
+      ],
+      "codes": [],
+      "opening": "2001-01-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3268520",
+      "label": "Buangkok MRT station",
+      "name": "Buangkok",
+      "lng": 103.893055555,
+      "lat": 1.383055555,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE15"
+      ],
+      "opening": "2006-01-15",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3268527",
+      "label": "Changi Airport MRT station",
+      "name": "Changi Airport",
+      "lng": 103.988333333,
+      "lat": 1.3575,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [],
+      "opening": "2002-02-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3268537",
+      "label": "Bugis MRT station",
+      "name": "Bugis",
+      "lng": 103.85615,
+      "lat": 1.300194,
+      "lines": [
+        "DTL",
+        "EWL"
+      ],
+      "codes": [
+        "DT14",
+        "EW12"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3271425",
+      "label": "Pioneer MRT station",
+      "name": "Pioneer",
+      "lng": 103.697217,
+      "lat": 1.337578,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW28"
+      ],
+      "opening": "2009-02-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3271443",
+      "label": "Joo Koon MRT station",
+      "name": "Joo Koon",
+      "lng": 103.678486,
+      "lat": 1.327739,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW29"
+      ],
+      "opening": "2009-02-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272113",
+      "label": "Paya Lebar MRT station",
+      "name": "Paya Lebar",
+      "lng": 103.892381,
+      "lat": 1.317767,
+      "lines": [
+        "CCL",
+        "EWL"
+      ],
+      "codes": [
+        "CC9",
+        "EW8"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272118",
+      "label": "Simei MRT station",
+      "name": "Simei",
+      "lng": 103.953172,
+      "lat": 1.343444,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW3"
+      ],
+      "opening": "1989-12-16",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272255",
+      "label": "Lakeside MRT station",
+      "name": "Lakeside",
+      "lng": 103.721139,
+      "lat": 1.344589,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW26"
+      ],
+      "opening": "1988-11-05",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272258",
+      "label": "Buona Vista MRT station",
+      "name": "Buona Vista",
+      "lng": 103.790428,
+      "lat": 1.306817,
+      "lines": [
+        "CCL",
+        "EWL"
+      ],
+      "codes": [
+        "CC22",
+        "EW21"
+      ],
+      "opening": "1988-03-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272264",
+      "label": "Tampines MRT station",
+      "name": "Tampines",
+      "lng": 103.945322,
+      "lat": 1.352528,
+      "lines": [
+        "DTL",
+        "EWL"
+      ],
+      "codes": [
+        "DT32",
+        "EW2"
+      ],
+      "opening": "1989-12-16",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272270",
+      "label": "Queenstown MRT station",
+      "name": "Queenstown",
+      "lng": 103.806114,
+      "lat": 1.294442,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW19"
+      ],
+      "opening": "1988-03-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272275",
+      "label": "Boon Lay MRT station",
+      "name": "Boon Lay",
+      "lng": 103.705833333,
+      "lat": 1.338611111,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW27"
+      ],
+      "opening": "1990-07-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272290",
+      "label": "Aljunied MRT station",
+      "name": "Aljunied",
+      "lng": 103.882981,
+      "lat": 1.316442,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW9"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272296",
+      "label": "Clementi MRT station",
+      "name": "Clementi",
+      "lng": 103.765277777,
+      "lat": 1.315,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW23"
+      ],
+      "opening": "1988-03-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272301",
+      "label": "Chinese Garden MRT station",
+      "name": "Chinese Garden",
+      "lng": 103.7325,
+      "lat": 1.3425,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW25"
+      ],
+      "opening": "1988-11-05",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272303",
+      "label": "Dover MRT station",
+      "name": "Dover",
+      "lng": 103.778611111,
+      "lat": 1.311388888,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW22"
+      ],
+      "opening": "2001-10-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272313",
+      "label": "Tanah Merah MRT station",
+      "name": "Tanah Merah",
+      "lng": 103.946344,
+      "lat": 1.327358,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW4"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272318",
+      "label": "Tiong Bahru MRT station",
+      "name": "Tiong Bahru",
+      "lng": 103.826958,
+      "lat": 1.286081,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW17"
+      ],
+      "opening": "1988-03-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272325",
+      "label": "Kembangan MRT station",
+      "name": "Kembangan",
+      "lng": 103.913333333,
+      "lat": 1.321111111,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW6"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272333",
+      "label": "Tanjong Pagar MRT station",
+      "name": "Tanjong Pagar",
+      "lng": 103.845711,
+      "lat": 1.276439,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW15"
+      ],
+      "opening": "1987-12-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272337",
+      "label": "Lavender MRT station",
+      "name": "Lavender",
+      "lng": 103.863008333,
+      "lat": 1.307166666,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW11"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272345",
+      "label": "Commonwealth MRT station",
+      "name": "Commonwealth",
+      "lng": 103.798194444,
+      "lat": 1.3025,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW20"
+      ],
+      "opening": "1988-03-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272355",
+      "label": "HarbourFront station",
+      "name": "HarbourFront",
+      "lng": 103.822222222,
+      "lat": 1.265277777,
+      "lines": [
+        "CCL",
+        "NEL"
+      ],
+      "codes": [
+        "CC29",
+        "NE1"
+      ],
+      "opening": "2003-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272360",
+      "label": "Eunos MRT station",
+      "name": "Eunos",
+      "lng": 103.903055555,
+      "lat": 1.319722222,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW7"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272369",
+      "label": "Kallang MRT station",
+      "name": "Kallang",
+      "lng": 103.8714,
+      "lat": 1.311469,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW10"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3272378",
+      "label": "Bedok MRT station",
+      "name": "Bedok",
+      "lng": 103.930036,
+      "lat": 1.324039,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW5"
+      ],
+      "opening": "1989-11-04",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3521325",
+      "label": "Labrador Park MRT station",
+      "name": "Labrador Park",
+      "lng": 103.802908,
+      "lat": 1.272267,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC27"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3521374",
+      "label": "Ubi MRT station",
+      "name": "Ubi",
+      "lng": 103.899167,
+      "lat": 1.33,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT27"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3521438",
+      "label": "Hillview MRT station",
+      "name": "Hillview",
+      "lng": 103.767389,
+      "lat": 1.362472,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT3"
+      ],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3521474",
+      "label": "Caldecott MRT station",
+      "name": "Caldecott",
+      "lng": 103.839447,
+      "lat": 1.337761,
+      "lines": [
+        "CCL",
+        "TEL"
+      ],
+      "codes": [
+        "CC17",
+        "TE9"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524122",
+      "label": "Farrer Road MRT station",
+      "name": "Farrer Road",
+      "lng": 103.807431,
+      "lat": 1.317319,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC20"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524310",
+      "label": "Haw Par Villa MRT station",
+      "name": "Haw Par Villa",
+      "lng": 103.781666666,
+      "lat": 1.282777777,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC25"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524382",
+      "label": "Fort Canning MRT station",
+      "name": "Fort Canning",
+      "lng": 103.845163,
+      "lat": 1.291937,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT20"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524442",
+      "label": "Kaki Bukit MRT station",
+      "name": "Kaki Bukit",
+      "lng": 103.908611,
+      "lat": 1.335,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT28"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524499",
+      "label": "King Albert Park MRT station",
+      "name": "King Albert Park",
+      "lng": 103.783611111,
+      "lat": 1.335833333,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524567",
+      "label": "Sixth Avenue MRT station",
+      "name": "Sixth Avenue",
+      "lng": 103.7975,
+      "lat": 1.330833333,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3524618",
+      "label": "Stevens station",
+      "name": "Stevens",
+      "lng": 103.825997222,
+      "lat": 1.320069444,
+      "lines": [
+        "DTL",
+        "TEL"
+      ],
+      "codes": [
+        "DT10",
+        "TE11"
+      ],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3536328",
+      "label": "Marina South Pier MRT station",
+      "name": "Marina South Pier",
+      "lng": 103.86325,
+      "lat": 1.270944444,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS28"
+      ],
+      "opening": "2014-11-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3537087",
+      "label": "Tuas West Road MRT station",
+      "name": "Tuas West Road",
+      "lng": 103.63956,
+      "lat": 1.33006,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW32"
+      ],
+      "opening": "2017-06-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q3537127",
+      "label": "Tuas Crescent MRT station",
+      "name": "Tuas Crescent",
+      "lng": 103.64894,
+      "lat": 1.32117,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW31"
+      ],
+      "opening": "2017-06-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4217206",
+      "label": "Nicoll Highway MRT station",
+      "name": "Nicoll Highway",
+      "lng": 103.863611111,
+      "lat": 1.299697222,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC5"
+      ],
+      "opening": "2010-04-17",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4265587",
+      "label": "Ten Mile Junction LRT station",
+      "name": "Ten Mile Junction",
+      "lng": 103.760094,
+      "lat": 1.380289,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP14"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4265715",
+      "label": "Bukit Panjang station",
+      "name": "Bukit Panjang",
+      "lng": 103.761666666,
+      "lat": 1.378611111,
+      "lines": [
+        "BPLRT",
+        "DTL"
+      ],
+      "codes": [
+        "BP6",
+        "DT1"
+      ],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4265724",
+      "label": "South View LRT station",
+      "name": "South View",
+      "lng": 103.745202777,
+      "lat": 1.380286111,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP2"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4761844",
+      "label": "Ang Mo Kio Bus Interchange",
+      "name": "Ang Mo Kio Bus Interchange",
+      "lng": 103.849,
+      "lat": 1.36964,
+      "lines": [],
+      "codes": [],
+      "opening": "1983-04-10",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4849028",
+      "label": "Bakau LRT station",
+      "name": "Bakau",
+      "lng": 103.905266666,
+      "lat": 1.387852777,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SE3"
+      ],
+      "opening": "2003-01-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4855189",
+      "label": "Bangkit LRT station",
+      "name": "Bangkit",
+      "lng": 103.772544,
+      "lat": 1.380044,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP9"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4877913",
+      "label": "Beauty World station",
+      "name": "Beauty World",
+      "lng": 103.775797,
+      "lat": 1.341133,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4879334",
+      "label": "Bedok Bus Interchange",
+      "name": "Bedok Bus Interchange",
+      "lng": 103.93,
+      "lat": 1.32516,
+      "lines": [],
+      "codes": [],
+      "opening": "2011-11-19",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4879338",
+      "label": "Bedok North Bus Depot",
+      "name": "Bedok North Bus Depot",
+      "lng": 103.948,
+      "lat": 1.3385,
+      "lines": [],
+      "codes": [],
+      "opening": "1982-12-01",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4879344",
+      "label": "Bedok North MRT station",
+      "name": "Bedok North",
+      "lng": 103.918259,
+      "lat": 1.334477,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT29"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4879351",
+      "label": "Bedok Reservoir MRT station",
+      "name": "Bedok Reservoir",
+      "lng": 103.933055555,
+      "lat": 1.336388888,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT30"
+      ],
+      "opening": "2017-10-22",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4886965",
+      "label": "Bencoolen MRT station",
+      "name": "Bencoolen",
+      "lng": 103.850392,
+      "lat": 1.298888,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT21"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4917326",
+      "label": "Bishan Bus Interchange",
+      "name": "Bishan Bus Interchange",
+      "lng": 103.85,
+      "lat": 1.35046,
+      "lines": [],
+      "codes": [],
+      "opening": "1989-04-30",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4943569",
+      "label": "Boon Lay Bus Interchange",
+      "name": "Boon Lay Bus Interchange",
+      "lng": 103.70555556,
+      "lat": 1.34,
+      "lines": [],
+      "codes": [],
+      "opening": "2009-12-27",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4986866",
+      "label": "Bukit Batok Bus Interchange",
+      "name": "Bukit Batok Bus Interchange",
+      "lng": 103.751,
+      "lat": 1.34991,
+      "lines": [],
+      "codes": [],
+      "opening": "1987-09-27",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4986886",
+      "label": "Bukit Brown MRT station",
+      "name": "Bukit Brown",
+      "lng": 103.830075,
+      "lat": 1.333639,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q110713763"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q4986920",
+      "label": "Bukit Merah Bus Interchange",
+      "name": "Bukit Merah Bus Interchange",
+      "lng": 103.817,
+      "lat": 1.28202,
+      "lines": [],
+      "codes": [],
+      "opening": "1981-02-14",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4986931",
+      "label": "Bukit Panjang Bus Interchange",
+      "name": "Bukit Panjang Bus Interchange",
+      "lng": 103.763611111,
+      "lat": 1.378611111,
+      "lines": [],
+      "codes": [],
+      "opening": "2017-09-04",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q4986974",
+      "label": "Bukit Timah railway station",
+      "name": "Bukit Timah railway",
+      "lng": 103.781111,
+      "lat": 1.334167,
+      "lines": [],
+      "codes": [],
+      "opening": "1903-01-01",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "former railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q5091237",
+      "label": "Cheng Lim LRT station",
+      "name": "Cheng Lim",
+      "lng": 103.893713,
+      "lat": 1.39631,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW1"
+      ],
+      "opening": "2013-01-01",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5103408",
+      "label": "Choa Chu Kang Bus Interchange",
+      "name": "Choa Chu Kang Bus Interchange",
+      "lng": 103.744,
+      "lat": 1.38556,
+      "lines": [],
+      "codes": [],
+      "opening": "1990-04-08",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q5156145",
+      "label": "Compassvale LRT station",
+      "name": "Compassvale",
+      "lng": 103.900156,
+      "lat": 1.394564,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SE1"
+      ],
+      "opening": "2003-01-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5169457",
+      "label": "Coral Edge LRT station",
+      "name": "Coral Edge",
+      "lng": 103.912555555,
+      "lat": 1.393944444,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE3"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "people mover station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5178930",
+      "label": "Cove LRT station",
+      "name": "Cove",
+      "lng": 103.90581,
+      "lat": 1.39949,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE1"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5211920",
+      "label": "Damai LRT station",
+      "name": "Damai",
+      "lng": 103.908875,
+      "lat": 1.404814,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE7"
+      ],
+      "opening": "2011-06-20",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5303492",
+      "label": "Downtown station",
+      "name": "Downtown",
+      "lng": 103.852931,
+      "lat": 1.279458,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT17"
+      ],
+      "opening": "2013-12-22",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5431381",
+      "label": "Fajar LRT station",
+      "name": "Fajar",
+      "lng": 103.770706,
+      "lat": 1.384533,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP10"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "tram stop"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5435951",
+      "label": "Farmway LRT station",
+      "name": "Farmway",
+      "lng": 103.888911,
+      "lat": 1.398978,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW2"
+      ],
+      "opening": "2007-11-15",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5445149",
+      "label": "Fernvale LRT station",
+      "name": "Fernvale",
+      "lng": 103.876303,
+      "lat": 1.393208,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW5"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5522477",
+      "label": "Gardens by the Bay station",
+      "name": "Gardens by the Bay",
+      "lng": 103.868,
+      "lat": 1.2783,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5554997",
+      "label": "Geylang Bahru MRT station",
+      "name": "Geylang Bahru",
+      "lng": 103.871944,
+      "lat": 1.321389,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT24"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5600268",
+      "label": "Great World MRT station",
+      "name": "Great World",
+      "lng": 103.833333333,
+      "lat": 1.295,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5617139",
+      "label": "Gul Circle MRT station",
+      "name": "Gul Circle",
+      "lng": 103.66065,
+      "lat": 1.3196,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW30"
+      ],
+      "opening": "2017-06-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5683584",
+      "label": "Havelock MRT station",
+      "name": "Havelock",
+      "lng": 103.833611111,
+      "lat": 1.287777777,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q5912807",
+      "label": "Hougang Central Bus Interchange",
+      "name": "Hougang Central Bus Interchange",
+      "lng": 103.89311111,
+      "lat": 1.37102778,
+      "lines": [],
+      "codes": [],
+      "opening": "1994-12-17",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q6132101",
+      "label": "Woodlands Train Checkpoint",
+      "name": "Woodlands Train Checkpoint",
+      "lng": 103.769167,
+      "lat": 1.443889,
+      "lines": [],
+      "codes": [],
+      "opening": "1903-01-01",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q6176620",
+      "label": "Jelapang LRT station",
+      "name": "Jelapang",
+      "lng": 103.764414,
+      "lat": 1.386711,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP12"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "people mover station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6345023",
+      "label": "Kadaloor LRT station",
+      "name": "Kadaloor",
+      "lng": 103.916353,
+      "lat": 1.399686,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE5"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6362774",
+      "label": "Kangkar LRT station",
+      "name": "Kangkar",
+      "lng": 103.902194,
+      "lat": 1.383739,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SE4"
+      ],
+      "opening": "2003-01-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6382291",
+      "label": "Keat Hong LRT station",
+      "name": "Keat Hong",
+      "lng": 103.748967,
+      "lat": 1.378617,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP3"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "people mover station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6391878",
+      "label": "Kent Ridge MRT station",
+      "name": "Kent Ridge",
+      "lng": 103.784394,
+      "lat": 1.293383,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC24"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6445301",
+      "label": "Kupang LRT station",
+      "name": "Kupang",
+      "lng": 103.881319,
+      "lat": 1.399228,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW3"
+      ],
+      "opening": "2015-06-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6505468",
+      "label": "Layar LRT station",
+      "name": "Layar",
+      "lng": 103.879753,
+      "lat": 1.394025,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW6"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6523392",
+      "label": "Lentor MRT station",
+      "name": "Lentor",
+      "lng": 103.83668,
+      "lat": 1.38471,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "TE5"
+      ],
+      "opening": "2021-08-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6763913",
+      "label": "Marina South station",
+      "name": "Marina South",
+      "lng": 103.862919,
+      "lat": 1.274082,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6796128",
+      "label": "Maxwell MRT station",
+      "name": "Maxwell",
+      "lng": 103.844,
+      "lat": 1.2803,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6819338",
+      "label": "Meridian LRT station",
+      "name": "Meridian",
+      "lng": 103.908592,
+      "lat": 1.397364,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE2"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6922930",
+      "label": "Mount Pleasant station",
+      "name": "Mount Pleasant",
+      "lng": 103.8356,
+      "lat": 1.3287,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q6964915",
+      "label": "Napier MRT station",
+      "name": "Napier",
+      "lng": 103.8191,
+      "lat": 1.3069,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7024230",
+      "label": "Nibong LRT station",
+      "name": "Nibong",
+      "lng": 103.90034,
+      "lat": 1.41188,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW5"
+      ],
+      "opening": "2014-06-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "people mover station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7074425",
+      "label": "Oasis LRT station",
+      "name": "Oasis",
+      "lng": 103.912422,
+      "lat": 1.402369,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE6"
+      ],
+      "opening": "2007-06-15",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7100179",
+      "label": "Orchard Boulevard MRT station",
+      "name": "Orchard Boulevard",
+      "lng": 103.8251,
+      "lat": 1.3024,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7142160",
+      "label": "Pasir Panjang MRT station",
+      "name": "Pasir Panjang",
+      "lng": 103.791358,
+      "lat": 1.276167,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC26"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7162421",
+      "label": "Pending LRT station",
+      "name": "Pending",
+      "lng": 103.771203,
+      "lat": 1.376161,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP8"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7178343",
+      "label": "Petir LRT station",
+      "name": "Petir",
+      "lng": 103.766564,
+      "lat": 1.377739,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP7"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7186917",
+      "label": "Phoenix LRT station",
+      "name": "Phoenix",
+      "lng": 103.757931,
+      "lat": 1.378625,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP5"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7260155",
+      "label": "Punggol Bus Interchange",
+      "name": "Punggol Bus Interchange",
+      "lng": 103.902,
+      "lat": 1.40417,
+      "lines": [],
+      "codes": [],
+      "opening": "2003-11-30",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q7260161",
+      "label": "Punggol Point LRT station",
+      "name": "Punggol Point",
+      "lng": 103.906353,
+      "lat": 1.416883,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW3"
+      ],
+      "opening": "2016-12-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7292813",
+      "label": "Ranggung LRT station",
+      "name": "Ranggung",
+      "lng": 103.897736,
+      "lat": 1.383619,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SE5"
+      ],
+      "opening": "2003-01-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7313275",
+      "label": "Renjong LRT station",
+      "name": "Renjong",
+      "lng": 103.890425,
+      "lat": 1.386614,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW8"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7338869",
+      "label": "Riviera LRT station",
+      "name": "Riviera",
+      "lng": 103.916111111,
+      "lat": 1.394444444,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PE4"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station",
+        "tram stop"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7379161",
+      "label": "Rumbia LRT station",
+      "name": "Rumbia",
+      "lng": 103.906306,
+      "lat": 1.391094,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SE2"
+      ],
+      "opening": "2003-01-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7407731",
+      "label": "Sam Kee LRT station",
+      "name": "Sam Kee",
+      "lng": 103.904888888,
+      "lat": 1.409722222,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW1"
+      ],
+      "opening": "2016-02-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7410678",
+      "label": "Samudera LRT station",
+      "name": "Samudera",
+      "lng": 103.902222222,
+      "lat": 1.415833333,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW4"
+      ],
+      "opening": "2017-03-31",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7446211",
+      "label": "Segar LRT station",
+      "name": "Segar",
+      "lng": 103.769542,
+      "lat": 1.387775,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP11"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7450573",
+      "label": "Sengkang Bus Interchange",
+      "name": "Sengkang Bus Interchange",
+      "lng": 103.896,
+      "lat": 1.39139,
+      "lines": [],
+      "codes": [],
+      "opening": "2003-01-18",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q7450771",
+      "label": "Senja LRT station",
+      "name": "Senja",
+      "lng": 103.762292,
+      "lat": 1.382675,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP13"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7452697",
+      "label": "Serangoon Bus Interchange",
+      "name": "Serangoon Bus Interchange",
+      "lng": 103.872,
+      "lat": 1.35222,
+      "lines": [],
+      "codes": [],
+      "opening": "2011-09-03",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q7494332",
+      "label": "Shenton Way MRT station",
+      "name": "Shenton Way",
+      "lng": 103.8507,
+      "lat": 1.2775,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2022-11-13",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7521549",
+      "label": "Bright Hill MRT station",
+      "name": "Bright Hill",
+      "lng": 103.8351,
+      "lat": 1.363758,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "CR13",
+        "TE7"
+      ],
+      "opening": "2021-08-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7562630",
+      "label": "Soo Teck LRT station",
+      "name": "Soo Teck",
+      "lng": 103.89727,
+      "lat": 1.4053,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW7"
+      ],
+      "opening": "2014-06-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7581151",
+      "label": "Springleaf MRT station",
+      "name": "Springleaf",
+      "lng": 103.81811,
+      "lat": 1.39806,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "TE4"
+      ],
+      "opening": "2021-08-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7636947",
+      "label": "Sumang LRT station",
+      "name": "Sumang",
+      "lng": 103.898527,
+      "lat": 1.408057,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW6"
+      ],
+      "opening": "2014-06-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7681796",
+      "label": "Tampines Bus Interchange",
+      "name": "Tampines Bus Interchange",
+      "lng": 103.944,
+      "lat": 1.35389,
+      "lines": [],
+      "codes": [],
+      "opening": "1987-12-20",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q7681800",
+      "label": "Tampines East MRT station",
+      "name": "Tampines East",
+      "lng": 103.953889,
+      "lat": 1.356111,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7681810",
+      "label": "Tampines West MRT station",
+      "name": "Tampines West",
+      "lng": 103.938333,
+      "lat": 1.345833,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7692707",
+      "label": "Teck Lee LRT station",
+      "name": "Teck Lee",
+      "lng": 103.906666666,
+      "lat": 1.412777777,
+      "lines": [
+        "PGLRT"
+      ],
+      "codes": [
+        "PW2"
+      ],
+      "opening": null,
+      "states": [
+        "Q55570340"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7692709",
+      "label": "Teck Whye LRT station",
+      "name": "Teck Whye",
+      "lng": 103.753567,
+      "lat": 1.376694,
+      "lines": [
+        "BPLRT"
+      ],
+      "codes": [
+        "BP4"
+      ],
+      "opening": "1999-11-06",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7697794",
+      "label": "Telok Ayer MRT station",
+      "name": "Telok Ayer",
+      "lng": 103.848472,
+      "lat": 1.282125,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT18"
+      ],
+      "opening": "2013-12-22",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7697798",
+      "label": "Telok Blangah MRT station",
+      "name": "Telok Blangah",
+      "lng": 103.809678,
+      "lat": 1.270572,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC28"
+      ],
+      "opening": "2011-10-08",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7710307",
+      "label": "Thanggam LRT station",
+      "name": "Thanggam",
+      "lng": 103.874794,
+      "lat": 1.399356,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW4"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7821100",
+      "label": "Tongkang LRT station",
+      "name": "Tongkang",
+      "lng": 103.885772,
+      "lat": 1.391078,
+      "lines": [
+        "SKLRT"
+      ],
+      "codes": [
+        "SW7"
+      ],
+      "opening": "2005-01-29",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "railway station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7898559",
+      "label": "Upper Changi MRT station",
+      "name": "Upper Changi",
+      "lng": 103.961667,
+      "lat": 1.3425,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT34"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q7898958",
+      "label": "Upper Thomson MRT station",
+      "name": "Upper Thomson",
+      "lng": 103.83288,
+      "lat": 1.35445,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "TE8"
+      ],
+      "opening": "2021-08-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q8032946",
+      "label": "Woodlands North MRT station",
+      "name": "Woodlands North",
+      "lng": 103.7851,
+      "lat": 1.4482,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "TE1"
+      ],
+      "opening": "2020-01-31",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q8032966",
+      "label": "Woodlands South MRT station",
+      "name": "Woodlands South",
+      "lng": 103.79385,
+      "lat": 1.42726,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "TE3"
+      ],
+      "opening": "2020-01-31",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q8053779",
+      "label": "Yio Chu Kang Bus Terminal",
+      "name": "Yio Chu Kang Bus Terminal",
+      "lng": 103.845,
+      "lat": 1.38175,
+      "lines": [],
+      "codes": [],
+      "opening": "1987-11-07",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q8053842",
+      "label": "Yishun Bus Interchange",
+      "name": "Yishun Bus Interchange",
+      "lng": 103.835888888,
+      "lat": 1.427583333,
+      "lines": [],
+      "codes": [],
+      "opening": "1987-08-23",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q11005410",
+      "label": "Bendemeer MRT station",
+      "name": "Bendemeer",
+      "lng": 103.863056,
+      "lat": 1.313889,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT23"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q11007149",
+      "label": "Jalan Besar MRT station",
+      "name": "Jalan Besar",
+      "lng": 103.855556,
+      "lat": 1.305833,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT22"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q11007759",
+      "label": "Mattar MRT station",
+      "name": "Mattar",
+      "lng": 103.883056,
+      "lat": 1.326944,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT25"
+      ],
+      "opening": "2017-10-21",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q11117393",
+      "label": "Botanic Gardens MRT station",
+      "name": "Botanic Gardens",
+      "lng": 103.815406,
+      "lat": 1.322519,
+      "lines": [
+        "CCL",
+        "DTL"
+      ],
+      "codes": [
+        "CC19",
+        "DT9"
+      ],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q11149382",
+      "label": "Tuas Link MRT station",
+      "name": "Tuas Link",
+      "lng": 103.637486,
+      "lat": 1.346859,
+      "lines": [
+        "EWL"
+      ],
+      "codes": [
+        "EW33"
+      ],
+      "opening": "2017-06-18",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q12983052",
+      "label": "Tan Kah Kee MRT station",
+      "name": "Tan Kah Kee",
+      "lng": 103.807222222,
+      "lat": 1.326111111,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": "2015-12-27",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q14874267",
+      "label": "Jurong East Bus Interchange",
+      "name": "Jurong East Bus Interchange",
+      "lng": 103.742,
+      "lat": 1.335,
+      "lines": [],
+      "codes": [],
+      "opening": "2011-12-17",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q15693078",
+      "label": "Mayflower station",
+      "name": "Mayflower",
+      "lng": 103.83678,
+      "lat": 1.37211,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [
+        "TE6"
+      ],
+      "opening": "2021-08-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q16926572",
+      "label": "HarbourFront Bus Interchange",
+      "name": "HarbourFront Bus Interchange",
+      "lng": 103.81666667,
+      "lat": 1.28194444,
+      "lines": [],
+      "codes": [],
+      "opening": "1980-01-01",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q16926578",
+      "label": "Joo Koon Bus Interchange",
+      "name": "Joo Koon Bus Interchange",
+      "lng": 103.67833333,
+      "lat": 1.32722222,
+      "lines": [],
+      "codes": [],
+      "opening": "2015-11-21",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q16926582",
+      "label": "Jurong railway station",
+      "name": "Jurong railway",
+      "lng": 103.723861111,
+      "lat": 1.323416666,
+      "lines": [],
+      "codes": [],
+      "opening": "1965-11-11",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q17611609",
+      "label": "Marine Parade MRT station",
+      "name": "Marine Parade",
+      "lng": 103.905248,
+      "lat": 1.30272,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q17611611",
+      "label": "Marine Terrace MRT station",
+      "name": "Marine Terrace",
+      "lng": 103.913332,
+      "lat": 1.305985,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18209162",
+      "label": "Tanjong Katong MRT station",
+      "name": "Tanjong Katong",
+      "lng": 103.897256,
+      "lat": 1.29995,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18209229",
+      "label": "Bedok South MRT station",
+      "name": "Bedok South",
+      "lng": 103.948276,
+      "lat": 1.316613,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18209311",
+      "label": "Canberra MRT station",
+      "name": "Canberra",
+      "lng": 103.829575,
+      "lat": 1.443283333,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [
+        "NS12"
+      ],
+      "opening": "2019-11-02",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18209994",
+      "label": "Bayshore MRT station",
+      "name": "Bayshore",
+      "lng": 103.943717,
+      "lat": 1.314712,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18378404",
+      "label": "Siglap MRT station",
+      "name": "Siglap",
+      "lng": 103.928967,
+      "lat": 1.30977,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18386327",
+      "label": "Sungei Bedok MRT station",
+      "name": "Sungei Bedok",
+      "lng": 103.96472222,
+      "lat": 1.32888889,
+      "lines": [
+        "DTL",
+        "TEL"
+      ],
+      "codes": [
+        "DT37",
+        "TE31"
+      ],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18387296",
+      "label": "Katong Park MRT station",
+      "name": "Katong Park",
+      "lng": 103.885331,
+      "lat": 1.297825,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18387904",
+      "label": "Tanjong Rhu MRT station",
+      "name": "Tanjong Rhu",
+      "lng": 103.873112,
+      "lat": 1.297091,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": "2024-06-23",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q18395717",
+      "label": "Xilin MRT station",
+      "name": "Xilin",
+      "lng": 103.96472222,
+      "lat": 1.32888889,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q19580291",
+      "label": "Cantonment MRT station",
+      "name": "Cantonment",
+      "lng": 103.836659,
+      "lat": 1.272814,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC31"
+      ],
+      "opening": "2026-07-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q20983869",
+      "label": "Keppel MRT station",
+      "name": "Keppel",
+      "lng": 103.830385,
+      "lat": 1.269988,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [],
+      "opening": "2026-07-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q22082862",
+      "label": "Prince Edward Road MRT Station",
+      "name": "Prince Edward Road",
+      "lng": 103.847298,
+      "lat": 1.273254,
+      "lines": [
+        "CCL"
+      ],
+      "codes": [
+        "CC32"
+      ],
+      "opening": "2026-07-12",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q30626636",
+      "label": "Compassvale Bus Interchange",
+      "name": "Compassvale Bus Interchange",
+      "lng": 103.89611111,
+      "lat": 1.39138889,
+      "lines": [],
+      "codes": [],
+      "opening": "2017-03-12",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q30626638",
+      "label": "Tampines Concourse Bus Interchange",
+      "name": "Tampines Concourse Bus Interchange",
+      "lng": 103.94361111,
+      "lat": 1.35388889,
+      "lines": [],
+      "codes": [],
+      "opening": "2016-12-18",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q30643856",
+      "label": "Punggol Coast station",
+      "name": "Punggol Coast",
+      "lng": 103.911111111,
+      "lat": 1.415277777,
+      "lines": [
+        "NEL"
+      ],
+      "codes": [
+        "NE18"
+      ],
+      "opening": "2024-12-10",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q54086754",
+      "label": "Toh Guan MRT station",
+      "name": "Toh Guan",
+      "lng": 103.7425,
+      "lat": 1.33984,
+      "lines": [],
+      "codes": [
+        "JE4"
+      ],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q54086765",
+      "label": "Jurong Town Hall MRT station",
+      "name": "Jurong Town Hall",
+      "lng": 103.746,
+      "lat": 1.326,
+      "lines": [],
+      "codes": [
+        "JE6"
+      ],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q54086770",
+      "label": "Peng Kang Hill MRT station",
+      "name": "Peng Kang Hill",
+      "lng": 103.678611111,
+      "lat": 1.343333333,
+      "lines": [],
+      "codes": [
+        "JW5"
+      ],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q54086781",
+      "label": "Nanyang Crescent MRT station",
+      "name": "Nanyang Crescent",
+      "lng": 103.680833333,
+      "lat": 1.348333333,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q54086819",
+      "label": "Choa Chu Kang West MRT station",
+      "name": "Choa Chu Kang West",
+      "lng": 103.74079556,
+      "lat": 1.379755,
+      "lines": [],
+      "codes": [
+        "JS2"
+      ],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55426686",
+      "label": "Gek Poh MRT station",
+      "name": "Gek Poh",
+      "lng": 103.69809861,
+      "lat": 1.348315,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55604709",
+      "label": "Bahar Junction MRT station",
+      "name": "Bahar Junction",
+      "lng": 103.702541666,
+      "lat": 1.345422222,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55606112",
+      "label": "Bukit Batok West MRT station",
+      "name": "Bukit Batok West",
+      "lng": 103.739592,
+      "lat": 1.34557,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55608443",
+      "label": "Corporation MRT station",
+      "name": "Corporation",
+      "lng": 103.713888888,
+      "lat": 1.353055555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55610931",
+      "label": "Enterprise MRT station",
+      "name": "Enterprise",
+      "lng": 103.708611111,
+      "lat": 1.332777777,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55613910",
+      "label": "Hong Kah MRT station",
+      "name": "Hong Kah",
+      "lng": 103.725833333,
+      "lat": 1.358055555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55615464",
+      "label": "Jurong Hill MRT station",
+      "name": "Jurong Hill",
+      "lng": 103.710277777,
+      "lat": 1.318611111,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55615465",
+      "label": "Jurong Pier MRT station",
+      "name": "Jurong Pier",
+      "lng": 103.710277777,
+      "lat": 1.313055555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55615466",
+      "label": "Jurong West MRT station",
+      "name": "Jurong West",
+      "lng": 103.708333333,
+      "lat": 1.349166666,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55624640",
+      "label": "Nanyang Gateway MRT station",
+      "name": "Nanyang Gateway",
+      "lng": 103.686666666,
+      "lat": 1.353611111,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55628510",
+      "label": "Pandan Reservoir MRT station",
+      "name": "Pandan Reservoir",
+      "lng": 103.745,
+      "lat": 1.32,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55634830",
+      "label": "Tawas MRT station",
+      "name": "Tawas",
+      "lng": 103.691944444,
+      "lat": 1.350555555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55634916",
+      "label": "Tengah MRT station",
+      "name": "Tengah",
+      "lng": 103.73,
+      "lat": 1.366388888,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55634917",
+      "label": "Tengah Park MRT station",
+      "name": "Tengah Park",
+      "lng": 103.736666666,
+      "lat": 1.352222222,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55634918",
+      "label": "Tengah Plantation MRT station",
+      "name": "Tengah Plantation",
+      "lng": 103.733333333,
+      "lat": 1.357222222,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q55636294",
+      "label": "Tukang MRT station",
+      "name": "Tukang",
+      "lng": 103.709166666,
+      "lat": 1.325277777,
+      "lines": [],
+      "codes": [
+        "JS10"
+      ],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "elevated station",
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q60569486",
+      "label": "Founders' Memorial MRT station",
+      "name": "Founders' Memorial",
+      "lng": 103.8687,
+      "lat": 1.2912,
+      "lines": [
+        "TEL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014499",
+      "label": "Tampines North MRT station",
+      "name": "Tampines North",
+      "lng": 103.93786,
+      "lat": 1.36919,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014507",
+      "label": "Defu MRT station",
+      "name": "Defu",
+      "lng": 103.898874,
+      "lat": 1.362243,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014509",
+      "label": "Serangoon North MRT station",
+      "name": "Serangoon North",
+      "lng": 103.873611111,
+      "lat": 1.370555555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014510",
+      "label": "Pasir Ris East MRT station",
+      "name": "Pasir Ris East",
+      "lng": 103.961,
+      "lat": 1.366,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014512",
+      "label": "Tavistock MRT station",
+      "name": "Tavistock",
+      "lng": 103.863333333,
+      "lat": 1.37,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014514",
+      "label": "Loyang MRT station",
+      "name": "Loyang",
+      "lng": 103.971944444,
+      "lat": 1.371944444,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014515",
+      "label": "Aviation Park MRT station",
+      "name": "Aviation Park",
+      "lng": 104.00314,
+      "lat": 1.36989,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q61014529",
+      "label": "Teck Ghee MRT station",
+      "name": "Teck Ghee",
+      "lng": 103.843611111,
+      "lat": 1.365555555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q62004591",
+      "label": "Hume station",
+      "name": "Hume",
+      "lng": 103.769166666,
+      "lat": 1.354444444,
+      "lines": [
+        "DTL"
+      ],
+      "codes": [
+        "DT4"
+      ],
+      "opening": "2025-02-28",
+      "states": [
+        "Q55654238"
+      ],
+      "instances": [
+        "metro station",
+        "underground station"
+      ],
+      "inUse": true,
+      "isMetro": true
+    },
+    {
+      "qid": "Q64038085",
+      "label": "Brickland MRT station",
+      "name": "Brickland",
+      "lng": 103.7479,
+      "lat": 1.3697,
+      "lines": [
+        "NSL"
+      ],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q96377155",
+      "label": "Elias MRT station",
+      "name": "Elias",
+      "lng": 103.938,
+      "lat": 1.384,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q107213131",
+      "label": "Woodlands Temporary Bus Interchange",
+      "name": "Woodlands Temporary Bus Interchange",
+      "lng": 103.786,
+      "lat": 1.437361111,
+      "lines": [],
+      "codes": [],
+      "opening": "2016-03-12",
+      "states": [],
+      "instances": [
+        "station located on surface"
+      ],
+      "inUse": true,
+      "isMetro": false
+    },
+    {
+      "qid": "Q111941406",
+      "label": "Alexandra Halt railway station",
+      "name": "Alexandra Halt railway",
+      "lng": 103.7906,
+      "lat": 1.2845,
+      "lines": [],
+      "codes": [],
+      "opening": "1932-05-03",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "former railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q111944493",
+      "label": "People's Park railway station",
+      "name": "People's Park railway",
+      "lng": 103.84175,
+      "lat": 1.286305555,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "former railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q111947851",
+      "label": "Bukit Panjang railway station",
+      "name": "Bukit Panjang railway",
+      "lng": 103.760277777,
+      "lat": 1.378888888,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q111949339",
+      "label": "Tanglin railway station",
+      "name": "Tanglin railway",
+      "lng": 103.792803888,
+      "lat": 1.305091111,
+      "lines": [],
+      "codes": [],
+      "opening": "1932-05-03",
+      "states": [
+        "Q11639308"
+      ],
+      "instances": [
+        "railway station"
+      ],
+      "inUse": false,
+      "isMetro": false
+    },
+    {
+      "qid": "Q114152838",
+      "label": "West Coast MRT station",
+      "name": "West Coast",
+      "lng": 103.757828,
+      "lat": 1.31079,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q114237640",
+      "label": "Turf City MRT station",
+      "name": "Turf City",
+      "lng": 103.794444444,
+      "lat": 1.340833333,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q114237660",
+      "label": "Maju MRT station",
+      "name": "Maju",
+      "lng": 103.776944444,
+      "lat": 1.328333333,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q12377751"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q114237773",
+      "label": "Jurong Lake District MRT station",
+      "name": "Jurong Lake District",
+      "lng": 103.739166666,
+      "lat": 1.327222222,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    },
+    {
+      "qid": "Q121754861",
+      "label": "Changi Airport Terminal 5 MRT station",
+      "name": "Changi Airport Terminal 5",
+      "lng": 103.9927778,
+      "lat": 1.3244444,
+      "lines": [],
+      "codes": [],
+      "opening": null,
+      "states": [
+        "Q811683"
+      ],
+      "instances": [
+        "metro station"
+      ],
+      "inUse": false,
+      "isMetro": true
+    }
+  ]
+}

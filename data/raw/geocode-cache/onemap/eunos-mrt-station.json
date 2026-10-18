@@ -1,0 +1,55 @@
+{
+  "query": "Eunos MRT STATION",
+  "found": 4,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "EUNOS MRT STATION (EW7)",
+      "BLK_NO": "30",
+      "ROAD_NAME": "EUNOS CRESCENT",
+      "BUILDING": "EUNOS MRT STATION (EW7)",
+      "ADDRESS": "30 EUNOS CRESCENT EUNOS MRT STATION (EW7) SINGAPORE 409423",
+      "POSTAL": "409423",
+      "X": "35779.98834538553",
+      "Y": "33560.58589680493",
+      "LATITUDE": "1.319783549160883",
+      "LONGITUDE": "103.9032258072548"
+    },
+    {
+      "SEARCHVAL": "EUNOS MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "EUNOS MRT STATION EXIT A",
+      "ADDRESS": "EUNOS MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "35743.07759862207",
+      "Y": "33531.14162599668",
+      "LATITUDE": "1.319517275135254",
+      "LONGITUDE": "103.902894137829"
+    },
+    {
+      "SEARCHVAL": "EUNOS MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "EUNOS MRT STATION EXIT B",
+      "ADDRESS": "EUNOS MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "35708.34817463998",
+      "Y": "33536.14643710479",
+      "LATITUDE": "1.319562545606161",
+      "LONGITUDE": "103.9025820773896"
+    },
+    {
+      "SEARCHVAL": "EUNOS MRT STATION EXIT C",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "EUNOS MRT STATION EXIT C",
+      "ADDRESS": "EUNOS MRT STATION EXIT C",
+      "POSTAL": "NIL",
+      "X": "35774.73651726265",
+      "Y": "33541.24819656275",
+      "LATITUDE": "1.319608667298637",
+      "LONGITUDE": "103.903178612002"
+    }
+  ]
+}

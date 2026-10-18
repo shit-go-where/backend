@@ -1,0 +1,43 @@
+{
+  "query": "Mattar MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MATTAR MRT STATION (DT25)",
+      "BLK_NO": "60",
+      "ROAD_NAME": "MERPATI ROAD",
+      "BUILDING": "MATTAR MRT STATION (DT25)",
+      "ADDRESS": "60 MERPATI ROAD MATTAR MRT STATION (DT25) SINGAPORE 379314",
+      "POSTAL": "379314",
+      "X": "33556.58344024606",
+      "Y": "34344.85853325576",
+      "LATITUDE": "1.326876715013358",
+      "LONGITUDE": "103.8832475095416"
+    },
+    {
+      "SEARCHVAL": "MATTAR MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "MATTAR MRT STATION EXIT A",
+      "ADDRESS": "MATTAR MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "33499.85721311811",
+      "Y": "34387.10488992184",
+      "LATITUDE": "1.327258786263585",
+      "LONGITUDE": "103.8827378011844"
+    },
+    {
+      "SEARCHVAL": "MATTAR MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "MATTAR MRT STATION EXIT B",
+      "ADDRESS": "MATTAR MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "33611.44637029618",
+      "Y": "34301.3054169286",
+      "LATITUDE": "1.326482826138165",
+      "LONGITUDE": "103.8837404747687"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "query": "Cashew MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CASHEW MRT STATION",
+      "BLK_NO": "1",
+      "ROAD_NAME": "CASHEW ROAD",
+      "BUILDING": "CASHEW MRT STATION",
+      "ADDRESS": "1 CASHEW ROAD CASHEW MRT STATION",
+      "POSTAL": "NIL",
+      "X": "20320.74121337757",
+      "Y": "39096.23859789968",
+      "LATITUDE": "1.369846013657411",
+      "LONGITUDE": "103.764315051619"
+    },
+    {
+      "SEARCHVAL": "CASHEW MRT STATION (DT2)",
+      "BLK_NO": "1",
+      "ROAD_NAME": "CASHEW ROAD",
+      "BUILDING": "CASHEW MRT STATION (DT2)",
+      "ADDRESS": "1 CASHEW ROAD CASHEW MRT STATION (DT2) SINGAPORE 679696",
+      "POSTAL": "679696",
+      "X": "20334.55891116057",
+      "Y": "39092.85854188912",
+      "LATITUDE": "1.369815449255529",
+      "LONGITUDE": "103.7644392141394"
+    },
+    {
+      "SEARCHVAL": "CASHEW MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "CASHEW MRT STATION EXIT A",
+      "ADDRESS": "CASHEW MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "20308.81353930198",
+      "Y": "39096.05895741656",
+      "LATITUDE": "1.36984438594548",
+      "LONGITUDE": "103.7642078731991"
+    }
+  ]
+}

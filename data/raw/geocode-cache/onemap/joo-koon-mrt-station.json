@@ -1,0 +1,43 @@
+{
+  "query": "Joo Koon MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "JOO KOON MRT STATION (EW29)",
+      "BLK_NO": "91",
+      "ROAD_NAME": "JOO KOON CIRCLE",
+      "BUILDING": "JOO KOON MRT STATION (EW29)",
+      "ADDRESS": "91 JOO KOON CIRCLE JOO KOON MRT STATION (EW29) SINGAPORE 629116",
+      "POSTAL": "629116",
+      "X": "10756.33797434811",
+      "Y": "34438.26177777722",
+      "LATITUDE": "1.327717040844709",
+      "LONGITUDE": "103.6783749961644"
+    },
+    {
+      "SEARCHVAL": "JOO KOON MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "JOO KOON MRT STATION EXIT A",
+      "ADDRESS": "JOO KOON MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "10772.99532355927",
+      "Y": "34414.67932576872",
+      "LATITUDE": "1.327503779715875",
+      "LONGITUDE": "103.6785246843093"
+    },
+    {
+      "SEARCHVAL": "JOO KOON MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "JOO KOON MRT STATION EXIT B",
+      "ADDRESS": "JOO KOON MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "10785.99079156481",
+      "Y": "34464.85792212188",
+      "LATITUDE": "1.32795758286753",
+      "LONGITUDE": "103.6786414270802"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "query": "Simei MRT STATION",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SIMEI MRT STATION (EW3)",
+      "BLK_NO": "30",
+      "ROAD_NAME": "SIMEI STREET 3",
+      "BUILDING": "SIMEI MRT STATION (EW3)",
+      "ADDRESS": "30 SIMEI STREET 3 SIMEI MRT STATION (EW3) SINGAPORE 529888",
+      "POSTAL": "529888",
+      "X": "41361.22817131225",
+      "Y": "36149.75277961046",
+      "LATITUDE": "1.343197078518295",
+      "LONGITUDE": "103.9533772143779"
+    },
+    {
+      "SEARCHVAL": "SIMEI MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "SIMEI MRT STATION EXIT A",
+      "ADDRESS": "SIMEI MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "41410.52445594128",
+      "Y": "36089.90171611123",
+      "LATITUDE": "1.342655786022784",
+      "LONGITUDE": "103.953820143851"
+    }
+  ]
+}

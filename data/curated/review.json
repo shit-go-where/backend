@@ -1,0 +1,320 @@
+{
+  "normalise": [
+    {
+      "kind": "blank-cell",
+      "key": "sheet:paya-lebar-ewl",
+      "message": "General Data row 41: \"Posters (1)\" is blank; counted as 0 in the survey, feature left unset",
+      "resolution": "auto: treated as 0 / unknown"
+    },
+    {
+      "kind": "blank-cell",
+      "key": "sheet:newton-dtl",
+      "message": "General Data row 97: \"Posters (1)\" is blank; counted as 0 in the survey, feature left unset",
+      "resolution": "auto: treated as 0 / unknown"
+    },
+    {
+      "kind": "total-mismatch",
+      "key": "sheet:chong-pang",
+      "message": "General Data row 172 (Chong Pang): sheet Total (50) = 26, components sum to 27",
+      "resolution": "auto: kept the sheet total; components imported as recorded"
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:boon-keng-nel",
+      "message": "RAS Ratings row 5 (Boon Keng NEL) disagrees with General Data on Total (50), Aesthetics (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "30",
+          "ras": "29"
+        },
+        "Aesthetics (5)": {
+          "general": "2",
+          "ras": "1"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:bukit-panjang-hawker-centre",
+      "message": "RAS Ratings row 29 (Bukit Panjang Hawker Centre) disagrees with General Data on Total (50), Scent (5), Music (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "37",
+          "ras": "35"
+        },
+        "Scent (5)": {
+          "general": "4",
+          "ras": "3"
+        },
+        "Music (5)": {
+          "general": "1",
+          "ras": "0"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:chinatown-nel",
+      "message": "RAS Ratings row 35 (Chinatown NEL) disagrees with General Data on Total (50), Cleanliness (10), Scent (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "31",
+          "ras": "29"
+        },
+        "Cleanliness (10)": {
+          "general": "7",
+          "ras": "6"
+        },
+        "Scent (5)": {
+          "general": "3",
+          "ras": "2"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:chong-pang",
+      "message": "RAS Ratings row 38 (Chong Pang) disagrees with General Data on Music (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Music (5)": {
+          "general": "1",
+          "ras": "0"
+        }
+      }
+    },
+    {
+      "kind": "ras-out-of-range",
+      "key": "sheet:marina-bay-sands",
+      "message": "RAS Ratings row 145 (Marina Bay Sands, section \"RAS 6-Star\") has RAS Stars = 6; the scale is 1-5",
+      "resolution": "auto: rasStars left null; value kept in Survey.raw[\"RAS Stars (5)\"]. Confirm with RAS before setting."
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:259-kopi-place-pte-ltd",
+      "message": "RAS Ratings row 147 (259 Kopi Place Pte. Ltd) disagrees with General Data on Total (50), Music (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "22",
+          "ras": "21"
+        },
+        "Music (5)": {
+          "general": "1",
+          "ras": "0"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:hdb-hub-toa-payoh-l1",
+      "message": "RAS Ratings row 154 (HDB Hub (Toa Payoh) L1) disagrees with General Data on Total (50), Cleanliness (10)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "25",
+          "ras": "26"
+        },
+        "Cleanliness (10)": {
+          "general": "5",
+          "ras": "6"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:kim-san-leng-at-bukit-panjang-blk-259",
+      "message": "RAS Ratings row 159 (Kim San Leng @ Bukit Panjang Blk 259) disagrees with General Data on Total (50), Music (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "17",
+          "ras": "16"
+        },
+        "Music (5)": {
+          "general": "1",
+          "ras": "0"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:lau-pa-sat",
+      "message": "RAS Ratings row 161 (Lau Pa Sat) disagrees with General Data on Total (50), Music (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "24",
+          "ras": "23"
+        },
+        "Music (5)": {
+          "general": "1",
+          "ras": "0"
+        }
+      }
+    },
+    {
+      "kind": "ras-tab-differs",
+      "key": "sheet:millenia-walk-l1",
+      "message": "RAS Ratings row 165 (Millenia Walk L1) disagrees with General Data on Total (50), Scent (5), Aesthetics (5)",
+      "resolution": "auto: General Data values imported; RAS-tab values kept in Survey.raw._rasTabDiffs",
+      "data": {
+        "Total (50)": {
+          "general": "39",
+          "ras": "41"
+        },
+        "Scent (5)": {
+          "general": "3",
+          "ras": "4"
+        },
+        "Aesthetics (5)": {
+          "general": "3",
+          "ras": "4"
+        }
+      }
+    },
+    {
+      "kind": "blank-cell",
+      "key": "sheet:paya-lebar-ewl",
+      "message": "Toilet Renewal row 9: \"Posters (1)\" is blank; counted as 0 in the survey, feature left unset",
+      "resolution": "auto: treated as 0 / unknown"
+    }
+  ],
+  "geocode": [
+    {
+      "kind": "geocode-overridden",
+      "key": "bi-bukit-panjang-bus-interchange",
+      "message": "Bukit Panjang Bus Interchange: resolved via override",
+      "resolution": "override in overrides.json: OneMap has no 'Bukit Panjang Bus Interchange'; the interchange is inside Bukit Panjang Integrated Transport Hub (15 Petir Road)",
+      "data": {
+        "lat": 1.378431,
+        "lng": 103.762843,
+        "matched": "BUKIT PANJANG INTEGRATED TRANSPORT HUB"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "cs-259-kopi-place-pte-ltd",
+      "message": "259 Kopi Place Pte. Ltd: resolved via override",
+      "resolution": "override in overrides.json: Not in OneMap by name. Assumed Blk 259 at Bukit Panjang Neighbourhood Centre (same block as Kim San Leng, surveyed the same day); confirm on site",
+      "data": {
+        "lat": 1.377507,
+        "lng": 103.773606,
+        "matched": "BUKIT PANJANG NEIGHBOURHOOD CENTRE"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "cs-eunos-block-2a-kimly",
+      "message": "Eunos Block 2A Kimly: resolved via override",
+      "resolution": "override in overrides.json: Blk 2A Eunos Crescent",
+      "data": {
+        "lat": 1.320201,
+        "lng": 103.903194,
+        "matched": "2A EUNOS CRESCENT SINGAPORE 401002"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "cs-kim-san-leng-at-bukit-panjang-blk-259",
+      "message": "Kim San Leng @ Bukit Panjang Blk 259: resolved via override",
+      "resolution": "override in overrides.json: Blk 259 Bukit Panjang Ring Road (Bukit Panjang Neighbourhood Centre)",
+      "data": {
+        "lat": 1.377043,
+        "lng": 103.77331,
+        "matched": "BUKIT PANJANG NEIGHBOURHOOD CENTRE"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "hc-chong-pang",
+      "message": "Chong Pang: resolved via override",
+      "resolution": "override in overrides.json: 'Chong Pang' matches a camp and several HDB estates; the hawker centre is Chong Pang Market & Food Centre, 104/105 Yishun Ring Road",
+      "data": {
+        "lat": 1.431718,
+        "lng": 103.828114,
+        "matched": "CHONG PANG MARKET & FOOD CENTRE"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mall-hdb-hub-toa-payoh",
+      "message": "HDB Hub (Toa Payoh): resolved via override",
+      "resolution": "override in overrides.json",
+      "data": {
+        "lat": 1.332055,
+        "lng": 103.848508,
+        "matched": "HDB HUB"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mall-jewel",
+      "message": "Jewel: resolved via override",
+      "resolution": "override in overrides.json: 'Jewel' first matches Jewel @ Buangkok (a condo)",
+      "data": {
+        "lat": 1.360341,
+        "lng": 103.989078,
+        "matched": "JEWEL CHANGI AIRPORT"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mall-sengkang-grand",
+      "message": "Sengkang Grand: resolved via override",
+      "resolution": "override in overrides.json",
+      "data": {
+        "lat": 1.382982,
+        "lng": 103.892721,
+        "matched": "SENGKANG GRAND MALL"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mall-sun-plaza",
+      "message": "Sun Plaza: resolved via override",
+      "resolution": "override in overrides.json: Sun Plaza mall (30 Sembawang Drive), not the Sun Plaza Gardens/View HDB blocks in Tampines",
+      "data": {
+        "lat": 1.448195,
+        "lng": 103.819502,
+        "matched": "SUN PLAZA"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mall-suntec",
+      "message": "Suntec: resolved via override",
+      "resolution": "override in overrides.json",
+      "data": {
+        "lat": 1.295467,
+        "lng": 103.858585,
+        "matched": "SUNTEC CITY"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mall-woodleigh-mall",
+      "message": "Woodleigh Mall: resolved via override",
+      "resolution": "override in overrides.json",
+      "data": {
+        "lat": 1.338731,
+        "lng": 103.87167,
+        "matched": "THE WOODLEIGH MALL"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "mrt-harbourfront",
+      "message": "Harbourfront: resolved via override",
+      "resolution": "override in overrides.json",
+      "data": {
+        "lat": 1.26535,
+        "lng": 103.821044,
+        "matched": "HARBOURFRONT MRT STATION"
+      }
+    }
+  ]
+}

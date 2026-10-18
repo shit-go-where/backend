@@ -1,0 +1,43 @@
+{
+  "query": "Stadium MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "STADIUM MRT STATION (CC6)",
+      "BLK_NO": "3",
+      "ROAD_NAME": "STADIUM WALK",
+      "BUILDING": "STADIUM MRT STATION (CC6)",
+      "ADDRESS": "3 STADIUM WALK STADIUM MRT STATION (CC6) SINGAPORE 397692",
+      "POSTAL": "397692",
+      "X": "32676.34770508576",
+      "Y": "31683.94075942039",
+      "LATITUDE": "1.302812468470708",
+      "LONGITUDE": "103.8753377110883"
+    },
+    {
+      "SEARCHVAL": "STADIUM MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "STADIUM MRT STATION EXIT A",
+      "ADDRESS": "STADIUM MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "32571.98820715863",
+      "Y": "31650.61392353661",
+      "LATITUDE": "1.302511087937294",
+      "LONGITUDE": "103.8743999883534"
+    },
+    {
+      "SEARCHVAL": "STADIUM MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "STADIUM MRT STATION EXIT B",
+      "ADDRESS": "STADIUM MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "32775.23114966787",
+      "Y": "31745.61634671129",
+      "LATITUDE": "1.303370225539351",
+      "LONGITUDE": "103.8762262335223"
+    }
+  ]
+}

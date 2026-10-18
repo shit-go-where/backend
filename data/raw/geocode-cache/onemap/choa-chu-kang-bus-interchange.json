@@ -1,0 +1,19 @@
+{
+  "query": "Choa Chu Kang Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CHOA CHU KANG BUS INTERCHANGE",
+      "BLK_NO": "70",
+      "ROAD_NAME": "CHOA CHU KANG LOOP",
+      "BUILDING": "CHOA CHU KANG BUS INTERCHANGE",
+      "ADDRESS": "70 CHOA CHU KANG LOOP CHOA CHU KANG BUS INTERCHANGE",
+      "POSTAL": "NIL",
+      "X": "18200.37482055184",
+      "Y": "40833.348088203",
+      "LATITUDE": "1.385555163364318",
+      "LONGITUDE": "103.7452615087469"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "query": "Rochor MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ROCHOR MRT STATION (DT13)",
+      "BLK_NO": "11",
+      "ROAD_NAME": "ROCHOR CANAL ROAD",
+      "BUILDING": "ROCHOR MRT STATION (DT13)",
+      "ADDRESS": "11 ROCHOR CANAL ROAD ROCHOR MRT STATION (DT13) SINGAPORE 188505",
+      "POSTAL": "188505",
+      "X": "30164.70185038634",
+      "Y": "31798.87667782791",
+      "LATITUDE": "1.30385218527656",
+      "LONGITUDE": "103.8527694288838"
+    },
+    {
+      "SEARCHVAL": "ROCHOR MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "ROCHOR MRT STATION EXIT A",
+      "ADDRESS": "ROCHOR MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "30151.72569335438",
+      "Y": "31774.91614843346",
+      "LATITUDE": "1.303635495604125",
+      "LONGITUDE": "103.8526528304498"
+    },
+    {
+      "SEARCHVAL": "ROCHOR MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "ROCHOR MRT STATION EXIT B",
+      "ADDRESS": "ROCHOR MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "30193.79125935398",
+      "Y": "31833.64296821319",
+      "LATITUDE": "1.304166597296997",
+      "LONGITUDE": "103.853030813143"
+    }
+  ]
+}

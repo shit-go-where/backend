@@ -1,0 +1,19 @@
+{
+  "query": "Lau Pa Sat",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "LAU PA SAT",
+      "BLK_NO": "18",
+      "ROAD_NAME": "RAFFLES QUAY",
+      "BUILDING": "LAU PA SAT",
+      "ADDRESS": "18 RAFFLES QUAY LAU PA SAT SINGAPORE 048582",
+      "POSTAL": "048582",
+      "X": "29901.95350475237",
+      "Y": "29227.12880777568",
+      "LATITUDE": "1.28059421956057",
+      "LONGITUDE": "103.8504083579583"
+    }
+  ]
+}

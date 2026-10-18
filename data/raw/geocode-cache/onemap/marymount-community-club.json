@@ -1,0 +1,19 @@
+{
+  "query": "Marymount Community Club",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MARYMOUNT COMMUNITY CLUB",
+      "BLK_NO": "191",
+      "ROAD_NAME": "SIN MING AVENUE",
+      "BUILDING": "MARYMOUNT COMMUNITY CLUB",
+      "ADDRESS": "191 SIN MING AVENUE MARYMOUNT COMMUNITY CLUB SINGAPORE 575738",
+      "POSTAL": "575738",
+      "X": "28904.11372842174",
+      "Y": "38173.91574593633",
+      "LATITUDE": "1.36150584133083",
+      "LONGITUDE": "103.841442648888"
+    }
+  ]
+}

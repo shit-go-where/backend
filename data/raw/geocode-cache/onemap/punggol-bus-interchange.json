@@ -1,0 +1,19 @@
+{
+  "query": "Punggol Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "PUNGGOL BUS INTERCHANGE",
+      "BLK_NO": "70A",
+      "ROAD_NAME": "PUNGGOL PLACE",
+      "BUILDING": "PUNGGOL BUS INTERCHANGE",
+      "ADDRESS": "70A PUNGGOL PLACE PUNGGOL BUS INTERCHANGE SINGAPORE 828865",
+      "POSTAL": "828865",
+      "X": "35677.10710551497",
+      "Y": "42903.50570749305",
+      "LATITUDE": "1.40427754900531",
+      "LONGITUDE": "103.902303768528"
+    }
+  ]
+}

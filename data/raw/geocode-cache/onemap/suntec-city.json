@@ -1,0 +1,43 @@
+{
+  "query": "Suntec City",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "GOLDEN VILLAGE (GV SUNTEC CITY)",
+      "BLK_NO": "3",
+      "ROAD_NAME": "TEMASEK BOULEVARD",
+      "BUILDING": "GOLDEN VILLAGE (GV SUNTEC CITY)",
+      "ADDRESS": "3 TEMASEK BOULEVARD GOLDEN VILLAGE (GV SUNTEC CITY)",
+      "POSTAL": "NIL",
+      "X": "31006.54609875102",
+      "Y": "30804.56396910362",
+      "LATITUDE": "1.29485990186642",
+      "LONGITUDE": "103.860333693777"
+    },
+    {
+      "SEARCHVAL": "SUNTEC CITY",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "SUNTEC CITY",
+      "ADDRESS": "SUNTEC CITY",
+      "POSTAL": "NIL",
+      "X": "30811.93398099486",
+      "Y": "30871.66475952603",
+      "LATITUDE": "1.295466755896756",
+      "LONGITUDE": "103.8585850260156"
+    },
+    {
+      "SEARCHVAL": "SUNTEC CITY MALL",
+      "BLK_NO": "3",
+      "ROAD_NAME": "TEMASEK BOULEVARD",
+      "BUILDING": "SUNTEC CITY MALL",
+      "ADDRESS": "3 TEMASEK BOULEVARD SUNTEC CITY MALL SINGAPORE 038983",
+      "POSTAL": "038983",
+      "X": "30859.71977216378",
+      "Y": "30923.09790327027",
+      "LATITUDE": "1.295931894771942",
+      "LONGITUDE": "103.8590144067362"
+    }
+  ]
+}

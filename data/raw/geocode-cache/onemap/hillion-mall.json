@@ -1,0 +1,19 @@
+{
+  "query": "Hillion Mall",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HILLION MALL",
+      "BLK_NO": "17",
+      "ROAD_NAME": "PETIR ROAD",
+      "BUILDING": "HILLION MALL",
+      "ADDRESS": "17 PETIR ROAD HILLION MALL SINGAPORE 678278",
+      "POSTAL": "678278",
+      "X": "20156.92419627495",
+      "Y": "40045.52913370728",
+      "LATITUDE": "1.37843100827587",
+      "LONGITUDE": "103.7628427898765"
+    }
+  ]
+}

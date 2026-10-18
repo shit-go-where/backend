@@ -1,0 +1,43 @@
+{
+  "query": "Novena MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "NOVENA MRT STATION (NS20)",
+      "BLK_NO": "250",
+      "ROAD_NAME": "THOMSON ROAD",
+      "BUILDING": "NOVENA MRT STATION (NS20)",
+      "ADDRESS": "250 THOMSON ROAD NOVENA MRT STATION (NS20) SINGAPORE 307642",
+      "POSTAL": "307642",
+      "X": "29169.32979250047",
+      "Y": "33633.15353910625",
+      "LATITUDE": "1.320440791201562",
+      "LONGITUDE": "103.8438256187479"
+    },
+    {
+      "SEARCHVAL": "NOVENA MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "NOVENA MRT STATION EXIT A",
+      "ADDRESS": "NOVENA MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "29233.89694081061",
+      "Y": "33706.37787558325",
+      "LATITUDE": "1.321103003672807",
+      "LONGITUDE": "103.8444057912622"
+    },
+    {
+      "SEARCHVAL": "NOVENA MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "NOVENA MRT STATION EXIT B",
+      "ADDRESS": "NOVENA MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "29113.37869816739",
+      "Y": "33571.58706789836",
+      "LATITUDE": "1.319884007888243",
+      "LONGITUDE": "103.8433228666909"
+    }
+  ]
+}

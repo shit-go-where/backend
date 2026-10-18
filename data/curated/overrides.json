@@ -1,0 +1,52 @@
+{
+  "bi-bukit-panjang-bus-interchange": {
+    "query": "Bukit Panjang Integrated Transport Hub",
+    "name": "Bukit Panjang Bus Interchange",
+    "reason": "OneMap has no 'Bukit Panjang Bus Interchange'; the interchange is inside Bukit Panjang Integrated Transport Hub (15 Petir Road)"
+  },
+  "cs-259-kopi-place-pte-ltd": {
+    "query": "259 Bangkit Road",
+    "pick": "259A BANGKIT ROAD",
+    "name": "259 Kopi Place",
+    "reason": "Not in OneMap by name. Assumed Blk 259 at Bukit Panjang Neighbourhood Centre (same block as Kim San Leng, surveyed the same day); confirm on site"
+  },
+  "cs-kim-san-leng-at-bukit-panjang-blk-259": {
+    "name": "Kim San Leng @ Bukit Panjang (Blk 259)",
+    "reason": "Blk 259 Bukit Panjang Ring Road (Bukit Panjang Neighbourhood Centre)"
+  },
+  "cs-eunos-block-2a-kimly": {
+    "name": "Kimly Coffeeshop, Blk 2A Eunos",
+    "reason": "Blk 2A Eunos Crescent"
+  },
+  "hc-chong-pang": {
+    "query": "105 Yishun Ring Road",
+    "name": "Chong Pang Market & Food Centre",
+    "reason": "'Chong Pang' matches a camp and several HDB estates; the hawker centre is Chong Pang Market & Food Centre, 104/105 Yishun Ring Road"
+  },
+  "mall-jewel": {
+    "query": "Jewel Changi Airport",
+    "name": "Jewel Changi Airport",
+    "reason": "'Jewel' first matches Jewel @ Buangkok (a condo)"
+  },
+  "mall-sun-plaza": {
+    "pick": "30 SEMBAWANG DRIVE",
+    "reason": "Sun Plaza mall (30 Sembawang Drive), not the Sun Plaza Gardens/View HDB blocks in Tampines"
+  },
+  "mall-suntec": {
+    "name": "Suntec City"
+  },
+  "mall-sengkang-grand": {
+    "query": "Sengkang Grand Mall",
+    "name": "Sengkang Grand Mall"
+  },
+  "mall-woodleigh-mall": {
+    "name": "The Woodleigh Mall"
+  },
+  "mall-hdb-hub-toa-payoh": {
+    "query": "HDB Hub",
+    "name": "HDB Hub (Toa Payoh)"
+  },
+  "mrt-harbourfront": {
+    "name": "HarbourFront"
+  }
+}

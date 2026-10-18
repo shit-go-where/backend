@@ -1,0 +1,31 @@
+{
+  "query": "Compass One",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "COMPASS ONE",
+      "BLK_NO": "1",
+      "ROAD_NAME": "SENGKANG SQUARE",
+      "BUILDING": "COMPASS ONE",
+      "ADDRESS": "1 SENGKANG SQUARE COMPASS ONE SINGAPORE 545078",
+      "POSTAL": "545078",
+      "X": "34872.18344100844",
+      "Y": "41551.76933606155",
+      "LATITUDE": "1.39205314156707",
+      "LONGITUDE": "103.8950705438402"
+    },
+    {
+      "SEARCHVAL": "COMPASS ONE (CAR PARK ENTRANCE)",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "COMPASS ONE (CAR PARK ENTRANCE)",
+      "ADDRESS": "COMPASS ONE (CAR PARK ENTRANCE)",
+      "POSTAL": "NIL",
+      "X": "34838.68819406349",
+      "Y": "41583.66034960188",
+      "LATITUDE": "1.392341560193054",
+      "LONGITUDE": "103.8947695703235"
+    }
+  ]
+}

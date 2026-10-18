@@ -1,0 +1,43 @@
+{
+  "query": "Napier MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "NAPIER MRT STATION (TE12)",
+      "BLK_NO": "2",
+      "ROAD_NAME": "NAPIER ROAD",
+      "BUILDING": "NAPIER MRT STATION (TE12)",
+      "ADDRESS": "2 NAPIER ROAD NAPIER MRT STATION (TE12) SINGAPORE 258511",
+      "POSTAL": "258511",
+      "X": "26401.66670745704",
+      "Y": "32122.86257249117",
+      "LATITUDE": "1.306782233647866",
+      "LONGITUDE": "103.8189567968147"
+    },
+    {
+      "SEARCHVAL": "NAPIER MRT STATION EXIT 1",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "NAPIER MRT STATION EXIT 1",
+      "ADDRESS": "NAPIER MRT STATION EXIT 1",
+      "POSTAL": "NIL",
+      "X": "26458.32573966123",
+      "Y": "32140.43658758886",
+      "LATITUDE": "1.306941169721705",
+      "LONGITUDE": "103.8194659041981"
+    },
+    {
+      "SEARCHVAL": "NAPIER MRT STATION EXIT 2",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "NAPIER MRT STATION EXIT 2",
+      "ADDRESS": "NAPIER MRT STATION EXIT 2",
+      "POSTAL": "NIL",
+      "X": "26459.80741800088",
+      "Y": "32076.08979020081",
+      "LATITUDE": "1.306359240056322",
+      "LONGITUDE": "103.819479220969"
+    }
+  ]
+}

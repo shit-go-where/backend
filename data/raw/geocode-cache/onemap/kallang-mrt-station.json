@@ -1,0 +1,43 @@
+{
+  "query": "Kallang MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "KALLANG MRT STATION (EW10)",
+      "BLK_NO": "5",
+      "ROAD_NAME": "SIMS AVENUE",
+      "BUILDING": "KALLANG MRT STATION (EW10)",
+      "ADDRESS": "5 SIMS AVENUE KALLANG MRT STATION (EW10) SINGAPORE 387405",
+      "POSTAL": "387405",
+      "X": "32236.60384384729",
+      "Y": "32643.33023826405",
+      "LATITUDE": "1.311488909988205",
+      "LONGITUDE": "103.8713865417532"
+    },
+    {
+      "SEARCHVAL": "KALLANG MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "KALLANG MRT STATION EXIT A",
+      "ADDRESS": "KALLANG MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "32274.89024020266",
+      "Y": "32649.03354363143",
+      "LATITUDE": "1.311540483371016",
+      "LONGITUDE": "103.8717305645294"
+    },
+    {
+      "SEARCHVAL": "KALLANG MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "KALLANG MRT STATION EXIT B",
+      "ADDRESS": "KALLANG MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "32258.92088226136",
+      "Y": "32675.71356055886",
+      "LATITUDE": "1.311781770188019",
+      "LONGITUDE": "103.8715870757017"
+    }
+  ]
+}

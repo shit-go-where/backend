@@ -1,0 +1,19 @@
+{
+  "query": "Jewel Changi Airport",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "JEWEL CHANGI AIRPORT",
+      "BLK_NO": "78",
+      "ROAD_NAME": "AIRPORT BOULEVARD",
+      "BUILDING": "JEWEL CHANGI AIRPORT",
+      "ADDRESS": "78 AIRPORT BOULEVARD JEWEL CHANGI AIRPORT SINGAPORE 819666",
+      "POSTAL": "819666",
+      "X": "45334.17674526945",
+      "Y": "38045.67199393362",
+      "LATITUDE": "1.360341006610217",
+      "LONGITUDE": "103.9890775502096"
+    }
+  ]
+}

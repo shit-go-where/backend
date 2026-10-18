@@ -1,0 +1,43 @@
+{
+  "query": "Ubi MRT STATION",
+  "found": 3,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "UBI MRT STATION (DT27)",
+      "BLK_NO": "51",
+      "ROAD_NAME": "UBI AVENUE 2",
+      "BUILDING": "UBI MRT STATION (DT27)",
+      "ADDRESS": "51 UBI AVENUE 2 UBI MRT STATION (DT27) SINGAPORE 408899",
+      "POSTAL": "408899",
+      "X": "35334.89183336962",
+      "Y": "34687.41099073924",
+      "LATITUDE": "1.329974259739727",
+      "LONGITUDE": "103.8992266554387"
+    },
+    {
+      "SEARCHVAL": "UBI MRT STATION EXIT A",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "UBI MRT STATION EXIT A",
+      "ADDRESS": "UBI MRT STATION EXIT A",
+      "POSTAL": "NIL",
+      "X": "35406.47779415641",
+      "Y": "34686.07148111984",
+      "LATITUDE": "1.329962128331883",
+      "LONGITUDE": "103.8998698944358"
+    },
+    {
+      "SEARCHVAL": "UBI MRT STATION EXIT B",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "UBI MRT STATION EXIT B",
+      "ADDRESS": "UBI MRT STATION EXIT B",
+      "POSTAL": "NIL",
+      "X": "35263.14057912491",
+      "Y": "34671.50580092333",
+      "LATITUDE": "1.329830436165982",
+      "LONGITUDE": "103.8985819270787"
+    }
+  ]
+}

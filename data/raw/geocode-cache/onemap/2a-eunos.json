@@ -1,0 +1,19 @@
+{
+  "query": "2A Eunos",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "2A EUNOS CRESCENT SINGAPORE 401002",
+      "BLK_NO": "2A",
+      "ROAD_NAME": "EUNOS CRESCENT",
+      "BUILDING": "NIL",
+      "ADDRESS": "2A EUNOS CRESCENT SINGAPORE 401002",
+      "POSTAL": "401002",
+      "X": "35776.39266025927",
+      "Y": "33606.75704238378",
+      "LATITUDE": "1.320201105284614",
+      "LONGITUDE": "103.903193509829"
+    }
+  ]
+}
