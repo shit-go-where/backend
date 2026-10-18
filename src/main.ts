@@ -1,10 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule, ObserveInstrument } from './app.module.js';
+// Vercel's NestJS builder detects the entrypoint by this import; keep it.
+import '@nestjs/core';
+import { createApp } from './app.factory.js';
+import { env } from './config/env.js';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    instrument: ObserveInstrument,
-  });
-  await app.listen(process.env.PORT ?? 3000);
-}
-await bootstrap();
+const app = await createApp();
+await app.listen(env.PORT);
+console.log(`API on http://localhost:${env.PORT} (docs at /docs)`);
