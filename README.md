@@ -115,6 +115,61 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | `CRON_SECRET` | for `/admin/jobs/*` | `change-me` | random; same value as the GitHub secret |
 | `DEV_LOGIN_ENABLED` | no | `true` | **unset** (boot fails if `true` in production) |
 | `SENTRY_DSN` | no | empty | optional |
+| `TELEGRAM_BOT_TOKEN` | for the bot | empty (bot off) | BotFather token; unset = no bot, no webhook route |
+| `TELEGRAM_WEBHOOK_SECRET` | for the webhook | empty | 32+ random chars (`openssl rand -hex 32`) |
+| `TELEGRAM_BOT_USERNAME` | for links | empty | bot username without `@`; needed for `/me` "Connect Telegram" and group deep links |
+| `TELEGRAM_CHANNEL_ID` | no | empty | broadcast channel (v1.5, unused in v1) |
+| `TELEGRAM_API_ROOT` | no | empty | leave unset (tests and local stubs only) |
+
+## Telegram bot
+
+A module in this API (`src/integrations/telegram/`, plan in [`../BOT.md`](../BOT.md)), built on
+[grammY](https://grammy.dev). With `TELEGRAM_BOT_TOKEN` unset it registers nothing. It calls the
+recommend, OneMap search, check-in and status services in-process; all links derive from
+`PUBLIC_APP_URL`.
+
+- **Webhook:** `POST /integrations/telegram`, not throttled and not in `openapi.json`. Telegram
+  sends `X-Telegram-Bot-Api-Secret-Token`, compared with `TELEGRAM_WEBHOOK_SECRET` (401 otherwise,
+  503 when the secret is unset). The reply is sent before the 200, so nothing runs after Vercel
+  freezes the function. Per chat: 20 updates/min and 300/day (groups 10/min, 200/day), 5 check-ins
+  and 10 reports per Singapore day.
+- **What it does (v1):** `/start`, location → top 3 (calm) or closest (`/go`, urgent for 2 min),
+  typed place → OneMap search → top 3, `/toilet <place>` (alias `/near`, works in groups),
+  `/filters`, check-in and status report buttons (anonymous under `hashTelegramId(chatId)` until
+  linked), `/privacy`, `/stop` (deletes the chat row), `/unlink`. Account linking: `/me`
+  "Connect Telegram" → `POST /me/telegram/link-token` → `https://t.me/<bot>?start=link_<token>`.
+- **Stored:** one `TelegramChat` row per chat (chat id, type, pending urgent mode, saved filters,
+  linked user id, timestamps). Never names, usernames, phone numbers, message text or coordinates.
+
+### Run it locally (long polling, no tunnel)
+
+1. Create a **separate dev bot** with BotFather (`/newbot`) so local polling never touches the
+   production webhook. Put its token in `.env` as `TELEGRAM_BOT_TOKEN` and its username in
+   `TELEGRAM_BOT_USERNAME`.
+2. `pnpm cli telegram:poll`. It builds once (Nest needs decorator metadata, which `tsx` does not
+   emit) and runs `node dist/cli.js telegram:poll`: the same handlers as the webhook, under long
+   polling. It refuses to start while the bot has a webhook (polling would delete it) unless you
+   pass `--force`. Ctrl+C stops it.
+3. Message the dev bot: `/start`, then send a location (Telegram on a phone) or type a place.
+
+### Webhook setup (production)
+
+After the API is deployed with `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` and
+`TELEGRAM_BOT_USERNAME` set, run once with the production values in your shell env (never paste
+them into chat):
+
+```bash
+pnpm cli telegram:setup --url https://<api origin>
+```
+
+This calls `setWebhook` for `<api origin>/integrations/telegram` with the secret token and the
+allowed updates (`message`, `callback_query`, `my_chat_member`), then `setMyCommands` (private
+and group lists), `setMyDescription` and `setMyShortDescription`. Without `--url` the webhook goes
+to `${PUBLIC_APP_URL}/api/integrations/telegram` (through the frontend's `/api` rewrite); pointing
+it at the API origin directly saves a hop. `--drop-pending` discards queued updates;
+`--delete` removes the webhook (e.g. before polling with the production bot). Re-run it whenever the
+API origin or the secret changes. BotFather: keep `/setprivacy` **Enabled** and `/setjoingroups`
+**Enabled**.
 
 ## Deployment
 
@@ -229,4 +284,5 @@ as the `openapi` artifact).
 - [ ] Cloudflare - R2 enabled, photo + backup buckets, two API tokens
 - [ ] Google Cloud - OAuth consent screen + web client
 - [ ] OneMap - developer account
+- [ ] Telegram - bot via BotFather (plus a separate dev bot for local polling)
 - [ ] Sentry (optional) - one project per app
