@@ -160,7 +160,8 @@ interface SubmissionView {
   submitterDistanceM: number | null;   // how far from the toilet the submitter stood (no coordinates exposed)
   reviewerNotes: { value: 'APPROVE' | 'REJECT'; note: string | null; createdAt: string; nearby: boolean; viaCheckIn: boolean }[];
                                        // every vote, newest first, anonymised (no user id / handle)
-  current: { label?: string | null; level?: string | null; areaType?: AreaType; accessNote?: string | null;
+  current: { label?: string | null; level?: string | null; areaType?: AreaType; nearestExit?: string | null;
+             accessNote?: string | null; openingHours?: OpeningHours | null;  // effective hours: the toilet's, else its venue's
              features?: Partial<Record<Feature, boolean | null>> } | null;
                                        // EDIT_TOILET while open: the toilet's values now for the changed fields (null feature = no record)
   approvals: number; rejections: number;
@@ -184,11 +185,14 @@ interface NewToiletPayload {
   note?: string;                          // added via PATCH /submissions/:id (NEEDS_INFO)
 }
 interface EditToiletPayload {
-  changes: { label?: string; level?: string; areaType?: AreaType; accessNote?: string;
-             features?: Partial<Record<Feature, boolean>> };
+  changes: { label?: string; level?: string; areaType?: AreaType; nearestExit?: string; accessNote?: string;
+             openingHours?: HoursInput; features?: Partial<Record<Feature, boolean>> };
   photoIds?: string[];
   note?: string;
 }
+// What a visitor can send: OpeningHours without 'osm' or `inferred`. Times HH:MM; close may be '24:00',
+// and a close at or before the open runs past midnight. 1-14 periods, each with 1-7 days (0 = Sun).
+type HoursInput = { type: 'always' } | { type: 'weekly'; periods: { days: number[]; open: string; close: string }[] };
 interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; note?: string }
 ```
 
@@ -379,7 +383,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   and 30 per IP per day (429). Never votes, never increments `seenBy`, earns nothing now: `pointsAwarded: 0`, `newBadges: []`,
   `bankedPoints` = what the device earned (CHECK_IN 1 + FIRST_CHECK_IN_AT_TOILET 3 for its first time here), paid on sign-in.
   Check-ins (either kind) do not change `lastVerifiedAt`; `POST /toilets/:id/verify` with `accurate: true` does.
-  `verifyPrompt`: up to 5 of BIDET, ACCESSIBLE, TOILET_PAPER, HAND_SOAP, SITTING, SQUAT, BABY_CHANGE — features the listing
+  `verifyPrompt`: up to 5 of BIDET, ACCESSIBLE, TOILET_PAPER, FREE, HAND_SOAP, SITTING, BABY_CHANGE — features the listing
   has a value for first, then unknown ones.
 - `POST /toilets/:id/verify` (auth) `{ lat, lng, accurate: boolean, note? }` → 200 `{ ok: true }`. Same 150 m rule; 400 for
   PENDING/REJECTED toilets. accurate → lastVerifiedAt=now; not accurate → Flag with reason `Check-in: listing inaccurate - <note>`.

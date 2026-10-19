@@ -4495,6 +4495,76 @@
         ],
         "additionalProperties": false
       },
+      "HoursInput": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "always"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "weekly"
+              },
+              "periods": {
+                "minItems": 1,
+                "maxItems": 14,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "minItems": 1,
+                      "maxItems": 7,
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                      }
+                    },
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                        },
+                        {
+                          "type": "string",
+                          "const": "24:00"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "days",
+                    "open",
+                    "close"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "periods"
+            ]
+          }
+        ]
+      },
       "CreateSubmissionDto": {
         "oneOf": [
           {
@@ -4692,10 +4762,18 @@
                           "UNKNOWN"
                         ]
                       },
+                      "nearestExit": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
                       "accessNote": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 500
+                      },
+                      "openingHours": {
+                        "$ref": "#/components/schemas/HoursInput"
                       },
                       "features": {
                         "type": "object",
@@ -4836,6 +4914,79 @@
               "kind",
               "payload"
             ]
+          }
+        ]
+      },
+      "HoursInput_Output": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "always"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "weekly"
+              },
+              "periods": {
+                "minItems": 1,
+                "maxItems": 14,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "minItems": 1,
+                      "maxItems": 7,
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 6
+                      }
+                    },
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                        },
+                        {
+                          "type": "string",
+                          "const": "24:00"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "days",
+                    "open",
+                    "close"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "type",
+              "periods"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -5027,10 +5178,18 @@
                           "UNKNOWN"
                         ]
                       },
+                      "nearestExit": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
                       "accessNote": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 500
+                      },
+                      "openingHours": {
+                        "$ref": "#/components/schemas/HoursInput_Output"
                       },
                       "features": {
                         "type": "object",
@@ -5227,10 +5386,26 @@
                       "UNKNOWN"
                     ]
                   },
+                  "nearestExit": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
                   "accessNote": {
                     "type": [
                       "string",
                       "null"
+                    ]
+                  },
+                  "openingHours": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/OpeningHours_Output"
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "features": {
@@ -5750,10 +5925,18 @@
                                 "UNKNOWN"
                               ]
                             },
+                            "nearestExit": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
                             "accessNote": {
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 500
+                            },
+                            "openingHours": {
+                              "$ref": "#/components/schemas/HoursInput_Output"
                             },
                             "features": {
                               "type": "object",
@@ -5950,10 +6133,26 @@
                             "UNKNOWN"
                           ]
                         },
+                        "nearestExit": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "accessNote": {
                           "type": [
                             "string",
                             "null"
+                          ]
+                        },
+                        "openingHours": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/components/schemas/OpeningHours_Output"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "features": {
@@ -6542,10 +6741,18 @@
                                 "UNKNOWN"
                               ]
                             },
+                            "nearestExit": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
+                            },
                             "accessNote": {
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 500
+                            },
+                            "openingHours": {
+                              "$ref": "#/components/schemas/HoursInput_Output"
                             },
                             "features": {
                               "type": "object",
@@ -6742,10 +6949,26 @@
                             "UNKNOWN"
                           ]
                         },
+                        "nearestExit": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
                         "accessNote": {
                           "type": [
                             "string",
                             "null"
+                          ]
+                        },
+                        "openingHours": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/components/schemas/OpeningHours_Output"
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
                         "features": {
