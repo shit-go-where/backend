@@ -244,6 +244,15 @@ describe('Submissions (e2e)', () => {
   });
 
   it('applies an EDIT_TOILET on one TRUSTED approval', async () => {
+    const hours = { type: 'weekly', periods: [{ days: [0, 1, 2, 3, 4, 5, 6], open: '10:00', close: '22:00' }] };
+    // Only 'always' or well-formed weekly hours: never raw OSM strings or bad times.
+    for (const bad of [{ type: 'osm', value: '24/7' }, { type: 'weekly', periods: [{ days: [1], open: '25:00', close: '22:00' }] }]) {
+      await http()
+        .post('/submissions')
+        .set('Cookie', bob.cookie)
+        .send({ kind: 'EDIT_TOILET', toiletId, ...offset(base, 10), payload: { changes: { openingHours: bad } } })
+        .expect(400);
+    }
     await http()
       .post('/submissions')
       .set('Cookie', bob.cookie)
@@ -256,18 +265,33 @@ describe('Submissions (e2e)', () => {
         kind: 'EDIT_TOILET',
         toiletId,
         ...offset(base, 20),
-        payload: { changes: { label: 'Back corridor', features: { BIDET: false, HAND_SOAP: true } }, note: 'checked today' },
+        payload: {
+          changes: {
+            label: 'Back corridor',
+            nearestExit: 'Exit B',
+            openingHours: hours,
+            features: { BIDET: false, HAND_SOAP: true },
+          },
+          note: 'checked today',
+        },
       })
       .expect(201);
     expect(r.body.toilet.id).toBe(toiletId);
     // Current → proposed, for the review card.
-    expect(r.body.current).toEqual({ label: 'Unisex at the back', features: { BIDET: true, HAND_SOAP: null } });
+    expect(r.body.current).toEqual({
+      label: 'Unisex at the back',
+      nearestExit: null,
+      openingHours: null,
+      features: { BIDET: true, HAND_SOAP: null },
+    });
     expect(r.body).toMatchObject({ onSite: true, path: 'nearby_quorum', needed: 2 });
     const v = await http().post(`/submissions/${r.body.id}/votes`).set('Cookie', tina.cookie).send({ value: 'APPROVE' }).expect(201);
     expect(v.body.state).toBe('APPROVED');
 
     const toilet = await prisma.toilet.findUniqueOrThrow({ where: { id: toiletId }, include: { features: true } });
     expect(toilet.label).toBe('Back corridor');
+    expect(toilet.nearestExit).toBe('Exit B');
+    expect(toilet.openingHours).toEqual(hours);
     const f = Object.fromEntries(toilet.features.map((x) => [x.feature, x.present]));
     expect(f).toMatchObject({ BIDET: false, HAND_SOAP: true, ACCESSIBLE: false });
     expect(toilet.features.every((x) => x.source === 'COMMUNITY')).toBe(true);

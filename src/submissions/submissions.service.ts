@@ -69,10 +69,12 @@ function viewInclude() {
         label: true,
         level: true,
         areaType: true,
+        nearestExit: true,
         accessNote: true,
+        openingHours: true,
         latitude: true,
         longitude: true,
-        venue: { select: { name: true } },
+        venue: { select: { name: true, openingHours: true } },
         features: { select: { feature: true, present: true } },
       },
     },
@@ -127,7 +129,9 @@ export class SubmissionsService {
       ...(c.label !== undefined ? { label: t.label } : {}),
       ...(c.level !== undefined ? { level: t.level } : {}),
       ...(c.areaType !== undefined ? { areaType: t.areaType } : {}),
+      ...(c.nearestExit !== undefined ? { nearestExit: t.nearestExit } : {}),
       ...(c.accessNote !== undefined ? { accessNote: t.accessNote } : {}),
+      ...(c.openingHours !== undefined ? { openingHours: ToiletPresenter.effectiveHours(t) } : {}),
       ...(c.features
         ? {
             features: Object.fromEntries(

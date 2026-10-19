@@ -145,7 +145,9 @@ export async function applyResolution(
           ...(changes.label !== undefined ? { label: changes.label } : {}),
           ...(changes.level !== undefined ? { level: changes.level } : {}),
           ...(changes.areaType !== undefined ? { areaType: changes.areaType } : {}),
+          ...(changes.nearestExit !== undefined ? { nearestExit: changes.nearestExit } : {}),
           ...(changes.accessNote !== undefined ? { accessNote: changes.accessNote } : {}),
+          ...(changes.openingHours !== undefined ? { openingHours: changes.openingHours } : {}),
           lastVerifiedAt: now,
         },
       });

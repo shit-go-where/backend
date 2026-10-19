@@ -9,6 +9,7 @@ import {
   VenueType,
   VoteValue,
 } from '../generated/prisma/enums.js';
+import { OpeningHoursSchema } from '../toilets/toilet.schemas.js';
 import { RESOLUTION_CODES } from './resolution-codes.js';
 
 /* ─────────────── shared building blocks ─────────────── */
@@ -18,6 +19,28 @@ export const FeatureMapSchema = z.partialRecord(FeatureSchema, z.boolean());
 const lat = z.number().min(-90).max(90);
 const lng = z.number().min(-180).max(180);
 const shortText = (max: number) => z.string().trim().min(1).max(max);
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+
+/**
+ * Hours a visitor can give: open all day, or weekly periods (common/opening-hours.ts). A close at
+ * or before the open runs past midnight; '24:00' closes at midnight. Never the raw OSM form.
+ */
+export const HoursInputSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('always') }),
+  z.object({
+    type: z.literal('weekly'),
+    periods: z
+      .array(
+        z.object({
+          days: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+          open: hhmm,
+          close: z.union([hhmm, z.literal('24:00')]),
+        }),
+      )
+      .min(1)
+      .max(14),
+  }),
+]).meta({ id: 'HoursInput' });
 
 /* ─────────────── payloads (stored in Submission.payload) ─────────────── */
 
@@ -44,12 +67,15 @@ export const EditToiletPayloadSchema = z.object({
       label: shortText(120).optional(),
       level: shortText(20).optional(),
       areaType: z.enum(AreaType).optional(),
+      /** MRT and bus interchange toilets: the exit it's closest to, e.g. "Exit B". */
+      nearestExit: shortText(40).optional(),
       accessNote: shortText(500).optional(),
+      openingHours: HoursInputSchema.optional(),
       features: FeatureMapSchema.optional(),
     })
     .refine(
       (c) =>
-        [c.label, c.level, c.areaType, c.accessNote].some((v) => v !== undefined) ||
+        [c.label, c.level, c.areaType, c.nearestExit, c.accessNote, c.openingHours].some((v) => v !== undefined) ||
         Object.keys(c.features ?? {}).length > 0,
       { message: 'changes must contain at least one change' },
     ),
@@ -155,7 +181,10 @@ export const CurrentValuesSchema = z.object({
   label: z.string().nullable().optional(),
   level: z.string().nullable().optional(),
   areaType: z.enum(AreaType).optional(),
+  nearestExit: z.string().nullable().optional(),
   accessNote: z.string().nullable().optional(),
+  /** The hours people see now: the toilet's own, else its place's. */
+  openingHours: OpeningHoursSchema.nullable().optional(),
   features: z.partialRecord(FeatureSchema, z.boolean().nullable()).optional(),
 });
 
