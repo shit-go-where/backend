@@ -57,11 +57,12 @@ jobs:
       API_URL: ${{ vars.API_URL }}
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
     steps:
-      - name: Expire stale submissions and archive old status reports
+      # metrics first: it counts yesterday's status reports before archive-status can remove any.
+      - name: Record yesterday's metrics, expire stale submissions, archive old status reports
         run: |
           test -n "$API_URL" || { echo "::error::vars.API_URL is not set"; exit 1; }
           test -n "$CRON_SECRET" || { echo "::error::secrets.CRON_SECRET is not set"; exit 1; }
-          for job in expire-submissions archive-status; do
+          for job in metrics expire-submissions archive-status; do
             echo "POST /admin/jobs/$job"
             curl --fail-with-body --silent --show-error \
               --retry 3 --retry-all-errors --retry-delay 10 --max-time 120 \

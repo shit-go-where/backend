@@ -34,6 +34,7 @@ import {
 } from './admin.dto.js';
 import { AdminService } from './admin.service.js';
 import { CronSecretGuard } from './cron-secret.guard.js';
+import { MetricsListDto, MetricsQueryDto, MetricsService } from '../metrics/metrics.service.js';
 
 @ApiTags('admin')
 @ApiCookieAuth()
@@ -41,7 +42,17 @@ import { CronSecretGuard } from './cron-secret.guard.js';
 @MinRole(Role.MODERATOR)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly admin: AdminService) {}
+  constructor(
+    private readonly admin: AdminService,
+    private readonly metrics: MetricsService,
+  ) {}
+
+  /** Nightly community health rows, newest first (GROWTH.md 0.2). */
+  @Get('metrics')
+  @ZodResponse({ type: MetricsListDto })
+  async metricsRange(@Query() q: MetricsQueryDto) {
+    return { items: await this.metrics.range(q.days) };
+  }
 
   @Get('flags')
   @ZodResponse({ type: AdminFlagListDto })

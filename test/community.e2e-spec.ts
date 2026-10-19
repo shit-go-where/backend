@@ -198,7 +198,7 @@ describe('Community loop (e2e)', () => {
     const stale = await submit(201, quinn, randomSgPoint(), null);
     await prisma.submission.update({ where: { id: stale.body.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
     // AdminModule is not mounted here; the expire job only needs Prisma.
-    await new AdminService(prisma, null as never).runJob('expire-submissions');
+    await new AdminService(prisma, null as never, null as never).runJob('expire-submissions');
     const staleRow = await prisma.submission.findUniqueOrThrow({ where: { id: stale.body.id }, include: { toilet: true } });
     expect(staleRow).toMatchObject({ state: 'ESCALATED', resolution: 'escalated_expired' });
     expect(staleRow.toilet?.status).toBe('PENDING');

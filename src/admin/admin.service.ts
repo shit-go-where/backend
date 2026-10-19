@@ -18,6 +18,7 @@ import {
 import { hasRole } from '../common/auth/auth.guard.js';
 import { MediaService } from '../media/media.service.js';
 import { recomputeAllScores } from '../toilets/scoring.js';
+import { MetricsService } from '../metrics/metrics.service.js';
 import type { JobName } from './admin.dto.js';
 
 /** TRUSTED approvals needed to publish a photo (a single MODERATOR+ approval publishes). */
@@ -40,6 +41,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly media: MediaService,
+    private readonly metrics: MetricsService,
   ) {}
 
   // ───────── flags ─────────
@@ -252,6 +254,9 @@ export class AdminService {
       }
       case 'recompute-scores':
         return { ok: true, affected: await recomputeAllScores(this.prisma) };
+      case 'metrics':
+        await this.metrics.computeYesterday(now);
+        return { ok: true, affected: 1 };
     }
   }
 

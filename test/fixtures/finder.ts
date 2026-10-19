@@ -41,6 +41,7 @@ const TABLES = [
   'Venue',
   'User',
   'KeyValue',
+  'MetricsDaily',
 ];
 
 export async function resetDb(prisma: PrismaService) {

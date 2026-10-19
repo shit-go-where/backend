@@ -104,7 +104,7 @@ export const DataQualitySchema = z.object({
 });
 export class DataQualityDto extends createZodDto(DataQualitySchema) {}
 
-export const JOB_NAMES = ['expire-submissions', 'archive-status', 'recompute-scores'] as const;
+export const JOB_NAMES = ['expire-submissions', 'archive-status', 'recompute-scores', 'metrics'] as const;
 export type JobName = (typeof JOB_NAMES)[number];
 
 export const JobResultSchema = z.object({ ok: z.literal(true), affected: z.number().int() });
