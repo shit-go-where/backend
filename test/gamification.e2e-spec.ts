@@ -45,7 +45,7 @@ describe('Gamification (e2e)', () => {
     await prisma.toiletFeature.createMany({
       data: [
         { toiletId, feature: 'HAND_SOAP', present: true, source: 'ADMIN', observedAt: new Date() },
-        { toiletId, feature: 'SQUAT', present: false, source: 'ADMIN', observedAt: new Date() },
+        { toiletId, feature: 'FREE', present: false, source: 'ADMIN', observedAt: new Date() },
       ],
     });
     pendingToiletId = (await makeToilet(prisma, station.id, offset(base, 20), { status: 'PENDING' })).id;
@@ -93,7 +93,7 @@ describe('Gamification (e2e)', () => {
     expect(r.body.pointsAwarded).toBe(4); // CHECK_IN 1 + FIRST_CHECK_IN_AT_TOILET 3
     expect(r.body.newBadges.map((b: { id: string }) => b.id)).toContain('first-flush');
     // known features first (in priority order), then unknown ones
-    expect(r.body.verifyPrompt).toEqual(['HAND_SOAP', 'SQUAT', 'BIDET', 'ACCESSIBLE', 'TOILET_PAPER']);
+    expect(r.body.verifyPrompt).toEqual(['FREE', 'HAND_SOAP', 'BIDET', 'ACCESSIBLE', 'TOILET_PAPER']);
 
     const row = await prisma.checkIn.findUniqueOrThrow({ where: { id: r.body.id } });
     // Never the coordinates: only the distance (deviceId is for signed-out check-ins).

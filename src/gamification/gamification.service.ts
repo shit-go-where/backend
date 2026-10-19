@@ -38,9 +38,10 @@ export const VERIFY_PRIORITY: Feature[] = [
   Feature.BIDET,
   Feature.ACCESSIBLE,
   Feature.TOILET_PAPER,
+  // Hawker centre and coffee shop toilets often charge 10-20 cents, and "Free" is a filter.
+  Feature.FREE,
   Feature.HAND_SOAP,
   Feature.SITTING,
-  Feature.SQUAT,
   Feature.BABY_CHANGE,
 ];
 
