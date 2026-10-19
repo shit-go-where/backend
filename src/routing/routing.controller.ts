@@ -1,4 +1,8 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
+import { DailyLimiter, Throttle, clientIp } from '../common/throttle.js';
+import { sgtDayNumber } from '../gamification/sgt.js';
+import { RouteCountService } from './route-count.service.js';
 import { ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { estimateWalkSeconds, haversineM } from '../common/geo.js';
@@ -10,6 +14,8 @@ import {
   GeoSearchResponseDto,
   RecommendBodyDto,
   RecommendResponseDto,
+  RouteStartedBodyDto,
+  RouteStartedResponseDto,
   WalkQueryDto,
   WalkResponseDto,
 } from './routing.dto.js';
@@ -17,10 +23,27 @@ import {
 @ApiTags('routing')
 @Controller('routing')
 export class RoutingController {
+  /** Route starts per IP per Singapore day, so one script cannot inflate the counts. */
+  private readonly startsPerIp = new DailyLimiter(100);
+
   constructor(
     private readonly recommender: RecommendService,
     private readonly onemap: OneMapService,
+    private readonly routeCounts: RouteCountService,
   ) {}
+
+  /** Someone started walking to this toilet. Anonymous; only a per-day count is kept (GROWTH.md 1.3). */
+  @Post('started')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @ZodResponse({ status: 200, type: RouteStartedResponseDto })
+  async started(@Body() body: RouteStartedBodyDto, @Req() req: Request) {
+    if (!this.startsPerIp.take(clientIp(req), sgtDayNumber(new Date()))) {
+      throw new HttpException('Too many routes from this network today', HttpStatus.TOO_MANY_REQUESTS);
+    }
+    await this.routeCounts.record(body.toiletId);
+    return { ok: true as const };
+  }
 
   @Post('recommend')
   @ZodResponse({ status: 200, type: RecommendResponseDto })

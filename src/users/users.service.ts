@@ -4,11 +4,14 @@ import { Prisma } from '../generated/prisma/client.js';
 import { Role, SubmissionState } from '../generated/prisma/enums.js';
 import { hasRole } from '../common/auth/auth.guard.js';
 import { TRUSTED_THRESHOLD } from '../gamification/points.service.js';
+import { sgtDateColumn } from '../gamification/sgt.js';
 import { MAX_OPEN_SUBMISSIONS, openSubmissionsWhere } from '../submissions/resolution.js';
 import type { Me } from './users.dto.js';
 
 /** A handle that is already set can be changed once in this window. */
 export const HANDLE_CHANGE_INTERVAL_MS = 30 * 86_400_000;
+/** Check-ins this recent make a toilet one you "helped" for the impact counts. */
+export const IMPACT_CHECK_IN_WINDOW_MS = 90 * 86_400_000;
 
 /** Handles nobody may claim (impersonation of staff / the app). */
 export const RESERVED_HANDLES = new Set([
@@ -57,7 +60,7 @@ export class UsersService {
     ]);
     if (!user) throw new NotFoundException('User not found');
     const since = user.lastSeenActivityAt ?? user.createdAt;
-    const [resolvedSubmissions, newPoints] = await Promise.all([
+    const [resolvedSubmissions, newPoints, impact] = await Promise.all([
       this.prisma.submission.count({
         where: {
           submittedById: userId,
@@ -68,6 +71,7 @@ export class UsersService {
         },
       }),
       this.prisma.pointsLedger.aggregate({ where: { userId, createdAt: { gt: since } }, _sum: { delta: true } }),
+      this.impact(userId, since),
     ]);
     const nextHandleChange =
       user.handle && user.handleChangedAt ? user.handleChangedAt.getTime() + HANDLE_CHANGE_INTERVAL_MS : 0;
@@ -80,6 +84,7 @@ export class UsersService {
       role: user.role,
       trustScore: user.trustScore,
       leaderboardOptIn: user.leaderboardOptIn,
+      verifierCredit: user.verifierCredit,
       points: points._sum.delta ?? 0,
       badges: user.badges.map((ub) => ({
         id: ub.badge.id,
@@ -96,9 +101,43 @@ export class UsersService {
         resolvedSubmissions,
         badges: user.badges.filter((b) => b.awardedAt > since).length,
         points: newPoints._sum.delta ?? 0,
+        routed: impact.routedSince,
       },
+      impact: { toilets: impact.toilets, routedWeek: impact.routedWeek },
       lastSeenActivityAt: user.lastSeenActivityAt?.toISOString() ?? null,
     };
+  }
+
+  /**
+   * Toilets this person helped (added, last verified, or checked in at within 90 days) and route
+   * starts to them. Counts only: ToiletRouteDaily never records who routed.
+   */
+  private async impact(userId: string, since: Date, now = new Date()) {
+    const helped = await this.prisma.toilet.findMany({
+      where: {
+        OR: [
+          { createdById: userId },
+          { lastVerifiedById: userId },
+          { checkIns: { some: { userId, createdAt: { gte: new Date(now.getTime() - IMPACT_CHECK_IN_WINDOW_MS) } } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!helped.length) return { toilets: 0, routedWeek: 0, routedSince: 0 };
+    const ids = helped.map((t) => t.id);
+    const routedFrom = async (from: Date) =>
+      (
+        await this.prisma.toiletRouteDaily.aggregate({
+          where: { toiletId: { in: ids }, day: { gte: sgtDateColumn(from) } },
+          _sum: { count: true },
+        })
+      )._sum.count ?? 0;
+    const [routedWeek, routedSince] = await Promise.all([
+      routedFrom(new Date(now.getTime() - 6 * 86_400_000)),
+      // Day resolution: the Singapore day after the last visit, so nothing already seen is counted again.
+      routedFrom(new Date(since.getTime() + 86_400_000)),
+    ]);
+    return { toilets: ids.length, routedWeek, routedSince };
   }
 
   /** Clears the "since your last visit" counts in GET /me. */
@@ -110,7 +149,7 @@ export class UsersService {
 
   async updateMe(
     userId: string,
-    patch: { handle?: string; displayName?: string; leaderboardOptIn?: boolean },
+    patch: { handle?: string; displayName?: string; leaderboardOptIn?: boolean; verifierCredit?: boolean },
   ): Promise<Me> {
     let handleChanged = false;
     if (patch.handle !== undefined) {
@@ -149,6 +188,7 @@ export class UsersService {
           handle: patch.handle,
           displayName: patch.displayName,
           leaderboardOptIn: patch.leaderboardOptIn,
+          verifierCredit: patch.verifierCredit,
           ...(handleChanged ? { handleChangedAt: new Date() } : {}),
         },
       });

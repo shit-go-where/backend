@@ -79,3 +79,6 @@ export class GeoSearchResponseDto extends createZodDto(
     items: z.array(z.object({ name: z.string(), address: z.string(), lat: z.number(), lng: z.number() })),
   }),
 ) {}
+
+export class RouteStartedBodyDto extends createZodDto(z.object({ toiletId: z.string().min(1).max(64) })) {}
+export class RouteStartedResponseDto extends createZodDto(z.object({ ok: z.literal(true) })) {}

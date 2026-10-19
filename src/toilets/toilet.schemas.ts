@@ -181,6 +181,8 @@ export const ToiletDetailSchema = z
     reviews: z.array(ReviewSchema),
     photos: z.array(PhotoRefSchema),
     myReview: ReviewSchema.nullable(),
+    /** Who last tapped "still accurate" on site, by handle (GROWTH.md 1.7). Null if unknown or they opted out. */
+    verifiedBy: z.object({ handle: z.string() }).nullable(),
     source: z.string(),
     attribution: z.string().nullable(),
   })

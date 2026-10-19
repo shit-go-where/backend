@@ -212,6 +212,7 @@ export class ToiletPresenter {
         },
         reviews: { orderBy: { createdAt: 'desc' }, take: 10, include: reviewInclude },
         _count: { select: { surveys: true } },
+        lastVerifiedBy: { select: { handle: true, verifierCredit: true, deletedAt: true } },
       },
     });
     if (!t || t.status === 'REJECTED') return null;
@@ -276,6 +277,10 @@ export class ToiletPresenter {
       reviews: t.reviews.map((r) => this.toReview(r)),
       photos: t.photos,
       myReview: mine ? this.toReview(mine, true) : null,
+      verifiedBy:
+        t.lastVerifiedBy?.handle && t.lastVerifiedBy.verifierCredit && !t.lastVerifiedBy.deletedAt
+          ? { handle: t.lastVerifiedBy.handle }
+          : null,
       source: t.source,
       attribution: ATTRIBUTION[t.source] ?? null,
     };

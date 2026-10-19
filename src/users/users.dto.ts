@@ -21,6 +21,8 @@ export const MeSchema = z.object({
   role: z.enum(Role),
   trustScore: z.number().int(),
   leaderboardOptIn: z.boolean(),
+  /** Show "Last checked by @handle" on toilets this person verified. */
+  verifierCredit: z.boolean(),
   points: z.number().int(),
   badges: z.array(BadgeSchema),
   needsHandle: z.boolean(),
@@ -35,7 +37,14 @@ export const MeSchema = z.object({
     resolvedSubmissions: z.number().int(),
     badges: z.number().int(),
     points: z.number().int(),
+    /** Routes other people started to toilets you helped, on Singapore days since your last visit. */
+    routed: z.number().int(),
   }),
+  /**
+   * What your contributions did (GROWTH.md 1.3). `toilets`: toilets you added, last verified, or
+   * checked in at in the last 90 days. `routedWeek`: routes started to them in the last 7 days.
+   */
+  impact: z.object({ toilets: z.number().int(), routedWeek: z.number().int() }),
   lastSeenActivityAt: z.string().nullable(),
 });
 export type Me = z.infer<typeof MeSchema>;
@@ -50,6 +59,7 @@ export const UpdateMeSchema = z.object({
     .optional(),
   displayName: z.string().trim().min(1).max(50).optional(),
   leaderboardOptIn: z.boolean().optional(),
+  verifierCredit: z.boolean().optional(),
 });
 export class UpdateMeDto extends createZodDto(UpdateMeSchema) {}
 
