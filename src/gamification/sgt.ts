@@ -18,6 +18,11 @@ export function sgtDayStart(d: Date): Date {
   return new Date(sgtDayNumber(d) * DAY_MS - SGT_OFFSET_MS);
 }
 
+/** Value for a Postgres DATE column holding the Singapore day containing d (UTC midnight of that date). */
+export function sgtDateColumn(d: Date): Date {
+  return new Date(sgtDayNumber(d) * DAY_MS);
+}
+
 /** Hour 0-23 in Singapore time. */
 export function sgtHour(d: Date): number {
   return new Date(d.getTime() + SGT_OFFSET_MS).getUTCHours();

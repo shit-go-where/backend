@@ -177,29 +177,32 @@ model Venue {
 }
 
 model Toilet {
-  id               String          @id @default(cuid())
+  id               String             @id @default(cuid())
   venueId          String
-  venue            Venue           @relation(fields: [venueId], references: [id])
+  venue            Venue              @relation(fields: [venueId], references: [id])
   label            String?
   latitude         Float
   longitude        Float
   level            String?
-  areaType         AreaType        @default(UNKNOWN)
+  areaType         AreaType           @default(UNKNOWN)
   nearestExit      String?
   accessNote       String?
   openingHours     Json?
   tier             ToiletTier
-  status           ToiletStatus    @default(ACTIVE)
+  status           ToiletStatus       @default(ACTIVE)
   source           DataSource
-  sourceKey        String          @unique
+  sourceKey        String             @unique
   lastVerifiedAt   DateTime?
-  needsResurvey    Boolean         @default(false)
+  needsResurvey    Boolean            @default(false)
   createdById      String?
-  createdBy        User?           @relation("ToiletCreatedBy", fields: [createdById], references: [id])
+  createdBy        User?              @relation("ToiletCreatedBy", fields: [createdById], references: [id])
+  // Who last tapped "still accurate" on site (GROWTH.md 1.7). Shown by handle unless they opted out.
+  lastVerifiedById String?
+  lastVerifiedBy   User?              @relation("ToiletLastVerifiedBy", fields: [lastVerifiedById], references: [id], onDelete: SetNull)
   scoreCleanliness Float?
-  reviewCount      Int             @default(0)
+  reviewCount      Int                @default(0)
   // Distinct signed-in people who have been there: the submitter plus each first check-in within 150 m.
-  seenBy           Int             @default(1)
+  seenBy           Int                @default(1)
   features         ToiletFeature[]
   surveys          Survey[]
   reviews          Review[]
@@ -208,8 +211,9 @@ model Toilet {
   checkIns         CheckIn[]
   flags            Flag[]
   submissions      Submission[]
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  routeDays        ToiletRouteDaily[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@index([latitude, longitude])
   @@index([status, tier])
@@ -265,10 +269,13 @@ model User {
   leaderboardOptIn   Boolean              @default(false)
   handleChangedAt    DateTime?
   lastSeenActivityAt DateTime?
+  // Show "Last checked by @handle" on toilets this person verified (GROWTH.md 1.7). Opt-out.
+  verifierCredit     Boolean              @default(true)
   deletedAt          DateTime?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   toiletsCreated     Toilet[]             @relation("ToiletCreatedBy")
+  toiletsVerified    Toilet[]             @relation("ToiletLastVerifiedBy")
   submissions        Submission[]         @relation("SubmittedBy")
   resolved           Submission[]         @relation("ResolvedBy")
   votes              SubmissionVote[]
@@ -502,4 +509,35 @@ model KeyValue {
   value     Json
   expiresAt DateTime?
   updatedAt DateTime  @updatedAt
+}
+
+/// Routes started to a toilet, per Singapore day (GROWTH.md 1.3). Counts only: who routed is never stored.
+model ToiletRouteDaily {
+  toiletId String
+  toilet   Toilet   @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  day      DateTime @db.Date
+  count    Int      @default(0)
+
+  @@id([toiletId, day])
+  @@index([day])
+}
+
+/// One row per Singapore day, written by the nightly `metrics` job (GROWTH.md 0.2).
+model MetricsDaily {
+  day           DateTime @id @db.Date
+  /// Distinct contributors (users + anonymous devices) in the 7 days ending `day`.
+  wac           Int
+  /// Distinct contributors on `day`.
+  contributors  Int
+  checkIns      Int
+  statusReports Int
+  reviews       Int
+  submissions   Int
+  votes         Int
+  /// % of ACTIVE Verified + Community toilets with lastVerifiedAt within 90 days.
+  freshPct      Float
+  /// ACTIVE toilets per tier: { VERIFIED, COMMUNITY, IMPORTED }.
+  toiletsByTier Json
+  pendingCount  Int
+  createdAt     DateTime @default(now())
 }
