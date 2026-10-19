@@ -62,7 +62,8 @@ interface ToiletSummary {
   surveyTotal: number | null;       // latest survey total, 0-50
   rasStars: number | null;
   reviewCount: number;
-  activeStatus: ActiveStatus[];     // unexpired status reports grouped by kind
+  seenBy: number;                   // distinct signed-in people who have been there: the submitter + first check-ins within 150 m (min 1)
+  activeStatus: ActiveStatus[];     // unexpired status reports grouped by kind; unconfirmed anonymous closures left out
   lastVerifiedAt: string | null;
   needsResurvey: boolean;
   openNow: boolean | null;          // null = unknown
@@ -93,6 +94,8 @@ interface ToiletDetail extends Omit<ToiletSummary, 'venue'> {
   venue: VenueLite & { address: string | null; planningArea: string | null };
   accessNote: string | null;
   nearestExit: string | null;
+  near: string | null;                 // "120 m from Tampines MRT": closest non-OTHER place within 1.5 km, only when the venue has no address
+  openSubmissionId: string | null;     // PENDING toilets: the open NEW_TOILET submission (PENDING/NEEDS_INFO/ESCALATED), for /review?id=; else null
   openingHours: OpeningHours | null;   // effective (toilet's or venue's)
   featureDetails: { feature: Feature; present: boolean; source: string; observedAt: string }[];
   latestSurvey: Survey | null;
@@ -104,7 +107,12 @@ interface ToiletDetail extends Omit<ToiletSummary, 'venue'> {
   attribution: string | null;          // e.g. "© OpenStreetMap contributors" for OSM
 }
 
-interface StatusReport { id: string; kind: StatusKind; confirmations: number; createdAt: string; expiresAt: string; confirmedByMe: boolean }
+interface StatusReport {
+  id: string; kind: StatusKind; confirmations: number; createdAt: string; expiresAt: string; confirmedByMe: boolean;
+  // A signed-out CLOSED_NOW / BROKEN report nobody has backed up: shown, but ignored by activeStatus, pins (hasIssue)
+  // and routing until a signed-in person confirms it or reports the same kind, or a second device reports it.
+  unconfirmed: boolean;
+}
 
 interface Badge { id: string; name: string; description: string; icon: string; awardedAt?: string }
 
@@ -112,22 +120,57 @@ interface Me {
   id: string; email: string; handle: string | null; displayName: string; avatarUrl: string | null;
   role: Role; trustScore: number; leaderboardOptIn: boolean; points: number;
   badges: Badge[]; needsHandle: boolean;
+  handleChangeableAt: string | null;   // when the handle can next be changed (once per 30 days); null = now
+  trust: { score: number; threshold: 50; isTrusted: boolean };   // isTrusted = role TRUSTED or above
+  openSubmissions: { count: number; limit: 10 };                 // open submissions from the last 14 days vs the cap
+  unseen: { resolvedSubmissions: number; badges: number; points: number };  // since lastSeenActivityAt (else sign-up)
+  lastSeenActivityAt: string | null;
 }
+
+// EXPIRED is legacy (old rows only): expiry now escalates to ESCALATED.
+type SubmissionState = 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_INFO' | 'EXPIRED' | 'ESCALATED';
+type ResolutionCode =
+  | 'auto_on_site_photo'    // "Live straight away: added on site with a photo."
+  | 'confirmed_on_site'     // "Confirmed by someone who checked in there."
+  | 'community_approved'    // "Approved by people nearby."
+  | 'trusted_approved'      // "Approved by a trusted reviewer."
+  | 'moderator_approved'    // "Approved by a moderator."
+  | 'moderator_rejected'    // "Rejected by a moderator."
+  | 'moderator_needs_info'  // "A moderator asked for more information."
+  | 'peer_needs_info'       // "Two reviewers think something is off. Add more detail and resubmit."
+  | 'escalated_expired'     // "Nobody nearby confirmed it in time, so a moderator will review it."
+  | 'escalated_flagged'     // "Two people flagged this toilet, so a moderator will review it."
+  | 'expired';              // "Expired before anyone confirmed it." (legacy)
 
 interface SubmissionView {
   id: string;
   kind: 'NEW_TOILET' | 'EDIT_TOILET' | 'CLOSE_TOILET';
-  state: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_INFO' | 'EXPIRED';
+  state: SubmissionState;              // an open one past expiresAt reads ESCALATED even before the expire job runs
   payload: NewToiletPayload | EditToiletPayload | CloseToiletPayload;
   toilet: { id: string; label: string | null; venueName: string; lat: number; lng: number } | null;
   venue: VenueLite | null;
   submittedBy: { handle: string | null };
+  onSite: boolean;                     // submitter stood within 150 m of the toilet
+  hasPhoto: boolean;
+  path: 'auto' | 'on_site_check_in' | 'nearby_quorum';  // which rule decides it (see "Trust model v2")
+  nearbyApprovals: number;             // APPROVE votes cast within 150 m (check-ins count)
+  needed: number;                      // nearby confirmations still needed to go live; 0 once decided or when only a moderator can decide
+  escalated: boolean;                  // state === 'ESCALATED'
+  submitterDistanceM: number | null;   // how far from the toilet the submitter stood (no coordinates exposed)
+  reviewerNotes: { value: 'APPROVE' | 'REJECT'; note: string | null; createdAt: string; nearby: boolean; viaCheckIn: boolean }[];
+                                       // every vote, newest first, anonymised (no user id / handle)
+  current: { label?: string | null; level?: string | null; areaType?: AreaType; accessNote?: string | null;
+             features?: Partial<Record<Feature, boolean | null>> } | null;
+                                       // EDIT_TOILET while open: the toilet's values now for the changed fields (null feature = no record)
   approvals: number; rejections: number;
-  createdAt: string; expiresAt: string; resolvedAt: string | null; resolution: string | null;
+  createdAt: string; expiresAt: string; resolvedAt: string | null;
+  resolution: ResolutionCode | null;
+  resolutionText: string | null;       // plain English for `resolution` (the comments above)
+  resolutionNote: string | null;       // a moderator's own note on their decision
   distanceM?: number;
   myVote: 'APPROVE' | 'REJECT' | null;
   photos: PhotoRef[];
-  canVote: boolean;                    // false for own submissions / already resolved
+  canVote: boolean;                    // false for own / decided / flagged-escalated submissions or once voted
 }
 
 interface NewToiletPayload {
@@ -136,7 +179,8 @@ interface NewToiletPayload {
   label?: string; lat: number; lng: number; level?: string;
   areaType?: AreaType; accessNote?: string;
   features: Partial<Record<Feature, boolean>>;
-  photoIds: string[];                     // >= 1
+  photoIds: string[];                     // 0-10 (optional on create, default [])
+  note?: string;                          // added via PATCH /submissions/:id (NEEDS_INFO)
 }
 interface EditToiletPayload {
   changes: { label?: string; level?: string; areaType?: AreaType; accessNote?: string;
@@ -144,7 +188,7 @@ interface EditToiletPayload {
   photoIds?: string[];
   note?: string;
 }
-interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
+interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; note?: string }
 ```
 
 ## Endpoints
@@ -165,10 +209,16 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
   `photoIds` must be the caller's own `confirmed` photos not attached to another review/toilet, else 400. When given it is the full set (others are detached); omitted keeps existing photos.
   The response (and `ToiletDetail.myReview`) include the author's not-yet-approved photos.
 - `GET /toilets/:id/status` → `{ items: StatusReport[] }` active only.
-- `POST /toilets/:id/status` (auth) `{ kind: StatusKind }` → `StatusReport`. TTL 2h, CLOSED_NOW 24h. Same user+toilet+kind within 30 min → returns existing.
-- `POST /status/:id/confirm` (auth) → `StatusReport` (200). Extends expiresAt by 1h (max 6h past createdAt, never shortens a 24h CLOSED_NOW). Awards STATUS_CONFIRMED to the original reporter (refId = `${statusReportId}:${confirmerId}`). Own report → 400; unknown/expired → 404; confirming twice is a no-op returning the report.
-  Rate limits: POST status 10/min, confirm 30/min, flags 5/min (per client IP, via @nestjs/throttler).
-- `POST /toilets/:id/flags` (auth) `{ reason: string 3-500 }` → `{ id }`
+- `POST /toilets/:id/status` (optional auth) `{ kind: StatusKind }` → `StatusReport`. TTL 2h, CLOSED_NOW 24h. Same user+toilet+kind within 30 min → returns existing.
+  Signed out: allowed. The device gets the `sgw_anon` cookie (see "Anonymous device"); TTL is 1 h for every kind; dedupe is per device;
+  a lone anonymous CLOSED_NOW / BROKEN is `unconfirmed: true` and does not affect activeStatus, pins or routing (see StatusReport).
+  Max 30 signed-out reports per IP per Singapore day (429 "Too many reports from this network today. Sign in to keep reporting.").
+- `POST /status/:id/confirm` (auth, signed-in only, also for anonymous reports) → `StatusReport` (200). A confirmation makes an unconfirmed anonymous closure count. Extends expiresAt by 1h (max 6h past createdAt, never shortens a 24h CLOSED_NOW). Awards STATUS_CONFIRMED to the original reporter (refId = `${statusReportId}:${confirmerId}`). Own report → 400; unknown/expired → 404; confirming twice is a no-op returning the report.
+  Anonymous reporters earn no STATUS_CONFIRMED (their reports move to their account on sign-in; earlier confirmations are not paid).
+  Rate limits: POST status 10/min, confirm 30/min, flags 5/min (per signed-in user, else client IP; src/common/throttle.ts).
+- `POST /toilets/:id/flags` (auth) `{ reason: string 3-500 }` → `{ id }`. When 2 distinct people (not the submitter) have open flags on a
+  toilet that was auto-published (trust model v2), it goes back to PENDING and its submission to ESCALATED (`escalated_flagged`).
+  `POST /toilets/:id/verify` with `accurate: false` creates a Flag too and counts the same way.
 
 ### Venues (owner: finder agent)
 - `GET /venues/nearby?lat&lng&radius=1000` → `{ items: (VenueLite & { distanceM: number; toiletCount: number })[] }` includes NONE / USES_NEARBY venues. `toiletCount` = ACTIVE toilets (always 0 for NONE venues).
@@ -190,9 +240,13 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
 - `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number } }`
   → `{ items: { toilet: ToiletSummary; score: number; walkSeconds: number; walkDistanceM: number; reasons: string[]; route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null }[]; searchedRadiusM: number; skippedVenues: { name: string; toiletStatus: VenueToiletStatus; note: string | null; distanceM: number }[] }`
   `purpose` adds soft preferences (src/routing/purposes.ts): missing features add cost, nothing is filtered out.
+  Each item also has `unconfirmed: boolean`: a PENDING community toilet nobody has confirmed yet. Calm (non-urgent) results may include
+  them, ranked below active toilets of similar distance (+0.1 cost, about 330 m) and with the reason
+  `"Unconfirmed: added by the community, not yet confirmed"` in place of `"Community verified"`. Urgent mode never includes them.
   Top 3. Toilets that are definitely closed now (openNow === false) are never recommended; unknown hours stay eligible. Route only computed for the top 3 via OneMap when configured; else `route: null` and `walkSeconds` / `walkDistanceM` are estimates (straight line × 1.3).
-  `score` is 0-100, higher = better. Hard filters (also in urgent mode): `require`, `areaType`, `openNow` (definitely-closed only), ACTIVE only,
-  no unexpired CLOSED_NOW/BROKEN report that is confirmed or reported twice. Urgent: radius 800 → 1500 → 3000 until ≥1 result, `radiusM`/`weights` ignored.
+  `score` is 0-100, higher = better. Hard filters (also in urgent mode): `require`, `areaType`, `openNow` (definitely-closed only), ACTIVE only
+  (plus PENDING in calm mode, flagged `unconfirmed`), no unexpired CLOSED_NOW/BROKEN report that is confirmed or reported twice
+  (unconfirmed anonymous reports are ignored). Urgent: radius 800 → 1500 → 3000 until ≥1 result, `radiusM`/`weights` ignored.
   Reasons look like `"4 min walk"`, `"Bidet"`, `"Clean 8.2/10"`, `"Reported: no paper 40 min ago"`, `"Verified 2024 survey"`. `skippedVenues` max 10, nearest first.
 - `GET /routing/walk?fromLat&fromLng&toLat&toLng` → `{ distanceM, durationS, polyline: [lat,lng][], source }`. Without OneMap (or on failure/timeout 4 s) `source: 'estimate'` with a 2-point straight polyline. Never 5xx.
 - `GET /geo/search?q` → `{ items: { name: string; address: string; lat: number; lng: number }[] }` (OneMap search proxy, no token needed). Max 10; `[]` when OneMap fails.
@@ -201,12 +255,22 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
 - `GET /auth/google?redirect=/path` → 302 to Google. State cookie (`sgw_oauth`, httpOnly, signed, 10 min) for CSRF.
   `redirect` must be a relative path starting with `/` (not `//`), else 400. 503 when Google env vars are missing.
 - `GET /auth/callback?code&state` → sets `sgw_session`, 302 to `PUBLIC_APP_URL + redirect`. Emails in ADMIN_EMAILS become ADMIN.
-  Missing/mismatched state → 400. If the user cancels at Google or sign-in fails, 302 to `PUBLIC_APP_URL + redirect`
-  with `?authError=access_denied|no_code|google_failed|email_unverified` and no session.
+  Every failure → 302 to `PUBLIC_APP_URL/login?redirect=<saved redirect, else />&error=<code>` with no session:
+  `expired` (state cookie missing, expired or mismatched), `access_denied` (Google sent `error`, e.g. the user cancelled),
+  `no_code`, `email_unverified`, `google_failed`. (503 only when Google env vars are missing.)
+  On success (and on `dev-login`), this browser's anonymous check-ins and status reports (`sgw_anon`) move to the account, their
+  banked check-in points are paid (CHECK_IN max 5 per original Singapore day, FIRST_CHECK_IN_AT_TOILET once per toilet, ledger rows
+  back-dated to the check-in), badges are evaluated, and `sgw_anon` is cleared. Idempotent; a failed merge never blocks sign-in.
+  Seen by is not incremented by merged check-ins.
 - `POST /auth/logout` → 204, clears cookie.
 - `POST /auth/dev-login` `{ email, displayName? }` → `Me`. Only when `DEV_LOGIN_ENABLED=true` (404 otherwise).
 - `GET /me` → `Me` (401 if signed out).
 - `PATCH /me` `{ handle?: /^[a-z0-9_]{3,20}$/, displayName?: string 1-50, leaderboardOptIn?: boolean }` → `Me` (409 on handle taken or reserved, e.g. `admin`, `sgw`). Handle is trimmed and lowercased before validation.
+  This is also how a handle is changed: choosing the first handle is free, changing an existing one is allowed once every 30 days
+  (429 "You can change your handle once every 30 days. You can change it again from 18 Nov 2026."). `Me.handleChangeableAt` says when.
+- `POST /me/activity/seen` → 200 `{ ok: true, seenAt: string }`. Sets `lastSeenActivityAt = now`, so `Me.unseen` drops to zeros.
+  `Me.unseen` counts since then: `resolvedSubmissions` = own submissions APPROVED/REJECTED since (not auto-published ones),
+  `badges` = badges awarded since, `points` = sum of ledger deltas since.
 - `DELETE /me` → 204, clears cookie. Anonymises the user row (email `deleted-<id>@deleted.invalid`, no handle/avatar/googleSub, "Deleted user", role USER, trust 0) and deletes their check-ins, points ledger and badges. Reviews, submissions, votes, photos, status reports and flags stay, attributed to the anonymous user.
 - `GET /me/activity?cursor&limit=30` (limit max 100) → `{ items: { id, delta, reason, refId, createdAt }[], nextCursor }` newest first.
 
@@ -221,36 +285,82 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
 ### Submissions (owner: contributions agent)
 - `POST /submissions` (auth) `{ kind, toiletId?, lat?, lng?, payload, force?: boolean }` → 201 `SubmissionView`. `lat/lng` = where the submitter stands.
   `payload` is validated per `kind` (discriminated union). There is no separate venue kind: a new place is created through NEW_TOILET's `newVenue`.
-  NEW_TOILET: `photoIds` (>= 1) must be the user's own confirmed photos not attached to another submission (400);
+  NEW_TOILET: `photoIds` (optional, 0–10) must be the user's own confirmed photos not attached to another submission (400);
   location must be inside Singapore (400). Venue: `venueId`, else `newVenue` creates a COMMUNITY venue, else snaps to the
   nearest venue within 60 m, else creates a COMMUNITY venue (type OTHER, named after `label`).
   Duplicate guard: an ACTIVE/PENDING toilet within 15 m at the same venue and same level (unknown level matches any)
   → 409 `{ statusCode, message, candidateIds: string[], candidates: ToiletSummary[] }`; resend with `force: true` to override.
-  Creates a Toilet with status PENDING, tier COMMUNITY, so it can show as a dashed pin. Expires after 60 days.
+  Creates a Toilet with tier COMMUNITY, `seenBy = 1`. Trust model v2 decides its status (see "Trust model v2" below):
+  on site (lat/lng within 150 m of the pin) + at least one photo → ACTIVE at once, submission APPROVED with `resolution: 'auto_on_site_photo'`,
+  NEW_TOILET_SUBMITTED +5 now (badges evaluated); otherwise PENDING (dashed pin). Expires after 60 days (then ESCALATED, never rejected).
   EDIT_TOILET / CLOSE_TOILET need `toiletId` of an ACTIVE toilet (404 / 400). EDIT `changes` must not be empty.
   EDIT_TOILET also needs `lat/lng` within 150 m of the toilet (400 when missing or farther): only someone there can edit it.
-  429 when the user already has 10 open (PENDING/NEEDS_INFO, unexpired) submissions.
+  429 when the user already has 10 open (PENDING/NEEDS_INFO/ESCALATED) submissions created in the last 14 days
+  (older ones do not count). `Me.openSubmissions` exposes `{ count, limit }` so /add can warn up front.
 - `GET /submissions/queue?lat&lng&radius=3000` (auth; lat/lng required, radius 50-20000) → `{ items: SubmissionView[] }`
-  PENDING/NEEDS_INFO, unexpired, not own, within radius of the toilet, nearest first, max 50, `distanceM` filled.
+  PENDING/NEEDS_INFO/ESCALATED (escalated ones can still be confirmed nearby; flagged ones are moderator-only and left out),
+  not own, within radius of the toilet, nearest first, max 50, `distanceM` filled.
   Includes ones I already voted on (`myVote` set, `canVote` false). `photos` include unapproved ones.
 - `GET /submissions/mine` (auth) → `{ items: SubmissionView[] }` newest first, max 100.
-- `GET /submissions/:id` (auth) → `SubmissionView` (404). `state` reads `EXPIRED` once an open submission is past `expiresAt`.
+- `GET /submissions/:id` (auth) → `SubmissionView` (404). `state` reads `ESCALATED` once an open submission is past `expiresAt`.
+- `PATCH /submissions/:id` (auth, owner only, else 404) `{ note?: string 1-1000, photoIds?: string[] (max 10), level?: string 1-20 }`
+  (at least one; 400 otherwise) → 200 `SubmissionView`. Only in NEEDS_INFO (409 "Only a submission that needs more info can be changed").
+  `note` → `payload.note`; `photoIds` (own confirmed, unattached, else 400) are appended to `payload.photoIds` and attached (hasPhoto updated);
+  `level` → `payload.level` and the pending toilet's level (NEW_TOILET) or `payload.changes.level` (EDIT_TOILET); 400 for CLOSE_TOILET.
+  Effect: state PENDING, REJECT votes deleted (those reviewers can vote again), APPROVE votes kept, `rejections` 0, resolution cleared,
+  `expiresAt` = now + 60 days.
 - `POST /submissions/:id/votes` (auth) `{ value: 'APPROVE'|'REJECT', comment?, lat?, lng? }` → 201 `SubmissionView`.
-  403 own submission; 409 already voted or voting closed (resolved/expired). `distanceM` of a vote = voter lat/lng to toilet.
+  403 own submission; 409 already voted, voting closed (decided), or "A moderator is reviewing this toilet after it was flagged"
+  (`escalated_flagged`). Expiry no longer closes voting: ESCALATED submissions can still be voted on. `distanceM` of a vote = voter lat/lng to toilet.
   Quorum (NEW_TOILET/EDIT_TOILET): 2 APPROVE votes cast within 150 m of the toilet, OR 1 APPROVE from TRUSTED+ → APPROVED.
+  NEW_TOILET submitted on site (`onSite`): 1 APPROVE within 150 m is enough. A signed-in check-in counts as an APPROVE vote (see check-ins).
   CLOSE_TOILET: 1 APPROVE within 150 m or from TRUSTED+ → APPROVED.
   MODERATOR+ REJECT → REJECTED (wins over approvals). 2 non-moderator REJECT → NEEDS_INFO (still votable).
   On resolution (one transaction): apply (NEW → toilet ACTIVE + lastVerifiedAt; rejected NEW → toilet REJECTED;
-  EDIT → fields + features with source COMMUNITY; CLOSE → toilet.status), award SUBMISSION_APPROVED to the submitter
-  and VOTE_MATCHED_OUTCOME to every voter whose vote matched, then badges are evaluated.
+  EDIT → fields + features with source COMMUNITY; CLOSE → toilet.status), award SUBMISSION_APPROVED (20) to the submitter
+  (NEW_TOILET_CONFIRMED 15 instead if it was auto-published, so the total stays 20) and VOTE_MATCHED_OUTCOME to every voter whose
+  vote matched, then badges are evaluated. `resolution` codes: `community_approved`, `confirmed_on_site` (an on-site toilet confirmed
+  through a check-in), `trusted_approved`, `moderator_rejected` (moderator REJECT vote), `peer_needs_info`.
 - `POST /submissions/:id/resolve` (MODERATOR+) `{ state: 'APPROVED'|'REJECTED'|'NEEDS_INFO', note? }` → 200 `SubmissionView`.
-  Same effects as a quorum. 409 if already APPROVED/REJECTED/EXPIRED.
+  Same effects as a quorum. Works on PENDING, NEEDS_INFO and ESCALATED. 409 if already APPROVED/REJECTED/EXPIRED.
+  `resolution` = `moderator_approved|moderator_rejected|moderator_needs_info`; `note` → `resolutionNote`.
+
+### Trust model v2 (PLAN.md §12 E1)
+- New toilet paths (`SubmissionView.path`):
+  - `auto`: on site (submitter within 150 m of the pin) + ≥ 1 photo → ACTIVE at once, Community tier, `seenBy = 1`, +5 NEW_TOILET_SUBMITTED.
+    The first other signed-in person to check in within 150 m pays the submitter +15 NEW_TOILET_CONFIRMED (check-in shows `confirmedPending: true`).
+    Guardrails: max 3 auto-publishes per user per Singapore day, none for 30 days after one of your submissions was REJECTED;
+    either falls back to `on_site_check_in`. 2 distinct flaggers → back to PENDING + ESCALATED (`escalated_flagged`), moderator only.
+  - `on_site_check_in`: on site, no photo (or a guardrail hit) → PENDING; live on the first check-in (or nearby APPROVE vote) by someone
+    else within 150 m, or a TRUSTED+ approve / moderator.
+  - `nearby_quorum`: not on site → PENDING; 2 nearby APPROVE (check-ins count), or TRUSTED+ / moderator.
+- Expiry: the `expire-submissions` job moves PENDING/NEEDS_INFO past `expiresAt` to ESCALATED (`escalated_expired`) and leaves the toilet
+  PENDING (it still shows as unconfirmed and can still be confirmed nearby). It never rejects.
+- Points: NEW_TOILET_SUBMITTED +5, NEW_TOILET_CONFIRMED +15 (counts toward trust), SUBMISSION_APPROVED +20 for every other approved submission.
+  Points already paid stay if a flagged toilet is later rejected.
+- Moderator queue: `GET /admin/submissions` (below).
+
+### Anonymous device (`sgw_anon`, PLAN.md §12 E4)
+- Signed-out check-ins and status reports set an httpOnly, SameSite=Lax (Secure in production), path `/`, 1-year cookie `sgw_anon` =
+  `<random UUID>.<HMAC-SHA256 with AUTH_SECRET>`, issued on the first anonymous check-in/report. No PII, no coordinates.
+  Stored rows keep `deviceId` with `userId = null` until sign-in merges them (see `/auth/callback`), which clears the cookie.
+- Adding toilets, edits, reviews, votes, flags and "Still true" confirmations stay signed-in only.
 
 ### Gamification (owner: contributions agent)
-- `POST /toilets/:id/check-ins` (auth) `{ lat, lng }` → 201 `{ id, distanceM, pointsAwarded: number, newBadges: Badge[], verifyPrompt: Feature[] }`.
-  404 unknown toilet; 400 if > 150 m (message states the distance) or the toilet is not ACTIVE; 429 if the user checked in
+- `POST /toilets/:id/check-ins` (optional auth) `{ lat, lng }` → 201
+  `{ id, distanceM, pointsAwarded: number, newBadges: Badge[], verifyPrompt: Feature[], confirmedPending: boolean, wentLive: boolean, bankedPoints: number }`.
+  404 unknown toilet; 400 if > 150 m (message states the distance) or the toilet is CLOSED/RENOVATION/REJECTED; 429 if the user checked in
   at this toilet in the last 2 h. Only `distanceM` is stored, never the coordinates.
   Points: CHECK_IN +1 (max 5 awards per Singapore calendar day) and FIRST_CHECK_IN_AT_TOILET +3 the first time at a toilet.
+  Signed in: allowed at ACTIVE and PENDING toilets. The first check-in per person per toilet increments `seenBy` (not the submitter's own).
+  At a new toilet someone else added (open submission, or an auto-published one awaiting its second person) it also records an APPROVE vote
+  linked to the check-in (if they have not voted) and runs the quorum: `confirmedPending: true` when it counted, `wentLive: true` when that
+  put a PENDING toilet live. Not for flagged-escalated ones. `bankedPoints` is 0.
+  Signed out: allowed at ACTIVE toilets only (401 "Sign in to confirm a new toilet" at PENDING ones); sets `sgw_anon`; same 150 m rule and
+  2 h cooldown per device; max 5 per device per Singapore day (429 "You can check in 5 times a day without signing in. Sign in to keep going.")
+  and 30 per IP per day (429). Never votes, never increments `seenBy`, earns nothing now: `pointsAwarded: 0`, `newBadges: []`,
+  `bankedPoints` = what the device earned (CHECK_IN 1 + FIRST_CHECK_IN_AT_TOILET 3 for its first time here), paid on sign-in.
+  Check-ins (either kind) do not change `lastVerifiedAt`; `POST /toilets/:id/verify` with `accurate: true` does.
   `verifyPrompt`: up to 5 of BIDET, ACCESSIBLE, TOILET_PAPER, HAND_SOAP, SITTING, SQUAT, BABY_CHANGE — features the listing
   has a value for first, then unknown ones.
 - `POST /toilets/:id/verify` (auth) `{ lat, lng, accurate: boolean, note? }` → 200 `{ ok: true }`. Same 150 m rule; 400 for
@@ -264,6 +374,8 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string }
   (not implemented by the contributions agent: needs the finder agent's ToiletSummary builder)
 - `GET /badges` (optional auth) → `{ items: Badge[] }` every badge; `awardedAt` set on the signed-in user's earned ones.
   Badges are evaluated after check-ins and approvals; other modules can call `GamificationService.evaluateBadges(userId, tx?)`.
+  `founding-contributor` ("Founding Contributor", 🌱): one of the first 100 accounts to check in or have a submission approved
+  (auto-published counts), awarded on the next evaluation while fewer than 100 accounts hold it. No backfill.
 
 ### Admin (owner: accounts agent)
 All MODERATOR+ unless noted.
@@ -276,7 +388,11 @@ All MODERATOR+ unless noted.
 - `PATCH /admin/toilets/:id` `{ status?, label?: string|null, areaType?, level?: string|null, accessNote?: string|null, needsResurvey?, features?: Partial<Record<Feature,boolean>> }` → `{ id }`. Features are written with `source=ADMIN`, `observedAt=now`. Unknown keys → 400.
 - `PATCH /admin/users/:id/role` (ADMIN) `{ role }` → `{ id, role }`. 400 when changing your own role.
 - `GET /admin/imports` → `{ items: ImportRun[] }`
-- `GET /admin/data-quality` → `{ counts: { toilets, venues, pending, flagsOpen, photosPending, noFeatures, stale365d, needsResurvey, unknownAreaType } }`
+- `GET /admin/submissions?state=pending|escalated|needs_info|all` (default `all` = PENDING + NEEDS_INFO + ESCALATED) →
+  `{ items: (SubmissionView & { ageDays: number })[] }` island-wide, escalated first then oldest first, max 200. Filters on the view state
+  (an overdue PENDING reads ESCALATED). Each item carries kind, toilet/venue names, onSite, hasPhoto, submitterDistanceM, approvals,
+  nearbyApprovals, needed, reviewerNotes, photos (incl. unapproved), payload and `current` (edits). Resolve with `POST /submissions/:id/resolve`. 400 bad state.
+- `GET /admin/data-quality` → `{ counts: { toilets, venues, pending, escalated, flagsOpen, photosPending, noFeatures, stale365d, needsResurvey, unknownAreaType } }`
 - `GET /admin/data-quality`: `toilets` excludes REJECTED; `pending` = unexpired PENDING/NEEDS_INFO submissions; `noFeatures`, `stale365d` (lastVerifiedAt null or > 365 d), `needsResurvey`, `unknownAreaType` count ACTIVE toilets only.
 - `POST /admin/jobs/:name` header `x-cron-secret: CRON_SECRET` (no session, not throttled) name ∈ `expire-submissions | archive-status | recompute-scores` → `{ ok: true, affected: number }`.
-  401 bad/missing secret, 503 when CRON_SECRET is unset, 404 unknown job. `expire-submissions`: PENDING/NEEDS_INFO past `expiresAt` → EXPIRED (their PENDING toilets → REJECTED), affected = submissions. `archive-status`: deletes status reports expired > 7 days. `recompute-scores`: affected = toilets recomputed.
+  401 bad/missing secret, 503 when CRON_SECRET is unset, 404 unknown job. `expire-submissions`: PENDING/NEEDS_INFO past `expiresAt` → ESCALATED (`escalatedAt` set, resolution `escalated_expired`); their toilets stay PENDING; affected = submissions. `escalated` (data-quality) = submissions in ESCALATED. `archive-status`: deletes status reports expired > 7 days. `recompute-scores`: affected = toilets recomputed.

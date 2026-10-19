@@ -73,7 +73,7 @@
         ],
         "responses": {
           "302": {
-            "description": "Sets the session cookie and redirects to the app"
+            "description": "Sets the session cookie and redirects to the app; on any failure redirects to /login?redirect=&error=<code>"
           }
         },
         "tags": [
@@ -247,6 +247,204 @@
         ],
         "tags": [
           "me"
+        ]
+      }
+    },
+    "/me/activity/seen": {
+      "post": {
+        "operationId": "UsersController_activitySeen",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivitySeenDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/toilets/{id}/check-ins": {
+      "post": {
+        "operationId": "GamificationController_checkIn",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckInResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/toilets/{id}/verify": {
+      "post": {
+        "operationId": "GamificationController_verify",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/me/passport": {
+      "get": {
+        "operationId": "GamificationController_passport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PassportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/leaderboard/users": {
+      "get": {
+        "operationId": "GamificationController_leaderboard",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "week",
+              "type": "string",
+              "enum": [
+                "week",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "gamification"
+        ]
+      }
+    },
+    "/badges": {
+      "get": {
+        "operationId": "GamificationController_badges",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgeListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "gamification"
         ]
       }
     },
@@ -976,6 +1174,49 @@
         "tags": [
           "submissions"
         ]
+      },
+      "patch": {
+        "operationId": "SubmissionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubmissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "submissions"
+        ]
       }
     },
     "/submissions/{id}/votes": {
@@ -1068,135 +1309,21 @@
         ]
       }
     },
-    "/toilets/{id}/check-ins": {
-      "post": {
-        "operationId": "GamificationController_checkIn",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckInDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckInResultDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "gamification"
-        ]
-      }
-    },
-    "/toilets/{id}/verify": {
-      "post": {
-        "operationId": "GamificationController_verify",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerifyDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OkDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "gamification"
-        ]
-      }
-    },
-    "/me/passport": {
+    "/admin/submissions": {
       "get": {
-        "operationId": "GamificationController_passport",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PassportDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "gamification"
-        ]
-      }
-    },
-    "/leaderboard/users": {
-      "get": {
-        "operationId": "GamificationController_leaderboard",
+        "operationId": "AdminSubmissionsController_list",
         "parameters": [
           {
-            "name": "scope",
+            "name": "state",
             "required": false,
             "in": "query",
             "schema": {
-              "default": "week",
+              "default": "all",
               "type": "string",
               "enum": [
-                "week",
+                "pending",
+                "escalated",
+                "needs_info",
                 "all"
               ]
             }
@@ -1208,35 +1335,19 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LeaderboardDto_Output"
+                  "$ref": "#/components/schemas/ModeratorSubmissionListDto_Output"
                 }
               }
             }
           }
         },
-        "tags": [
-          "gamification"
-        ]
-      }
-    },
-    "/badges": {
-      "get": {
-        "operationId": "GamificationController_badges",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BadgeListDto_Output"
-                }
-              }
-            }
+        "security": [
+          {
+            "cookie": []
           }
-        },
+        ],
         "tags": [
-          "gamification"
+          "admin"
         ]
       }
     },
@@ -2110,6 +2221,96 @@
           },
           "needsHandle": {
             "type": "boolean"
+          },
+          "handleChangeableAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trust": {
+            "type": "object",
+            "properties": {
+              "score": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "threshold": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "isTrusted": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "score",
+              "threshold",
+              "isTrusted"
+            ],
+            "additionalProperties": false
+          },
+          "openSubmissions": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "count",
+              "limit"
+            ],
+            "additionalProperties": false
+          },
+          "unseen": {
+            "type": "object",
+            "properties": {
+              "resolvedSubmissions": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "badges": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "points": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "resolvedSubmissions",
+              "badges",
+              "points"
+            ],
+            "additionalProperties": false
+          },
+          "lastSeenActivityAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -2123,7 +2324,12 @@
           "leaderboardOptIn",
           "points",
           "badges",
-          "needsHandle"
+          "needsHandle",
+          "handleChangeableAt",
+          "trust",
+          "openSubmissions",
+          "unseen",
+          "lastSeenActivityAt"
         ],
         "additionalProperties": false
       },
@@ -2170,7 +2376,9 @@
                     "CHECK_IN",
                     "FIRST_CHECK_IN_AT_TOILET",
                     "VOTE_MATCHED_OUTCOME",
-                    "SURVEY_COMPLETED"
+                    "SURVEY_COMPLETED",
+                    "NEW_TOILET_SUBMITTED",
+                    "NEW_TOILET_CONFIRMED"
                   ]
                 },
                 "refId": {
@@ -2204,6 +2412,362 @@
         "required": [
           "items",
           "nextCursor"
+        ],
+        "additionalProperties": false
+      },
+      "ActivitySeenDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "seenAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "seenAt"
+        ],
+        "additionalProperties": false
+      },
+      "CheckInDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "CheckInResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "distanceM": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pointsAwarded": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newBadges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "awardedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "icon"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "verifyPrompt": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "TOILET_PAPER",
+                "HAND_TOWEL",
+                "HAND_DRYER",
+                "HAND_SOAP",
+                "SEAT_LINER",
+                "BIDET",
+                "AUTO_FLUSH",
+                "AUTO_TAP",
+                "AUTO_SOAP",
+                "COAT_HOOK",
+                "FEEDBACK_DEVICE",
+                "SIGNAGE",
+                "POSTERS",
+                "AMBULANT",
+                "ACCESSIBLE",
+                "CHILD",
+                "BABY_CHANGE",
+                "NURSING_ROOM",
+                "SHOWER",
+                "SITTING",
+                "SQUAT",
+                "MALE",
+                "FEMALE",
+                "UNISEX",
+                "FREE",
+                "SANITARY_BIN",
+                "PERIOD_PRODUCTS",
+                "MIRROR",
+                "WATER_REFILL",
+                "ABLUTION"
+              ]
+            }
+          },
+          "confirmedPending": {
+            "type": "boolean"
+          },
+          "wentLive": {
+            "type": "boolean"
+          },
+          "bankedPoints": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "distanceM",
+          "pointsAwarded",
+          "newBadges",
+          "verifyPrompt",
+          "confirmedPending",
+          "wentLive",
+          "bankedPoints"
+        ],
+        "additionalProperties": false
+      },
+      "VerifyDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "accurate": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "lat",
+          "lng",
+          "accurate"
+        ]
+      },
+      "OkDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      },
+      "PassportDto_Output": {
+        "type": "object",
+        "properties": {
+          "stamped": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "stations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "venueId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "stampedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "venueId",
+                "name",
+                "lines",
+                "stampedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "stamped",
+          "total",
+          "stations"
+        ],
+        "additionalProperties": false
+      },
+      "LeaderboardDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rank": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "handle": {
+                  "type": "string"
+                },
+                "avatarUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "points": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "rank",
+                "handle",
+                "avatarUrl",
+                "points"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "me": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "rank": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "points": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "rank",
+                  "points"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "me"
+        ],
+        "additionalProperties": false
+      },
+      "BadgeListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "awardedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "icon"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
         ],
         "additionalProperties": false
       },
@@ -2426,6 +2990,11 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "seenBy": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
           "activeStatus": {
             "type": "array",
             "items": {
@@ -2475,6 +3044,7 @@
           "surveyTotal",
           "rasStars",
           "reviewCount",
+          "seenBy",
           "activeStatus",
           "lastVerifiedAt",
           "needsResurvey",
@@ -3127,6 +3697,11 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "seenBy": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
           "activeStatus": {
             "type": "array",
             "items": {
@@ -3183,6 +3758,26 @@
             ]
           },
           "nearestExit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "near": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "openSubmissionId": {
             "anyOf": [
               {
                 "type": "string"
@@ -3295,6 +3890,7 @@
           "surveyTotal",
           "rasStars",
           "reviewCount",
+          "seenBy",
           "activeStatus",
           "lastVerifiedAt",
           "needsResurvey",
@@ -3302,6 +3898,8 @@
           "photoThumb",
           "accessNote",
           "nearestExit",
+          "near",
+          "openSubmissionId",
           "openingHours",
           "featureDetails",
           "latestSurvey",
@@ -3539,6 +4137,9 @@
                       "type": "null"
                     }
                   ]
+                },
+                "unconfirmed": {
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -3547,7 +4148,8 @@
                 "walkSeconds",
                 "walkDistanceM",
                 "reasons",
-                "route"
+                "route",
+                "unconfirmed"
               ],
               "additionalProperties": false
             }
@@ -3793,20 +4395,24 @@
                     }
                   },
                   "photoIds": {
-                    "minItems": 1,
+                    "default": [],
                     "maxItems": 10,
                     "type": "array",
                     "items": {
                       "type": "string",
                       "minLength": 1
                     }
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
                   }
                 },
                 "required": [
                   "lat",
                   "lng",
-                  "features",
-                  "photoIds"
+                  "features"
                 ]
               },
               "toiletId": {
@@ -3974,6 +4580,11 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 500
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
                   }
                 },
                 "required": [
@@ -4027,7 +4638,8 @@
               "APPROVED",
               "REJECTED",
               "NEEDS_INFO",
-              "EXPIRED"
+              "EXPIRED",
+              "ESCALATED"
             ]
           },
           "payload": {
@@ -4146,13 +4758,18 @@
                     }
                   },
                   "photoIds": {
-                    "minItems": 1,
+                    "default": [],
                     "maxItems": 10,
                     "type": "array",
                     "items": {
                       "type": "string",
                       "minLength": 1
                     }
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
                   }
                 },
                 "required": [
@@ -4270,6 +4887,11 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 500
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
                   }
                 },
                 "required": [
@@ -4277,6 +4899,167 @@
                   "reason"
                 ],
                 "additionalProperties": false
+              }
+            ]
+          },
+          "onSite": {
+            "type": "boolean"
+          },
+          "hasPhoto": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "on_site_check_in",
+              "nearby_quorum"
+            ]
+          },
+          "nearbyApprovals": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "needed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "escalated": {
+            "type": "boolean"
+          },
+          "submitterDistanceM": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewerNotes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "enum": [
+                    "APPROVE",
+                    "REJECT"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "nearby": {
+                  "type": "boolean"
+                },
+                "viaCheckIn": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "value",
+                "note",
+                "createdAt",
+                "nearby",
+                "viaCheckIn"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "current": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "level": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "areaType": {
+                    "type": "string",
+                    "enum": [
+                      "PAID_AREA",
+                      "UNPAID_AREA",
+                      "NOT_APPLICABLE",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "accessNote": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "features": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": [
+                        "TOILET_PAPER",
+                        "HAND_TOWEL",
+                        "HAND_DRYER",
+                        "HAND_SOAP",
+                        "SEAT_LINER",
+                        "BIDET",
+                        "AUTO_FLUSH",
+                        "AUTO_TAP",
+                        "AUTO_SOAP",
+                        "COAT_HOOK",
+                        "FEEDBACK_DEVICE",
+                        "SIGNAGE",
+                        "POSTERS",
+                        "AMBULANT",
+                        "ACCESSIBLE",
+                        "CHILD",
+                        "BABY_CHANGE",
+                        "NURSING_ROOM",
+                        "SHOWER",
+                        "SITTING",
+                        "SQUAT",
+                        "MALE",
+                        "FEMALE",
+                        "UNISEX",
+                        "FREE",
+                        "SANITARY_BIN",
+                        "PERIOD_PRODUCTS",
+                        "MIRROR",
+                        "WATER_REFILL",
+                        "ABLUTION"
+                      ]
+                    },
+                    "additionalProperties": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
               }
             ]
           },
@@ -4434,6 +5217,39 @@
           "resolution": {
             "anyOf": [
               {
+                "type": "string",
+                "enum": [
+                  "auto_on_site_photo",
+                  "confirmed_on_site",
+                  "community_approved",
+                  "trusted_approved",
+                  "moderator_approved",
+                  "moderator_rejected",
+                  "moderator_needs_info",
+                  "peer_needs_info",
+                  "escalated_expired",
+                  "escalated_flagged",
+                  "expired"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolutionText": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolutionNote": {
+            "anyOf": [
+              {
                 "type": "string"
               },
               {
@@ -4493,6 +5309,15 @@
           "kind",
           "state",
           "payload",
+          "onSite",
+          "hasPhoto",
+          "path",
+          "nearbyApprovals",
+          "needed",
+          "escalated",
+          "submitterDistanceM",
+          "reviewerNotes",
+          "current",
           "toilet",
           "venue",
           "submittedBy",
@@ -4502,6 +5327,8 @@
           "expiresAt",
           "resolvedAt",
           "resolution",
+          "resolutionText",
+          "resolutionNote",
           "myVote",
           "photos",
           "canVote"
@@ -4534,7 +5361,8 @@
                     "APPROVED",
                     "REJECTED",
                     "NEEDS_INFO",
-                    "EXPIRED"
+                    "EXPIRED",
+                    "ESCALATED"
                   ]
                 },
                 "payload": {
@@ -4653,13 +5481,18 @@
                           }
                         },
                         "photoIds": {
-                          "minItems": 1,
+                          "default": [],
                           "maxItems": 10,
                           "type": "array",
                           "items": {
                             "type": "string",
                             "minLength": 1
                           }
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
                         }
                       },
                       "required": [
@@ -4777,6 +5610,11 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 500
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
                         }
                       },
                       "required": [
@@ -4784,6 +5622,167 @@
                         "reason"
                       ],
                       "additionalProperties": false
+                    }
+                  ]
+                },
+                "onSite": {
+                  "type": "boolean"
+                },
+                "hasPhoto": {
+                  "type": "boolean"
+                },
+                "path": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "on_site_check_in",
+                    "nearby_quorum"
+                  ]
+                },
+                "nearbyApprovals": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "needed": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "escalated": {
+                  "type": "boolean"
+                },
+                "submitterDistanceM": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reviewerNotes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "enum": [
+                          "APPROVE",
+                          "REJECT"
+                        ]
+                      },
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "nearby": {
+                        "type": "boolean"
+                      },
+                      "viaCheckIn": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "value",
+                      "note",
+                      "createdAt",
+                      "nearby",
+                      "viaCheckIn"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "current": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "level": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "areaType": {
+                          "type": "string",
+                          "enum": [
+                            "PAID_AREA",
+                            "UNPAID_AREA",
+                            "NOT_APPLICABLE",
+                            "UNKNOWN"
+                          ]
+                        },
+                        "accessNote": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "features": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "enum": [
+                              "TOILET_PAPER",
+                              "HAND_TOWEL",
+                              "HAND_DRYER",
+                              "HAND_SOAP",
+                              "SEAT_LINER",
+                              "BIDET",
+                              "AUTO_FLUSH",
+                              "AUTO_TAP",
+                              "AUTO_SOAP",
+                              "COAT_HOOK",
+                              "FEEDBACK_DEVICE",
+                              "SIGNAGE",
+                              "POSTERS",
+                              "AMBULANT",
+                              "ACCESSIBLE",
+                              "CHILD",
+                              "BABY_CHANGE",
+                              "NURSING_ROOM",
+                              "SHOWER",
+                              "SITTING",
+                              "SQUAT",
+                              "MALE",
+                              "FEMALE",
+                              "UNISEX",
+                              "FREE",
+                              "SANITARY_BIN",
+                              "PERIOD_PRODUCTS",
+                              "MIRROR",
+                              "WATER_REFILL",
+                              "ABLUTION"
+                            ]
+                          },
+                          "additionalProperties": {
+                            "type": [
+                              "boolean",
+                              "null"
+                            ]
+                          }
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
                     }
                   ]
                 },
@@ -4935,6 +5934,35 @@
                   ]
                 },
                 "resolution": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "auto_on_site_photo",
+                        "confirmed_on_site",
+                        "community_approved",
+                        "trusted_approved",
+                        "moderator_approved",
+                        "moderator_rejected",
+                        "moderator_needs_info",
+                        "peer_needs_info",
+                        "escalated_expired",
+                        "escalated_flagged",
+                        "expired"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "resolutionText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resolutionNote": {
                   "type": [
                     "string",
                     "null"
@@ -4992,6 +6020,15 @@
                 "kind",
                 "state",
                 "payload",
+                "onSite",
+                "hasPhoto",
+                "path",
+                "nearbyApprovals",
+                "needed",
+                "escalated",
+                "submitterDistanceM",
+                "reviewerNotes",
+                "current",
                 "toilet",
                 "venue",
                 "submittedBy",
@@ -5001,6 +6038,8 @@
                 "expiresAt",
                 "resolvedAt",
                 "resolution",
+                "resolutionText",
+                "resolutionNote",
                 "myVote",
                 "photos",
                 "canVote"
@@ -5013,6 +6052,29 @@
           "items"
         ],
         "additionalProperties": false
+      },
+      "UpdateSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "photoIds": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "level": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          }
+        }
       },
       "VoteDto": {
         "type": "object",
@@ -5065,42 +6127,10 @@
           "state"
         ]
       },
-      "CheckInDto": {
+      "ModeratorSubmissionListDto_Output": {
         "type": "object",
         "properties": {
-          "lat": {
-            "type": "number",
-            "minimum": -90,
-            "maximum": 90
-          },
-          "lng": {
-            "type": "number",
-            "minimum": -180,
-            "maximum": 180
-          }
-        },
-        "required": [
-          "lat",
-          "lng"
-        ]
-      },
-      "CheckInResultDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "distanceM": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "pointsAwarded": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "newBadges": {
+          "items": {
             "type": "array",
             "items": {
               "type": "object",
@@ -5108,278 +6138,709 @@
                 "id": {
                   "type": "string"
                 },
-                "name": {
-                  "type": "string"
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "NEW_TOILET",
+                    "EDIT_TOILET",
+                    "CLOSE_TOILET"
+                  ]
                 },
-                "description": {
-                  "type": "string"
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "APPROVED",
+                    "REJECTED",
+                    "NEEDS_INFO",
+                    "EXPIRED",
+                    "ESCALATED"
+                  ]
                 },
-                "icon": {
-                  "type": "string"
+                "payload": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "venueId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "newVenue": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "MRT_STATION",
+                                "BUS_INTERCHANGE",
+                                "MALL",
+                                "HAWKER_CENTRE",
+                                "COFFEESHOP",
+                                "COMMUNITY_CLUB",
+                                "PARK",
+                                "LIBRARY",
+                                "HOSPITAL",
+                                "SPORTS_CENTRE",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "type"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "lat": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "lng": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "level": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20
+                        },
+                        "areaType": {
+                          "type": "string",
+                          "enum": [
+                            "PAID_AREA",
+                            "UNPAID_AREA",
+                            "NOT_APPLICABLE",
+                            "UNKNOWN"
+                          ]
+                        },
+                        "accessNote": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "features": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "enum": [
+                              "TOILET_PAPER",
+                              "HAND_TOWEL",
+                              "HAND_DRYER",
+                              "HAND_SOAP",
+                              "SEAT_LINER",
+                              "BIDET",
+                              "AUTO_FLUSH",
+                              "AUTO_TAP",
+                              "AUTO_SOAP",
+                              "COAT_HOOK",
+                              "FEEDBACK_DEVICE",
+                              "SIGNAGE",
+                              "POSTERS",
+                              "AMBULANT",
+                              "ACCESSIBLE",
+                              "CHILD",
+                              "BABY_CHANGE",
+                              "NURSING_ROOM",
+                              "SHOWER",
+                              "SITTING",
+                              "SQUAT",
+                              "MALE",
+                              "FEMALE",
+                              "UNISEX",
+                              "FREE",
+                              "SANITARY_BIN",
+                              "PERIOD_PRODUCTS",
+                              "MIRROR",
+                              "WATER_REFILL",
+                              "ABLUTION"
+                            ]
+                          },
+                          "additionalProperties": {
+                            "type": "boolean"
+                          }
+                        },
+                        "photoIds": {
+                          "default": [],
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        }
+                      },
+                      "required": [
+                        "lat",
+                        "lng",
+                        "features",
+                        "photoIds"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "changes": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            },
+                            "level": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "areaType": {
+                              "type": "string",
+                              "enum": [
+                                "PAID_AREA",
+                                "UNPAID_AREA",
+                                "NOT_APPLICABLE",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "accessNote": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 500
+                            },
+                            "features": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "enum": [
+                                  "TOILET_PAPER",
+                                  "HAND_TOWEL",
+                                  "HAND_DRYER",
+                                  "HAND_SOAP",
+                                  "SEAT_LINER",
+                                  "BIDET",
+                                  "AUTO_FLUSH",
+                                  "AUTO_TAP",
+                                  "AUTO_SOAP",
+                                  "COAT_HOOK",
+                                  "FEEDBACK_DEVICE",
+                                  "SIGNAGE",
+                                  "POSTERS",
+                                  "AMBULANT",
+                                  "ACCESSIBLE",
+                                  "CHILD",
+                                  "BABY_CHANGE",
+                                  "NURSING_ROOM",
+                                  "SHOWER",
+                                  "SITTING",
+                                  "SQUAT",
+                                  "MALE",
+                                  "FEMALE",
+                                  "UNISEX",
+                                  "FREE",
+                                  "SANITARY_BIN",
+                                  "PERIOD_PRODUCTS",
+                                  "MIRROR",
+                                  "WATER_REFILL",
+                                  "ABLUTION"
+                                ]
+                              },
+                              "additionalProperties": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "photoIds": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        }
+                      },
+                      "required": [
+                        "changes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "CLOSED",
+                            "RENOVATION"
+                          ]
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
                 },
-                "awardedAt": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "name",
-                "description",
-                "icon"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "verifyPrompt": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "TOILET_PAPER",
-                "HAND_TOWEL",
-                "HAND_DRYER",
-                "HAND_SOAP",
-                "SEAT_LINER",
-                "BIDET",
-                "AUTO_FLUSH",
-                "AUTO_TAP",
-                "AUTO_SOAP",
-                "COAT_HOOK",
-                "FEEDBACK_DEVICE",
-                "SIGNAGE",
-                "POSTERS",
-                "AMBULANT",
-                "ACCESSIBLE",
-                "CHILD",
-                "BABY_CHANGE",
-                "NURSING_ROOM",
-                "SHOWER",
-                "SITTING",
-                "SQUAT",
-                "MALE",
-                "FEMALE",
-                "UNISEX",
-                "FREE",
-                "SANITARY_BIN",
-                "PERIOD_PRODUCTS",
-                "MIRROR",
-                "WATER_REFILL",
-                "ABLUTION"
-              ]
-            }
-          }
-        },
-        "required": [
-          "id",
-          "distanceM",
-          "pointsAwarded",
-          "newBadges",
-          "verifyPrompt"
-        ],
-        "additionalProperties": false
-      },
-      "VerifyDto": {
-        "type": "object",
-        "properties": {
-          "lat": {
-            "type": "number",
-            "minimum": -90,
-            "maximum": 90
-          },
-          "lng": {
-            "type": "number",
-            "minimum": -180,
-            "maximum": 180
-          },
-          "accurate": {
-            "type": "boolean"
-          },
-          "note": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 500
-          }
-        },
-        "required": [
-          "lat",
-          "lng",
-          "accurate"
-        ]
-      },
-      "OkDto_Output": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean",
-            "const": true
-          }
-        },
-        "required": [
-          "ok"
-        ],
-        "additionalProperties": false
-      },
-      "PassportDto_Output": {
-        "type": "object",
-        "properties": {
-          "stamped": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "total": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "stations": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "venueId": {
-                  "type": "string"
+                "onSite": {
+                  "type": "boolean"
                 },
-                "name": {
-                  "type": "string"
+                "hasPhoto": {
+                  "type": "boolean"
                 },
-                "lines": {
+                "path": {
+                  "type": "string",
+                  "enum": [
+                    "auto",
+                    "on_site_check_in",
+                    "nearby_quorum"
+                  ]
+                },
+                "nearbyApprovals": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "needed": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "escalated": {
+                  "type": "boolean"
+                },
+                "submitterDistanceM": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reviewerNotes": {
                   "type": "array",
                   "items": {
-                    "type": "string"
-                  }
-                },
-                "stampedAt": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              },
-              "required": [
-                "venueId",
-                "name",
-                "lines",
-                "stampedAt"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "stamped",
-          "total",
-          "stations"
-        ],
-        "additionalProperties": false
-      },
-      "LeaderboardDto_Output": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "rank": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                },
-                "handle": {
-                  "type": "string"
-                },
-                "avatarUrl": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "points": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                }
-              },
-              "required": [
-                "rank",
-                "handle",
-                "avatarUrl",
-                "points"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "me": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "rank": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "enum": [
+                          "APPROVE",
+                          "REJECT"
+                        ]
                       },
-                      {
-                        "type": "null"
+                      "note": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "nearby": {
+                        "type": "boolean"
+                      },
+                      "viaCheckIn": {
+                        "type": "boolean"
                       }
-                    ]
-                  },
-                  "points": {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
+                    },
+                    "required": [
+                      "value",
+                      "note",
+                      "createdAt",
+                      "nearby",
+                      "viaCheckIn"
+                    ],
+                    "additionalProperties": false
                   }
                 },
-                "required": [
-                  "rank",
-                  "points"
-                ],
-                "additionalProperties": false
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "me"
-        ],
-        "additionalProperties": false
-      },
-      "BadgeListDto_Output": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
+                "current": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "level": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "areaType": {
+                          "type": "string",
+                          "enum": [
+                            "PAID_AREA",
+                            "UNPAID_AREA",
+                            "NOT_APPLICABLE",
+                            "UNKNOWN"
+                          ]
+                        },
+                        "accessNote": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "features": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string",
+                            "enum": [
+                              "TOILET_PAPER",
+                              "HAND_TOWEL",
+                              "HAND_DRYER",
+                              "HAND_SOAP",
+                              "SEAT_LINER",
+                              "BIDET",
+                              "AUTO_FLUSH",
+                              "AUTO_TAP",
+                              "AUTO_SOAP",
+                              "COAT_HOOK",
+                              "FEEDBACK_DEVICE",
+                              "SIGNAGE",
+                              "POSTERS",
+                              "AMBULANT",
+                              "ACCESSIBLE",
+                              "CHILD",
+                              "BABY_CHANGE",
+                              "NURSING_ROOM",
+                              "SHOWER",
+                              "SITTING",
+                              "SQUAT",
+                              "MALE",
+                              "FEMALE",
+                              "UNISEX",
+                              "FREE",
+                              "SANITARY_BIN",
+                              "PERIOD_PRODUCTS",
+                              "MIRROR",
+                              "WATER_REFILL",
+                              "ABLUTION"
+                            ]
+                          },
+                          "additionalProperties": {
+                            "type": [
+                              "boolean",
+                              "null"
+                            ]
+                          }
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "toilet": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "label": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "venueName": {
+                          "type": "string"
+                        },
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label",
+                        "venueName",
+                        "lat",
+                        "lng"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "venue": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "MRT_STATION",
+                            "BUS_INTERCHANGE",
+                            "MALL",
+                            "HAWKER_CENTRE",
+                            "COFFEESHOP",
+                            "COMMUNITY_CLUB",
+                            "PARK",
+                            "LIBRARY",
+                            "HOSPITAL",
+                            "SPORTS_CENTRE",
+                            "OTHER"
+                          ]
+                        },
+                        "lines": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "lat": {
+                          "type": "number"
+                        },
+                        "lng": {
+                          "type": "number"
+                        },
+                        "toiletStatus": {
+                          "type": "string",
+                          "enum": [
+                            "HAS_TOILETS",
+                            "NONE",
+                            "UNKNOWN",
+                            "USES_NEARBY"
+                          ]
+                        },
+                        "note": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "type",
+                        "lines",
+                        "lat",
+                        "lng",
+                        "toiletStatus",
+                        "note"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "submittedBy": {
+                  "type": "object",
+                  "properties": {
+                    "handle": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "handle"
+                  ],
+                  "additionalProperties": false
+                },
+                "approvals": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "rejections": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "createdAt": {
                   "type": "string"
                 },
-                "name": {
+                "expiresAt": {
                   "type": "string"
                 },
-                "description": {
-                  "type": "string"
+                "resolvedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
-                "icon": {
-                  "type": "string"
+                "resolution": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "auto_on_site_photo",
+                        "confirmed_on_site",
+                        "community_approved",
+                        "trusted_approved",
+                        "moderator_approved",
+                        "moderator_rejected",
+                        "moderator_needs_info",
+                        "peer_needs_info",
+                        "escalated_expired",
+                        "escalated_flagged",
+                        "expired"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
-                "awardedAt": {
-                  "type": "string"
+                "resolutionText": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resolutionNote": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "distanceM": {
+                  "type": "number"
+                },
+                "myVote": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "APPROVE",
+                        "REJECT"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "photos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      },
+                      "thumbUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "url",
+                      "thumbUrl"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "canVote": {
+                  "type": "boolean"
+                },
+                "ageDays": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
                 "id",
-                "name",
-                "description",
-                "icon"
+                "kind",
+                "state",
+                "payload",
+                "onSite",
+                "hasPhoto",
+                "path",
+                "nearbyApprovals",
+                "needed",
+                "escalated",
+                "submitterDistanceM",
+                "reviewerNotes",
+                "current",
+                "toilet",
+                "venue",
+                "submittedBy",
+                "approvals",
+                "rejections",
+                "createdAt",
+                "expiresAt",
+                "resolvedAt",
+                "resolution",
+                "resolutionText",
+                "resolutionNote",
+                "myVote",
+                "photos",
+                "canVote",
+                "ageDays"
               ],
               "additionalProperties": false
             }
@@ -5526,6 +6987,9 @@
           },
           "confirmedByMe": {
             "type": "boolean"
+          },
+          "unconfirmed": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -5534,7 +6998,8 @@
           "confirmations",
           "createdAt",
           "expiresAt",
-          "confirmedByMe"
+          "confirmedByMe",
+          "unconfirmed"
         ],
         "additionalProperties": false
       },
@@ -5598,6 +7063,9 @@
           },
           "confirmedByMe": {
             "type": "boolean"
+          },
+          "unconfirmed": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -5606,7 +7074,8 @@
           "confirmations",
           "createdAt",
           "expiresAt",
-          "confirmedByMe"
+          "confirmedByMe",
+          "unconfirmed"
         ],
         "additionalProperties": false
       },
@@ -6153,6 +7622,11 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
+              "escalated": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
               "flagsOpen": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -6188,6 +7662,7 @@
               "toilets",
               "venues",
               "pending",
+              "escalated",
               "flagsOpen",
               "photosPending",
               "noFeatures",
