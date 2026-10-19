@@ -8,15 +8,22 @@ import type { StatusKind } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PointsService } from '../gamification/points.service.js';
 import type { StatusReportView } from '../toilets/toilet.schemas.js';
+import { isUnconfirmed } from './unconfirmed.js';
 
 const HOUR = 3_600_000;
 export const STATUS_TTL_MS = 2 * HOUR;
 export const CLOSED_TTL_MS = 24 * HOUR;
+/** Signed-out reports are shorter-lived, whatever the kind (PLAN.md §12 E4). */
+export const ANON_STATUS_TTL_MS = HOUR;
 export const DEDUPE_WINDOW_MS = 30 * 60_000;
 export const CONFIRM_EXTEND_MS = HOUR;
 export const CONFIRM_CAP_MS = 6 * HOUR;
 
-export const ttlFor = (kind: StatusKind) => (kind === 'CLOSED_NOW' ? CLOSED_TTL_MS : STATUS_TTL_MS);
+export const ttlFor = (kind: StatusKind, anonymous = false) =>
+  anonymous ? ANON_STATUS_TTL_MS : kind === 'CLOSED_NOW' ? CLOSED_TTL_MS : STATUS_TTL_MS;
+
+/** Who is reporting: a signed-in user, or a signed-out device (sgw_anon cookie). */
+export type Reporter = { userId: string; deviceId?: undefined } | { userId?: undefined; deviceId: string };
 
 /** New expiry after a confirmation: +1h, capped at createdAt+6h, never shortened. */
 export function extendedExpiry(r: Pick<StatusReport, 'createdAt' | 'expiresAt'>): Date {
@@ -31,7 +38,8 @@ export class StatusService {
     private readonly points: PointsService,
   ) {}
 
-  private view(r: StatusReport, confirmedByMe: boolean): StatusReportView {
+  /** `others` = the toilet's unexpired reports, to decide whether an anonymous closure is confirmed. */
+  private view(r: StatusReport, confirmedByMe: boolean, others: StatusReport[]): StatusReportView {
     return {
       id: r.id,
       kind: r.kind,
@@ -39,7 +47,12 @@ export class StatusService {
       createdAt: r.createdAt.toISOString(),
       expiresAt: r.expiresAt.toISOString(),
       confirmedByMe,
+      unconfirmed: isUnconfirmed(r, others),
     };
+  }
+
+  private unexpired(toiletId: string, now: Date) {
+    return this.prisma.statusReport.findMany({ where: { toiletId, expiresAt: { gt: now } } });
   }
 
   private async assertToilet(toiletId: string) {
@@ -56,23 +69,31 @@ export class StatusService {
     });
     return {
       items: rows.map((r) =>
-        this.view(r, 'confirmedBy' in r && Array.isArray(r.confirmedBy) && r.confirmedBy.length > 0),
+        this.view(r, 'confirmedBy' in r && Array.isArray(r.confirmedBy) && r.confirmedBy.length > 0, rows),
       ),
     };
   }
 
-  /** Same user+toilet+kind within 30 min returns the existing report. */
-  async report(toiletId: string, userId: string, kind: StatusKind, now = new Date()) {
+  /** Same reporter (user or device) + toilet + kind within 30 min returns the existing report. */
+  async report(toiletId: string, who: Reporter, kind: StatusKind, now = new Date()) {
     await this.assertToilet(toiletId);
+    const reporter = who.userId !== undefined ? { userId: who.userId } : { deviceId: who.deviceId, userId: null };
     const existing = await this.prisma.statusReport.findFirst({
-      where: { toiletId, userId, kind, createdAt: { gte: new Date(now.getTime() - DEDUPE_WINDOW_MS) } },
+      where: { toiletId, ...reporter, kind, createdAt: { gte: new Date(now.getTime() - DEDUPE_WINDOW_MS) } },
       orderBy: { createdAt: 'desc' },
     });
-    if (existing) return this.view(existing, false);
+    if (existing) return this.view(existing, false, await this.unexpired(toiletId, now));
+    const anonymous = who.userId === undefined;
     const r = await this.prisma.statusReport.create({
-      data: { toiletId, userId, kind, createdAt: now, expiresAt: new Date(now.getTime() + ttlFor(kind)) },
+      data: {
+        toiletId,
+        ...reporter,
+        kind,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + ttlFor(kind, anonymous)),
+      },
     });
-    return this.view(r, false);
+    return this.view(r, false, await this.unexpired(toiletId, now));
   }
 
   /** One confirmation per user; not your own; extends expiry; awards the reporter. */
@@ -92,11 +113,13 @@ export class StatusService {
         where: { id: r.id },
         data: { confirmations: { increment: 1 }, expiresAt: extendedExpiry(fresh) },
       });
-      await this.points.award(r.userId, 'STATUS_CONFIRMED', `${r.id}:${userId}`, { tx });
+      // Anonymous reporters earn nothing here (their reports are merged on sign-in, confirmations aren't).
+      if (r.userId) await this.points.award(r.userId, 'STATUS_CONFIRMED', `${r.id}:${userId}`, { tx });
       return u;
     });
-    if (updated) return this.view(updated, true);
+    const others = await this.unexpired(r.toiletId, now);
+    if (updated) return this.view(updated, true, others);
     const current = await this.prisma.statusReport.findUniqueOrThrow({ where: { id: r.id } });
-    return this.view(current, true);
+    return this.view(current, true, others);
   }
 }

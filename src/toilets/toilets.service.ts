@@ -73,7 +73,10 @@ export class ToiletsService {
         scoreCleanliness: true,
         openingHours: true,
         venue: { select: { type: true, openingHours: true } },
-        statusReports: { where: { expiresAt: { gt: now } }, select: { kind: true } },
+        statusReports: {
+          where: { expiresAt: { gt: now } },
+          select: { kind: true, createdAt: true, confirmations: true, userId: true, deviceId: true },
+        },
       },
       take: IN_BOUNDS_CAP,
     });

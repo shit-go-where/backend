@@ -92,6 +92,8 @@ export const DataQualitySchema = z.object({
     toilets: z.number().int(),
     venues: z.number().int(),
     pending: z.number().int(),
+    /** Submissions waiting for a moderator: expired without confirmation, or an auto-published toilet flagged twice. */
+    escalated: z.number().int(),
     flagsOpen: z.number().int(),
     photosPending: z.number().int(),
     noFeatures: z.number().int(),

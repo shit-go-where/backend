@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, Patch, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiCookieAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import type { Response } from 'express';
 import { AuthGuard, CurrentUser } from '../common/auth/auth.guard.js';
 import { SESSION_COOKIE, sessionCookieOptions } from '../common/auth/session.js';
 import type { User } from '../generated/prisma/client.js';
-import { ActivityPageDto, ActivityQueryDto, MeDto, UpdateMeDto } from './users.dto.js';
+import { ActivityPageDto, ActivityQueryDto, ActivitySeenDto, MeDto, UpdateMeDto } from './users.dto.js';
 import { UsersService } from './users.service.js';
 
 // Only fixed sub-paths here: GET /me/passport lives in the gamification module.
@@ -41,5 +41,13 @@ export class UsersController {
   @ZodResponse({ type: ActivityPageDto })
   activity(@CurrentUser() user: User, @Query() query: ActivityQueryDto) {
     return this.users.activity(user.id, query);
+  }
+
+  /** Marks everything in GET /me's `unseen` as seen (the Me page was opened). */
+  @Post('activity/seen')
+  @HttpCode(200)
+  @ZodResponse({ type: ActivitySeenDto })
+  activitySeen(@CurrentUser() user: User) {
+    return this.users.markActivitySeen(user.id);
   }
 }

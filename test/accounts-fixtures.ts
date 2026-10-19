@@ -44,6 +44,7 @@ export async function createAccountsApp() {
   const { UsersModule } = await import('../src/users/users.module.js');
   const { MediaModule } = await import('../src/media/media.module.js');
   const { AdminModule } = await import('../src/admin/admin.module.js');
+  const { StatusModule } = await import('../src/status/status.module.js');
   const { env } = await import('../src/config/env.js');
 
   class AccountsTestModule {}
@@ -55,6 +56,8 @@ export async function createAccountsApp() {
       UsersModule,
       MediaModule,
       AdminModule,
+      // Signed-out status reports are merged on sign-in.
+      StatusModule,
     ],
     providers: [
       { provide: APP_PIPE, useClass: nz.ZodValidationPipe },

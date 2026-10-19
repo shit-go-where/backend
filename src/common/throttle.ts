@@ -43,19 +43,48 @@ interface Window {
   resetAt: number;
 }
 
-/** Client identity: signed-in user id, else the client IP as seen through Vercel's proxy. */
+/** The client IP as seen through Vercel's proxy. */
+export function clientIp(req: Request): string {
+  const realIp = req.headers['x-real-ip'];
+  const fwd = req.headers['x-forwarded-for'];
+  return (
+    (typeof realIp === 'string' && realIp) ||
+    (typeof fwd === 'string' && fwd.split(',')[0]?.trim()) ||
+    req.ip ||
+    'unknown'
+  );
+}
+
+/** Client identity: signed-in user id, else the client IP. */
 export function trackerFor(req: Request): string {
   const token = (req.cookies as Record<string, string> | undefined)?.[SESSION_COOKIE];
   const session = verifySessionToken(token);
   if (session) return `u:${session.uid}`;
-  const realIp = req.headers['x-real-ip'];
-  const fwd = req.headers['x-forwarded-for'];
-  const ip =
-    (typeof realIp === 'string' && realIp) ||
-    (typeof fwd === 'string' && fwd.split(',')[0]?.trim()) ||
-    req.ip ||
-    'unknown';
-  return `ip:${ip}`;
+  return `ip:${clientIp(req)}`;
+}
+
+/**
+ * Per-key daily counter (e.g. anonymous check-ins per IP per Singapore day). In memory per instance,
+ * like the throttle windows: a soft cap that stops casual abuse, not a guarantee.
+ */
+export class DailyLimiter {
+  private readonly counts = new Map<string, number>();
+  private day = -1;
+
+  constructor(private readonly limit: number) {}
+
+  /** Counts one use; false when the key is already at the limit today (and nothing is counted). */
+  take(key: string, dayNumber: number): boolean {
+    if (dayNumber !== this.day) {
+      this.counts.clear();
+      this.day = dayNumber;
+    }
+    const n = this.counts.get(key) ?? 0;
+    if (n >= this.limit) return false;
+    if (this.counts.size >= MAX_KEYS) this.counts.clear();
+    this.counts.set(key, n + 1);
+    return true;
+  }
 }
 
 @Injectable()

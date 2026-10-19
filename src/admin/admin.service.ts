@@ -195,6 +195,7 @@ export class AdminService {
       toilets,
       venues,
       pending,
+      escalated,
       flagsOpen,
       photosPending,
       noFeatures,
@@ -210,6 +211,7 @@ export class AdminService {
           expiresAt: { gt: now },
         },
       }),
+      this.prisma.submission.count({ where: { state: SubmissionState.ESCALATED } }),
       this.prisma.flag.count({ where: { resolved: false } }),
       this.prisma.photo.count({ where: { confirmed: true, approved: false } }),
       this.prisma.toilet.count({ where: { ...live, features: { none: {} } } }),
@@ -227,6 +229,7 @@ export class AdminService {
         toilets,
         venues,
         pending,
+        escalated,
         flagsOpen,
         photosPending,
         noFeatures,
@@ -252,31 +255,19 @@ export class AdminService {
     }
   }
 
+  /**
+   * PENDING / NEEDS_INFO past expiresAt → ESCALATED for moderators (PLAN.md §12: moderation is a
+   * safety net, expiry never deletes). Their toilets stay PENDING, so they still show as unconfirmed
+   * and a nearby check-in can still confirm them.
+   */
   private async expireSubmissions(now: Date): Promise<number> {
-    return this.prisma.$transaction(async (tx) => {
-      const due = await tx.submission.findMany({
-        where: {
-          state: { in: [SubmissionState.PENDING, SubmissionState.NEEDS_INFO] },
-          expiresAt: { lt: now },
-        },
-        select: { id: true, toiletId: true },
-      });
-      if (due.length === 0) return 0;
-      const r = await tx.submission.updateMany({
-        where: {
-          id: { in: due.map((s) => s.id) },
-          state: { in: [SubmissionState.PENDING, SubmissionState.NEEDS_INFO] },
-        },
-        data: { state: SubmissionState.EXPIRED, resolvedAt: now, resolution: 'Expired without quorum' },
-      });
-      const toiletIds = due.map((s) => s.toiletId).filter((id): id is string => id !== null);
-      if (toiletIds.length > 0) {
-        await tx.toilet.updateMany({
-          where: { id: { in: toiletIds }, status: ToiletStatus.PENDING },
-          data: { status: ToiletStatus.REJECTED },
-        });
-      }
-      return r.count;
+    const r = await this.prisma.submission.updateMany({
+      where: {
+        state: { in: [SubmissionState.PENDING, SubmissionState.NEEDS_INFO] },
+        expiresAt: { lt: now },
+      },
+      data: { state: SubmissionState.ESCALATED, escalatedAt: now, resolution: 'escalated_expired', resolutionNote: null },
     });
+    return r.count;
   }
 }

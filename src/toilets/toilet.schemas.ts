@@ -97,6 +97,8 @@ const toiletSummaryShape = {
   surveyTotal: z.number().nullable(),
   rasStars: z.number().nullable(),
   reviewCount: z.number().int(),
+  /** Distinct signed-in people who have been there (the submitter plus first check-ins within 150 m). */
+  seenBy: z.number().int(),
   activeStatus: z.array(ActiveStatusSchema),
   lastVerifiedAt: z.string().nullable(),
   needsResurvey: z.boolean(),
@@ -161,6 +163,10 @@ export const ToiletDetailSchema = z
     }),
     accessNote: z.string().nullable(),
     nearestExit: z.string().nullable(),
+    /** "120 m from Tampines MRT": the nearest named place within 1.5 km, only when the venue has no address. */
+    near: z.string().nullable(),
+    /** The open NEW_TOILET submission behind a pending toilet, so its page can link to that review card. */
+    openSubmissionId: z.string().nullable(),
     openingHours: OpeningHoursSchema.nullable(),
     featureDetails: z.array(
       z.object({
@@ -189,6 +195,12 @@ export const StatusReportSchema = z
     createdAt: z.string(),
     expiresAt: z.string(),
     confirmedByMe: z.boolean(),
+    /**
+     * A signed-out Closed / Broken report nobody has backed up yet: shown, but it does not affect
+     * activeStatus, pins or routing until a signed-in person confirms or reports the same, or a
+     * second device does.
+     */
+    unconfirmed: z.boolean(),
   })
   .meta({ id: 'StatusReport' });
 export type StatusReportView = z.infer<typeof StatusReportSchema>;

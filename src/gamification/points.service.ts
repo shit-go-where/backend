@@ -13,11 +13,16 @@ export const POINTS: Record<PointReason, number> = {
   FIRST_CHECK_IN_AT_TOILET: 3,
   VOTE_MATCHED_OUTCOME: 2,
   SURVEY_COMPLETED: 30,
+  // An on-site, photographed toilet goes live at once: 5 now, 15 once a second person confirms it,
+  // so the total matches SUBMISSION_APPROVED.
+  NEW_TOILET_SUBMITTED: 5,
+  NEW_TOILET_CONFIRMED: 15,
 };
 
 /** Reasons that count toward trust (actions verified by others). */
 const TRUST_REASONS = new Set<PointReason>([
   'SUBMISSION_APPROVED',
+  'NEW_TOILET_CONFIRMED',
   'STATUS_CONFIRMED',
   'VOTE_MATCHED_OUTCOME',
   'SURVEY_COMPLETED',
@@ -39,12 +44,13 @@ export class PointsService {
     userId: string,
     reason: PointReason,
     refId: string,
-    opts: { delta?: number; tx?: Prisma.TransactionClient } = {},
+    opts: { delta?: number; tx?: Prisma.TransactionClient; createdAt?: Date } = {},
   ): Promise<boolean> {
     const db = opts.tx ?? this.prisma;
     const delta = opts.delta ?? POINTS[reason];
     const created = await db.pointsLedger.createMany({
-      data: [{ userId, reason, refId, delta }],
+      // createdAt: back-dated when anonymous check-ins are merged on sign-in, so daily caps apply per original day.
+      data: [{ userId, reason, refId, delta, ...(opts.createdAt ? { createdAt: opts.createdAt } : {}) }],
       skipDuplicates: true,
     });
     if (created.count === 0) return false;

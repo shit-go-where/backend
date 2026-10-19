@@ -5,8 +5,18 @@ import { bboxAround, estimateWalkSeconds, haversineM, type LatLng } from '../com
 import { ToiletPresenter } from '../toilets/toilet-presenter.service.js';
 import type { ToiletSummary } from '../toilets/toilet.schemas.js';
 import { OneMapService } from './onemap.service.js';
+import { countedReports } from '../status/unconfirmed.js';
+import { rankUnconfirmedLower, unconfirmedReasons } from './unconfirmed.js';
 import { PURPOSE_NEEDS, type Purpose } from './purposes.js';
-import { rank, reasons, resolveWeights, walkingMetres, type RankCandidate, type Ranked } from './ranking.js';
+import {
+  byWalkMinutes,
+  rank,
+  reasons,
+  resolveWeights,
+  walkingMetres,
+  type RankCandidate,
+  type Ranked,
+} from './ranking.js';
 
 export const URGENT_RADII = [800, 1500, 3000];
 export const DEFAULT_RADIUS = 1500;
@@ -33,6 +43,8 @@ export interface RecommendItem {
   walkDistanceM: number;
   reasons: string[];
   route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null;
+  /** A pending community toilet nobody has confirmed yet (calm mode only). */
+  unconfirmed: boolean;
 }
 
 @Injectable()
@@ -58,6 +70,8 @@ export class RecommendService {
         features: required,
         areaType: input.areaType,
         bbox: bboxAround(origin, maxRadius),
+        // Calm results may offer unconfirmed (PENDING) toilets, labelled; urgent mode never does.
+        includePending: !urgent,
       }),
       now,
     );
@@ -72,7 +86,8 @@ export class RecommendService {
           source: row.source,
           lastVerifiedAt: row.lastVerifiedAt,
           features: summary.features,
-          reports: row.statusReports,
+          // Unconfirmed anonymous closures never take a toilet out of routing.
+          reports: countedReports(row.statusReports),
           summary,
         };
         return candidate;
@@ -98,6 +113,7 @@ export class RecommendService {
       );
       if (ranked.length > 0) break;
     }
+    if (!urgent) ranked = rankUnconfirmedLower(ranked, (c) => c.summary.status === 'PENDING');
 
     const top = ranked.slice(0, TOP_N);
     const routes = await Promise.all(
@@ -106,17 +122,24 @@ export class RecommendService {
     const items: RecommendItem[] = top.map(({ candidate: c, score }, i) => {
       const route = routes[i];
       const walkSeconds = route?.durationS ?? estimateWalkSeconds(c.distanceM);
+      const unconfirmed = c.summary.status === 'PENDING';
+      const why = reasons(c, walkSeconds, required, now, preferred);
       return {
         toilet: c.summary,
         score,
         walkSeconds,
         walkDistanceM: route?.distanceM ?? walkingMetres(c.distanceM),
-        reasons: reasons(c, walkSeconds, required, now, preferred),
+        reasons: unconfirmed ? unconfirmedReasons(why) : why,
         route: route ? { polyline: route.polyline, source: route.source } : null,
+        unconfirmed,
       };
     });
 
-    return { items, searchedRadiusM, skippedVenues: await this.skippedVenues(origin, searchedRadiusM) };
+    return {
+      items: urgent ? byWalkMinutes(items) : items,
+      searchedRadiusM,
+      skippedVenues: await this.skippedVenues(origin, searchedRadiusM),
+    };
   }
 
   /** Venues in range that have no toilet of their own, so the UI can explain the gap. */

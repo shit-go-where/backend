@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { User } from '../generated/prisma/client.js';
 import { AuthGuard, CurrentUser } from '../common/auth/auth.guard.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { escalateIfFlagged } from '../submissions/resolution.js';
 
 export const CreateFlagSchema = z.object({ reason: z.string().trim().min(3).max(500) });
 export class CreateFlagDto extends createZodDto(CreateFlagSchema) {}
@@ -28,6 +29,8 @@ export class FlagsController {
       data: { toiletId: id, userId: user.id, reason: body.reason },
       select: { id: true },
     });
+    // Two people flagging a toilet that went live without review sends it back to the moderators.
+    await escalateIfFlagged(this.prisma, id);
     return flag;
   }
 }

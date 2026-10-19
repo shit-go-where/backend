@@ -24,7 +24,14 @@ export const CheckInResultSchema = z.object({
   pointsAwarded: z.number().int(),
   newBadges: z.array(BadgeSchema),
   verifyPrompt: z.array(z.enum(Feature)),
+  /** This check-in counted as a confirmation of a new toilet someone else added. */
+  confirmedPending: z.boolean(),
+  /** ...and that confirmation put it live. */
+  wentLive: z.boolean(),
+  /** Signed out: points this device earned and will be paid on sign-in. Always 0 when signed in. */
+  bankedPoints: z.number().int(),
 });
+export type CheckInResult = z.infer<typeof CheckInResultSchema>;
 export class CheckInResultDto extends createZodDto(CheckInResultSchema) {}
 
 export const VerifySchema = z.object({

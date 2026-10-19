@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Logger,
   NotFoundException,
   Post,
   Query,
@@ -23,6 +24,8 @@ import {
 } from '../common/auth/session.js';
 import { MeDto } from '../users/users.dto.js';
 import { UsersService } from '../users/users.service.js';
+import { clearAnonCookie, readDeviceId } from '../common/auth/anon.js';
+import { GamificationService } from '../gamification/gamification.service.js';
 import {
   AuthService,
   OAUTH_STATE_COOKIE,
@@ -59,6 +62,9 @@ function stateCookieOptions() {
   };
 }
 
+/** Read by the frontend's /login page to explain what went wrong. */
+export type AuthErrorCode = 'access_denied' | 'no_code' | 'email_unverified' | 'google_failed' | 'expired';
+
 function appUrl(path: string, params?: Record<string, string>): string {
   const base = env.PUBLIC_APP_URL.replace(/\/$/, '');
   if (!params) return base + path;
@@ -69,10 +75,28 @@ function appUrl(path: string, params?: Record<string, string>): string {
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
+  private readonly log = new Logger(AuthController.name);
+
   constructor(
     private readonly auth: AuthService,
     private readonly users: UsersService,
+    private readonly gamification: GamificationService,
   ) {}
+
+  /**
+   * After any sign-in: move this browser's anonymous check-ins and status reports (sgw_anon) to the
+   * account, pay their banked points, and drop the cookie. Never blocks the sign-in itself.
+   */
+  private async mergeAnonymous(userId: string, req: Request, res: Response) {
+    const deviceId = readDeviceId(req);
+    if (!deviceId) return;
+    try {
+      await this.gamification.mergeDevice(userId, deviceId);
+      clearAnonCookie(res);
+    } catch (e) {
+      this.log.warn(`anonymous merge failed for ${userId}: ${String(e)}`);
+    }
+  }
 
   @Get('google')
   @ApiFoundResponse({ description: 'Redirects to Google' })
@@ -85,29 +109,30 @@ export class AuthController {
   }
 
   @Get('callback')
-  @ApiFoundResponse({ description: 'Sets the session cookie and redirects to the app' })
+  @ApiFoundResponse({
+    description:
+      'Sets the session cookie and redirects to the app; on any failure redirects to /login?redirect=&error=<code>',
+  })
   async callback(@Query() query: CallbackQuery, @Req() req: Request, @Res() res: Response) {
     this.auth.assertGoogleConfigured();
     const cookies = req.cookies as Record<string, string> | undefined;
     const saved = decodeStateCookie(cookies?.[OAUTH_STATE_COOKIE]);
     res.clearCookie(OAUTH_STATE_COOKIE, stateCookieOptions());
-    if (!saved || !query.state || saved.state !== query.state) {
-      throw new BadRequestException('Invalid or expired sign-in state. Please try again.');
-    }
-    if (query.error || !query.code) {
-      // User cancelled at Google (error=access_denied) or Google sent no code.
-      res.redirect(302, appUrl(saved.redirect, { authError: query.error ?? 'no_code' }));
-      return;
-    }
+    // Every failure lands on the login page, which explains it and offers to try again.
+    const fail = (error: AuthErrorCode) =>
+      res.redirect(302, appUrl('/login', { redirect: saved?.redirect ?? '/', error }));
+    if (!saved || !query.state || saved.state !== query.state) return fail('expired');
+    // User cancelled at Google (error=access_denied) or Google sent no code.
+    if (query.error) return fail('access_denied');
+    if (!query.code) return fail('no_code');
     let profile;
     try {
       profile = await this.auth.exchangeCode(query.code);
     } catch (e) {
-      const reason = e instanceof Error && /not verified/.test(e.message) ? 'email_unverified' : 'google_failed';
-      res.redirect(302, appUrl(saved.redirect, { authError: reason }));
-      return;
+      return fail(e instanceof Error && /not verified/.test(e.message) ? 'email_unverified' : 'google_failed');
     }
     const user = await this.auth.upsertGoogleUser(profile);
+    await this.mergeAnonymous(user.id, req, res);
     res.cookie(SESSION_COOKIE, createSessionToken(user.id), sessionCookieOptions());
     res.redirect(302, appUrl(saved.redirect));
   }
@@ -124,9 +149,10 @@ export class AuthController {
   @HttpCode(200)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ZodResponse({ type: MeDto })
-  async devLogin(@Body() body: DevLoginBody, @Res({ passthrough: true }) res: Response) {
+  async devLogin(@Body() body: DevLoginBody, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     if (!env.DEV_LOGIN_ENABLED) throw new NotFoundException();
     const user = await this.auth.upsertDevUser(body.email, body.displayName);
+    await this.mergeAnonymous(user.id, req, res);
     res.cookie(SESSION_COOKIE, createSessionToken(user.id), sessionCookieOptions());
     return this.users.getMe(user.id);
   }

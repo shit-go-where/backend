@@ -91,6 +91,136 @@ describe('PATCH /me', () => {
   });
 });
 
+describe('Me extras (PLAN.md §12 E5/E6)', () => {
+  it('reports trust progress, open submissions and unseen activity, and marks it seen', async () => {
+    const { cookie, me } = await login(ctx.server, email('seen'));
+    let res = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
+    expect(res.body).toMatchObject({
+      trust: { score: 0, threshold: 50, isTrusted: false },
+      openSubmissions: { count: 0, limit: 10 },
+      unseen: { resolvedSubmissions: 0, badges: 0, points: 0 },
+      lastSeenActivityAt: null,
+      handleChangeableAt: null,
+    });
+    await ctx.prisma.pointsLedger.create({ data: { userId: me.id, reason: 'CHECK_IN', refId: `seen-${uid()}`, delta: 1 } });
+    res = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
+    expect(res.body.unseen.points).toBe(1);
+
+    const seen = await request(ctx.server).post('/me/activity/seen').set('Cookie', cookie).expect(200);
+    expect(seen.body).toMatchObject({ ok: true, seenAt: expect.any(String) });
+    res = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
+    expect(res.body.unseen).toEqual({ resolvedSubmissions: 0, badges: 0, points: 0 });
+    expect(res.body.lastSeenActivityAt).toBe(seen.body.seenAt);
+    await request(ctx.server).post('/me/activity/seen').expect(401);
+  });
+
+  it('lets a handle change once every 30 days; the first handle is free', async () => {
+    const { cookie } = await login(ctx.server, email('hc'));
+    const h = () => `h${uid()}`;
+    await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(200);
+    const changed = await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(200);
+    expect(changed.body.handleChangeableAt).toEqual(expect.any(String));
+    const again = await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(429);
+    expect(again.body.message).toMatch(/once every 30 days/);
+    // Same handle again, or other fields, are fine.
+    await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: changed.body.handle, displayName: 'X' }).expect(200);
+  });
+});
+
+describe('anonymous check-ins merged on sign-in (PLAN.md §12 E4)', () => {
+  it('banks points on the device, then pays them once on sign-in and clears the cookie', async () => {
+    const { toilet } = await makeToilet(ctx.prisma);
+    const at = { lat: toilet.latitude, lng: toilet.longitude };
+    const first = await request(ctx.server).post(`/toilets/${toilet.id}/check-ins`).send(at).expect(201);
+    expect(first.body).toMatchObject({ pointsAwarded: 0, bankedPoints: 4, confirmedPending: false, wentLive: false });
+    const anon = cookiesOf(first).find((c) => c.startsWith('sgw_anon='))!;
+    expect(anon).toMatch(/HttpOnly/i);
+    expect(anon).toMatch(/SameSite=Lax/i);
+    const anonCookie = anon.split(';')[0];
+    const row = await ctx.prisma.checkIn.findUniqueOrThrow({ where: { id: first.body.id } });
+    expect(row.userId).toBeNull();
+    expect(row.deviceId).toEqual(expect.any(String));
+
+    // Same device, same toilet within 2 h → 429.
+    await request(ctx.server).post(`/toilets/${toilet.id}/check-ins`).set('Cookie', anonCookie).send(at).expect(429);
+    // A signed-out status report from the same device.
+    const report = await request(ctx.server)
+      .post(`/toilets/${toilet.id}/status`)
+      .set('Cookie', anonCookie)
+      .send({ kind: 'CLOSED_NOW' })
+      .expect(201);
+    expect(report.body.unconfirmed).toBe(true);
+    const ttl = new Date(report.body.expiresAt).getTime() - new Date(report.body.createdAt).getTime();
+    expect(ttl).toBe(3_600_000);
+
+    const e = email('merge');
+    const signIn = await request(ctx.server).post('/auth/dev-login').set('Cookie', anonCookie).send({ email: e }).expect(200);
+    expect(cookiesOf(signIn).some((c) => c.startsWith('sgw_anon=;'))).toBe(true);
+    const merged = await ctx.prisma.checkIn.findUniqueOrThrow({ where: { id: first.body.id } });
+    expect(merged.userId).toBe(signIn.body.id);
+    expect(merged.deviceId).toBeNull();
+    const rep = await ctx.prisma.statusReport.findUniqueOrThrow({ where: { id: report.body.id } });
+    expect(rep.userId).toBe(signIn.body.id);
+    const ledger = await ctx.prisma.pointsLedger.findMany({ where: { userId: signIn.body.id } });
+    expect(ledger.map((l) => `${l.reason}:${l.delta}`).sort()).toEqual(['CHECK_IN:1', 'FIRST_CHECK_IN_AT_TOILET:3']);
+    expect(ledger.find((l) => l.reason === 'CHECK_IN')!.createdAt.getTime()).toBe(row.createdAt.getTime());
+
+    // Idempotent: signing in again with the old cookie pays nothing more.
+    await request(ctx.server).post('/auth/dev-login').set('Cookie', anonCookie).send({ email: e }).expect(200);
+    expect(await ctx.prisma.pointsLedger.count({ where: { userId: signIn.body.id } })).toBe(2);
+  });
+
+  it('applies the daily CHECK_IN cap per original Singapore day when merging', async () => {
+    const { toilet } = await makeToilet(ctx.prisma);
+    const deviceId = crypto.randomUUID();
+    const day = new Date('2026-03-03T04:00:00Z');
+    await ctx.prisma.checkIn.createMany({
+      data: Array.from({ length: 7 }, (_, i) => ({
+        deviceId,
+        toiletId: toilet.id,
+        distanceM: 10,
+        createdAt: new Date(day.getTime() + i * 60_000),
+      })),
+    });
+    const { createAnonToken } = await import('../src/common/auth/anon.js');
+    const res = await request(ctx.server)
+      .post('/auth/dev-login')
+      .set('Cookie', `sgw_anon=${createAnonToken(deviceId)}`)
+      .send({ email: email('cap') })
+      .expect(200);
+    const ledger = await ctx.prisma.pointsLedger.findMany({ where: { userId: res.body.id } });
+    expect(ledger.filter((l) => l.reason === 'CHECK_IN')).toHaveLength(5);
+    expect(ledger.filter((l) => l.reason === 'FIRST_CHECK_IN_AT_TOILET')).toHaveLength(1);
+  });
+
+  it('limits a device to 5 signed-out check-ins a day and sends pending toilets to sign-in', async () => {
+    const { createAnonToken } = await import('../src/common/auth/anon.js');
+    const cookie = `sgw_anon=${createAnonToken()}`;
+    for (let i = 0; i < 5; i++) {
+      const { toilet } = await makeToilet(ctx.prisma);
+      await request(ctx.server)
+        .post(`/toilets/${toilet.id}/check-ins`)
+        .set('Cookie', cookie)
+        .send({ lat: toilet.latitude, lng: toilet.longitude })
+        .expect(201);
+    }
+    const { toilet } = await makeToilet(ctx.prisma);
+    const res = await request(ctx.server)
+      .post(`/toilets/${toilet.id}/check-ins`)
+      .set('Cookie', cookie)
+      .send({ lat: toilet.latitude, lng: toilet.longitude })
+      .expect(429);
+    expect(res.body.message).toMatch(/5 times a day/);
+
+    const { toilet: pending } = await makeToilet(ctx.prisma, 'PENDING');
+    const p = await request(ctx.server)
+      .post(`/toilets/${pending.id}/check-ins`)
+      .send({ lat: pending.latitude, lng: pending.longitude })
+      .expect(401);
+    expect(p.body.message).toMatch(/Sign in to confirm/);
+  });
+});
+
 describe('GET /me/activity', () => {
   it('paginates the points ledger and Me.points sums it', async () => {
     const { cookie, me } = await login(ctx.server, email('act'));
@@ -219,18 +349,32 @@ describe('Google OAuth', () => {
     expect(u.googleSub).toBe(sub);
   });
 
-  it('callback rejects bad state and unverified email', async () => {
+  it('callback sends every failure to /login with a code', async () => {
+    const login = (redirect: string, error: string) =>
+      `${TEST_APP_URL}/login?${new URLSearchParams({ redirect, error }).toString()}`;
     const { cookie, state } = await start();
-    await request(ctx.server).get(`/auth/callback?code=abc&state=wrong`).set('Cookie', cookie).expect(400);
-    await request(ctx.server).get(`/auth/callback?code=abc&state=${state}`).expect(400);
+    let res = await request(ctx.server).get(`/auth/callback?code=abc&state=wrong`).set('Cookie', cookie).expect(302);
+    expect(res.headers.location).toBe(login('/after?x=1', 'expired'));
+    res = await request(ctx.server).get(`/auth/callback?code=abc&state=${state}`).expect(302);
+    expect(res.headers.location).toBe(login('/', 'expired'));
+
+    const s1 = await start('/go');
+    res = await request(ctx.server)
+      .get(`/auth/callback?error=access_denied&state=${s1.state}`)
+      .set('Cookie', s1.cookie)
+      .expect(302);
+    expect(res.headers.location).toBe(login('/go', 'access_denied'));
+    const s0 = await start('/go');
+    res = await request(ctx.server).get(`/auth/callback?state=${s0.state}`).set('Cookie', s0.cookie).expect(302);
+    expect(res.headers.location).toBe(login('/go', 'no_code'));
 
     stubGoogle({ sub: `s-${uid()}`, email: email('unv'), email_verified: false });
     const s2 = await start('/');
-    const res = await request(ctx.server)
+    res = await request(ctx.server)
       .get(`/auth/callback?code=abc&state=${s2.state}`)
       .set('Cookie', s2.cookie)
       .expect(302);
-    expect(res.headers.location).toBe(`${TEST_APP_URL}/?authError=email_unverified`);
+    expect(res.headers.location).toBe(login('/', 'email_unverified'));
     expect(cookiesOf(res).some((c) => c.startsWith('sgw_session=') && !c.startsWith('sgw_session=;'))).toBe(false);
   });
 

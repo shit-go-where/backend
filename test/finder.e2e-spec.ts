@@ -131,6 +131,11 @@ describe('Finder (e2e)', () => {
         myReview: null,
         reviews: [],
         photos: [],
+        seenBy: 1,
+        // Has an address, so no "near" hint.
+        near: null,
+        // Live, so no open submission to review.
+        openSubmissionId: null,
       });
       expect(res.body.featureDetails).toContainEqual(
         expect.objectContaining({ feature: 'SQUAT', present: false }),
@@ -141,6 +146,8 @@ describe('Finder (e2e)', () => {
     it('attribution for OSM and data.gov sources, venue hours fallback', async () => {
       const osm = await http().get(`/toilets/${fx.toilets.b1.id}`).expect(200);
       expect(osm.body.attribution).toBe('© OpenStreetMap contributors (ODbL)');
+      // The station has no address: say what it is near.
+      expect(osm.body.near).toMatch(/^\d+ m from (Bishan CCL Test|Nearby User Test|Test Mall)$/);
       expect(osm.body.openNow).toBe(true);
       const gov = await http().get(`/toilets/${fx.toilets.e1.id}`).expect(200);
       expect(gov.body.attribution).toBe('Data © data.gov.sg, Singapore Open Data Licence');
@@ -189,8 +196,8 @@ describe('Finder (e2e)', () => {
     it('returns top 3 with reasons, estimate routes and skipped venues', async () => {
       const res = await http().post('/routing/recommend').send(ORIGIN).expect(200);
       expect(res.body.searchedRadiusM).toBe(1500);
-      // Only two eligible toilets: A2 is closed by its hours and is excluded.
-      expect(res.body.items).toHaveLength(2);
+      // A2 is closed by its hours and is excluded; the pending one is offered, flagged as unconfirmed.
+      expect(res.body.items).toHaveLength(3);
       const best = res.body.items[0];
       expect(best.toilet.id).toBe(fx.toilets.a1.id);
       expect(best.route).toBeNull();
@@ -200,11 +207,15 @@ describe('Finder (e2e)', () => {
       );
       expect(best.reasons[0]).toMatch(/^\d+ min walk$/);
       expect(best.score).toBeGreaterThan(res.body.items[1].score);
-      // RENOVATION and PENDING are never recommended, nor toilets at NONE venues.
+      expect(best.unconfirmed).toBe(false);
+      // RENOVATION is never recommended, nor toilets at NONE venues. PENDING ones are, in calm mode, labelled.
       const ids = res.body.items.map((i: { toilet: { id: string } }) => i.toilet.id);
       expect(ids).not.toContain(fx.toilets.closed.id);
-      expect(ids).not.toContain(fx.toilets.pending.id);
       expect(ids).not.toContain(fx.toilets.c1.id);
+      const pending = res.body.items.find((i: { toilet: { id: string } }) => i.toilet.id === fx.toilets.pending.id);
+      expect(pending).toMatchObject({ unconfirmed: true, toilet: { status: 'PENDING' } });
+      expect(pending.reasons).toContain('Unconfirmed: added by the community, not yet confirmed');
+      expect(pending.reasons).not.toContain('Community verified');
       // A2 is closed by its own hours: never recommended, even without openNow.
       expect(ids).not.toContain(fx.toilets.a2.id);
       expect(res.body.skippedVenues.map((v: { name: string }) => v.name)).toEqual([
@@ -243,6 +254,8 @@ describe('Finder (e2e)', () => {
       expect(near800.body.searchedRadiusM).toBe(800);
       expect(near800.body.items[0].toilet.id).toBe(fx.toilets.a1.id);
       expect(near800.body.items.map((i: { toilet: { id: string } }) => i.toilet.id)).not.toContain(fx.toilets.a2.id);
+      // Urgent mode never offers an unconfirmed toilet.
+      expect(near800.body.items.map((i: { toilet: { id: string } }) => i.toilet.id)).not.toContain(fx.toilets.pending.id);
     });
 
     it('skips toilets with a confirmed CLOSED_NOW report', async () => {
@@ -286,8 +299,32 @@ describe('Finder (e2e)', () => {
   describe('status reports', () => {
     let reportId: string;
 
-    it('requires sign-in to report', async () => {
-      await http().post(`/toilets/${fx.toilets.a2.id}/status`).send({ kind: 'NO_PAPER' }).expect(401);
+    it('takes signed-out reports; a lone anonymous closure stays unconfirmed until a second device', async () => {
+      const e1 = fx.toilets.e1.id;
+      const first = await http().post(`/toilets/${e1}/status`).send({ kind: 'CLOSED_NOW' }).expect(201);
+      expect(first.body.unconfirmed).toBe(true);
+      const device1 = ([] as string[])
+        .concat(first.headers['set-cookie'] ?? [])
+        .find((c) => c.startsWith('sgw_anon='))!
+        .split(';')[0];
+      // 1 h for signed-out reports, even CLOSED_NOW.
+      expect(new Date(first.body.expiresAt).getTime() - new Date(first.body.createdAt).getTime()).toBe(3_600_000);
+      let detail = await http().get(`/toilets/${e1}`).expect(200);
+      expect(detail.body.activeStatus).toEqual([]);
+
+      // Same device again: deduplicated, still unconfirmed.
+      const again = await http().post(`/toilets/${e1}/status`).set('Cookie', device1).send({ kind: 'CLOSED_NOW' }).expect(201);
+      expect(again.body).toMatchObject({ id: first.body.id, unconfirmed: true });
+      // "Still true" stays signed-in only.
+      await http().post(`/status/${first.body.id}/confirm`).set('Cookie', device1).expect(401);
+
+      const second = await http().post(`/toilets/${e1}/status`).send({ kind: 'CLOSED_NOW' }).expect(201);
+      expect(second.body.unconfirmed).toBe(false);
+      const list = await http().get(`/toilets/${e1}/status`).expect(200);
+      expect(list.body.items.every((r: { unconfirmed: boolean }) => !r.unconfirmed)).toBe(true);
+      detail = await http().get(`/toilets/${e1}`).expect(200);
+      expect(detail.body.activeStatus).toEqual([expect.objectContaining({ kind: 'CLOSED_NOW', count: 2 })]);
+      await prisma.statusReport.deleteMany({ where: { toiletId: e1 } });
     });
 
     it('creates and de-duplicates within 30 min', async () => {

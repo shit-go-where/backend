@@ -4,7 +4,9 @@ import type { AreaType, Feature, ToiletTier } from '../generated/prisma/enums.js
 import { PrismaService } from '../prisma/prisma.service.js';
 import { estimateWalkSeconds, haversineM, type LatLng } from '../common/geo.js';
 import { isOpenAt, type OpeningHours } from '../common/opening-hours.js';
+import { countedReports } from '../status/unconfirmed.js';
 import type { Review, ToiletDetail, ToiletPin, ToiletSummary } from './toilet.schemas.js';
+import { nearText } from './near.js';
 
 /** Prisma include needed to build a ToiletSummary. Depends on `now` for unexpired status reports. */
 export function summaryInclude(now: Date) {
@@ -18,7 +20,7 @@ export function summaryInclude(now: Date) {
     },
     statusReports: {
       where: { expiresAt: { gt: now } },
-      select: { kind: true, createdAt: true, confirmations: true },
+      select: { kind: true, createdAt: true, confirmations: true, userId: true, deviceId: true },
     },
     photos: {
       where: { approved: true },
@@ -109,9 +111,10 @@ export class ToiletPresenter {
     };
   }
 
-  activeStatus(reports: { kind: ToiletSummary['activeStatus'][number]['kind']; createdAt: Date }[]) {
+  /** Unexpired reports grouped by kind; unconfirmed anonymous closures are left out (status/unconfirmed.ts). */
+  activeStatus(reports: ToiletWithSummary['statusReports']) {
     const byKind = new Map<string, { kind: (typeof reports)[number]['kind']; count: number; latest: Date }>();
-    for (const r of reports) {
+    for (const r of countedReports(reports)) {
       const cur = byKind.get(r.kind);
       if (!cur) byKind.set(r.kind, { kind: r.kind, count: 1, latest: r.createdAt });
       else {
@@ -142,6 +145,7 @@ export class ToiletPresenter {
       surveyTotal: survey?.total ?? null,
       rasStars: survey?.rasStars ?? null,
       reviewCount: t.reviewCount,
+      seenBy: t.seenBy,
       activeStatus: this.activeStatus(t.statusReports),
       lastVerifiedAt: t.lastVerifiedAt?.toISOString() ?? null,
       needsResurvey: t.needsResurvey,
@@ -164,7 +168,7 @@ export class ToiletPresenter {
     status: ToiletPin['status'];
     scoreCleanliness: number | null;
     venue: { type: ToiletPin['venueType'] };
-    statusReports: { kind: string }[];
+    statusReports: ToiletWithSummary['statusReports'];
   }): ToiletPin {
     return {
       id: t.id,
@@ -173,7 +177,7 @@ export class ToiletPresenter {
       tier: t.tier,
       status: t.status,
       scoreCleanliness: t.scoreCleanliness,
-      hasIssue: t.statusReports.some((r) => r.kind !== 'ALL_GOOD'),
+      hasIssue: countedReports(t.statusReports).some((r) => r.kind !== 'ALL_GOOD'),
       venueType: t.venue.type,
     };
   }
@@ -231,6 +235,18 @@ export class ToiletPresenter {
     return {
       ...summary,
       venue: { ...summary.venue, address: t.venue.address, planningArea: t.venue.planningArea },
+      // Places without an address say where they are ("120 m from Tampines MRT"), as on area pages.
+      near: t.venue.address ? null : await nearText(this.prisma, t.venue),
+      openSubmissionId:
+        t.status === 'PENDING'
+          ? ((
+              await this.prisma.submission.findFirst({
+                where: { toiletId: t.id, kind: 'NEW_TOILET', state: { in: ['PENDING', 'NEEDS_INFO', 'ESCALATED'] } },
+                orderBy: { createdAt: 'desc' },
+                select: { id: true },
+              })
+            )?.id ?? null)
+          : null,
       accessNote: t.accessNote,
       nearestExit: t.nearestExit,
       openingHours: ToiletPresenter.effectiveHours(t),

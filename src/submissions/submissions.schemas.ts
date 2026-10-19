@@ -9,6 +9,7 @@ import {
   VenueType,
   VoteValue,
 } from '../generated/prisma/enums.js';
+import { RESOLUTION_CODES } from './resolution-codes.js';
 
 /* ─────────────── shared building blocks ─────────────── */
 
@@ -30,7 +31,10 @@ export const NewToiletPayloadSchema = z.object({
   areaType: z.enum(AreaType).optional(),
   accessNote: shortText(500).optional(),
   features: FeatureMapSchema,
-  photoIds: z.array(z.string().min(1)).min(1).max(10),
+  // Optional: peers nearby confirm a new toilet either way, and a photo shouldn't block one (PRODUCT.md).
+  photoIds: z.array(z.string().min(1)).max(10).default([]),
+  /** Added when answering NEEDS_INFO (PATCH /submissions/:id). */
+  note: shortText(1000).optional(),
 });
 export type NewToiletPayload = z.infer<typeof NewToiletPayloadSchema>;
 
@@ -57,6 +61,7 @@ export type EditToiletPayload = z.infer<typeof EditToiletPayloadSchema>;
 export const CloseToiletPayloadSchema = z.object({
   status: z.enum(['CLOSED', 'RENOVATION']),
   reason: shortText(500),
+  note: shortText(1000).optional(),
 });
 export type CloseToiletPayload = z.infer<typeof CloseToiletPayloadSchema>;
 
@@ -113,6 +118,23 @@ export const ResolveSchema = z.object({
 });
 export class ResolveDto extends createZodDto(ResolveSchema) {}
 
+/** Owner's answer to NEEDS_INFO: more detail, more photos, a corrected level. Puts it back to PENDING. */
+export const UpdateSubmissionSchema = z
+  .object({
+    note: shortText(1000).optional(),
+    photoIds: z.array(z.string().min(1)).max(10).optional(),
+    level: shortText(20).optional(),
+  })
+  .refine((b) => b.note !== undefined || b.level !== undefined || (b.photoIds?.length ?? 0) > 0, {
+    message: 'Add a note, a photo or a level',
+  });
+export class UpdateSubmissionDto extends createZodDto(UpdateSubmissionSchema) {}
+
+export const ModeratorQueueQuerySchema = z.object({
+  state: z.enum(['pending', 'escalated', 'needs_info', 'all']).default('all'),
+});
+export class ModeratorQueueQueryDto extends createZodDto(ModeratorQueueQuerySchema) {}
+
 /* ─────────────── responses ─────────────── */
 
 export const PhotoRefSchema = z.object({ id: z.string(), url: z.string(), thumbUrl: z.string().nullable() });
@@ -128,11 +150,45 @@ export const VenueLiteSchema = z.object({
   note: z.string().nullable(),
 });
 
+/** The toilet's values now, for the fields an EDIT_TOILET changes (null feature = no record). */
+export const CurrentValuesSchema = z.object({
+  label: z.string().nullable().optional(),
+  level: z.string().nullable().optional(),
+  areaType: z.enum(AreaType).optional(),
+  accessNote: z.string().nullable().optional(),
+  features: z.partialRecord(FeatureSchema, z.boolean().nullable()).optional(),
+});
+
+/** One vote, anonymised: no user id or handle. */
+export const ReviewerNoteSchema = z.object({
+  value: z.enum(VoteValue),
+  note: z.string().nullable(),
+  createdAt: z.string(),
+  /** Cast within 150 m of the toilet, so it counts toward the nearby quorum. */
+  nearby: z.boolean(),
+  /** The vote came from a check-in at the toilet. */
+  viaCheckIn: z.boolean(),
+});
+
 export const SubmissionViewSchema = z.object({
   id: z.string(),
   kind: z.enum(SubmissionKind),
   state: z.enum(SubmissionState),
   payload: SubmissionPayloadSchema,
+  /** Submitted within 150 m of the toilet / with at least one photo. */
+  onSite: z.boolean(),
+  hasPhoto: z.boolean(),
+  /** auto: live at once (on site + photo); on_site_check_in: one nearby check-in or vote; nearby_quorum: two. */
+  path: z.enum(['auto', 'on_site_check_in', 'nearby_quorum']),
+  nearbyApprovals: z.number().int(),
+  /** More nearby confirmations needed to go live (0 once decided, or while only a moderator can decide). */
+  needed: z.number().int(),
+  escalated: z.boolean(),
+  /** How far from the toilet the submitter stood, when they shared a location. */
+  submitterDistanceM: z.number().int().nullable(),
+  reviewerNotes: z.array(ReviewerNoteSchema),
+  /** EDIT_TOILET while open: the toilet's current values for the changed fields. */
+  current: CurrentValuesSchema.nullable(),
   toilet: z
     .object({ id: z.string(), label: z.string().nullable(), venueName: z.string(), lat: z.number(), lng: z.number() })
     .nullable(),
@@ -143,7 +199,10 @@ export const SubmissionViewSchema = z.object({
   createdAt: z.string(),
   expiresAt: z.string(),
   resolvedAt: z.string().nullable(),
-  resolution: z.string().nullable(),
+  resolution: z.enum(RESOLUTION_CODES).nullable(),
+  resolutionText: z.string().nullable(),
+  /** A moderator's note on their decision. */
+  resolutionNote: z.string().nullable(),
   distanceM: z.number().optional(),
   myVote: z.enum(VoteValue).nullable(),
   photos: z.array(PhotoRefSchema),
@@ -152,3 +211,10 @@ export const SubmissionViewSchema = z.object({
 export type SubmissionView = z.infer<typeof SubmissionViewSchema>;
 export class SubmissionViewDto extends createZodDto(SubmissionViewSchema) {}
 export class SubmissionListDto extends createZodDto(z.object({ items: z.array(SubmissionViewSchema) })) {}
+
+export const ModeratorSubmissionSchema = SubmissionViewSchema.extend({
+  /** Whole days since it was submitted. */
+  ageDays: z.number().int(),
+});
+export type ModeratorSubmission = z.infer<typeof ModeratorSubmissionSchema>;
+export class ModeratorSubmissionListDto extends createZodDto(z.object({ items: z.array(ModeratorSubmissionSchema) })) {}

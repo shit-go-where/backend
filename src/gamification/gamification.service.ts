@@ -4,24 +4,30 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   OnApplicationBootstrap,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PointsService, POINTS } from './points.service.js';
 import type { Prisma, PrismaClient, User } from '../generated/prisma/client.js';
 import { Feature, PointReason, ToiletStatus, VenueToiletStatus, VenueType } from '../generated/prisma/enums.js';
 import { haversineM } from '../common/geo.js';
-import { BADGES, MRT_LINES, earnedBadgeIds, type MrtLine } from './badges.js';
+import { BADGES, FOUNDING_BADGE_ID, MRT_LINES, earnedBadgeIds, type MrtLine } from './badges.js';
 import { rankWithTies } from './ranking.js';
 import { sgtDayStart } from './sgt.js';
-import type { BadgeView, Leaderboard } from './gamification.schemas.js';
+import type { BadgeView, CheckInResult, Leaderboard } from './gamification.schemas.js';
+import { confirmByCheckIn, escalateIfFlagged } from '../submissions/resolution.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
 export const CHECK_IN_RADIUS_M = 150;
 export const CHECK_IN_COOLDOWN_MS = 2 * 3_600_000;
 export const CHECK_IN_DAILY_POINT_CAP = 5;
+/** Signed-out check-ins per device per Singapore day (and the same 2 h cooldown per toilet). */
+export const ANON_CHECK_INS_PER_DAY = 5;
+const DAY_MS = 86_400_000;
 const LEADERBOARD_TTL_MS = 5 * 60_000;
 const WEEK_MS = 7 * 86_400_000;
 
@@ -46,6 +52,7 @@ type LeaderboardScope = 'week' | 'all';
 
 @Injectable()
 export class GamificationService implements OnApplicationBootstrap {
+  private readonly log = new Logger(GamificationService.name);
   private readonly lbCache = new Map<LeaderboardScope, { at: number; items: Leaderboard['items'] }>();
 
   constructor(
@@ -87,6 +94,10 @@ export class GamificationService implements OnApplicationBootstrap {
       db.userBadge.findMany({ where: { userId }, select: { badgeId: true } }),
     ]);
     if (!user) return [];
+    // Founding slots only matter until this user holds the badge.
+    const foundingHolders = existing.some((e) => e.badgeId === FOUNDING_BADGE_ID)
+      ? 0
+      : await db.userBadge.count({ where: { badgeId: FOUNDING_BADGE_ID } });
     const lineStations: Partial<Record<MrtLine, string[]>> = {};
     for (const line of MRT_LINES) lineStations[line] = stations.filter((s) => s.lines.includes(line)).map((s) => s.id);
 
@@ -97,6 +108,7 @@ export class GamificationService implements OnApplicationBootstrap {
       reviews,
       approvedPhotos,
       role: user.role,
+      foundingHolders,
     });
     const have = new Set(existing.map((e) => e.badgeId));
     const fresh = earned.filter((id) => !have.has(id));
@@ -143,7 +155,7 @@ export class GamificationService implements OnApplicationBootstrap {
   private async loadToiletWithin(toiletId: string, lat: number, lng: number) {
     const toilet = await this.prisma.toilet.findUnique({
       where: { id: toiletId },
-      select: { id: true, status: true, latitude: true, longitude: true },
+      select: { id: true, status: true, latitude: true, longitude: true, createdById: true },
     });
     if (!toilet) throw new NotFoundException('Toilet not found');
     const distanceM = Math.round(haversineM({ lat, lng }, { lat: toilet.latitude, lng: toilet.longitude }));
@@ -155,10 +167,24 @@ export class GamificationService implements OnApplicationBootstrap {
     return { toilet, distanceM };
   }
 
-  async checkIn(user: User, toiletId: string, lat: number, lng: number) {
+  private async verifyPrompt(toiletId: string): Promise<Feature[]> {
+    const features = await this.prisma.toiletFeature.findMany({
+      where: { toiletId, feature: { in: VERIFY_PRIORITY } },
+      select: { feature: true },
+    });
+    return pickVerifyPrompt(features.map((f) => f.feature));
+  }
+
+  /**
+   * Signed-in check-in. At a PENDING toilet someone else added (or an auto-published one awaiting
+   * its second person), it also counts as an APPROVE vote (submissions/resolution.ts confirmByCheckIn).
+   */
+  async checkIn(user: User, toiletId: string, lat: number, lng: number): Promise<CheckInResult> {
     // Coordinates are used for verification only and never stored (PLAN.md §11 B8).
     const { toilet, distanceM } = await this.loadToiletWithin(toiletId, lat, lng);
-    if (toilet.status !== ToiletStatus.ACTIVE) throw new BadRequestException('This toilet is not active');
+    if (toilet.status !== ToiletStatus.ACTIVE && toilet.status !== ToiletStatus.PENDING) {
+      throw new BadRequestException('This toilet is not active');
+    }
 
     const now = new Date();
     const recent = await this.prisma.checkIn.findFirst({
@@ -169,8 +195,13 @@ export class GamificationService implements OnApplicationBootstrap {
       throw new HttpException('You already checked in here in the last 2 hours', HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    const { id, pointsAwarded } = await this.prisma.$transaction(async (tx) => {
+    const { id, pointsAwarded, confirmation } = await this.prisma.$transaction(async (tx) => {
+      const before = await tx.checkIn.count({ where: { userId: user.id, toiletId } });
       const checkIn = await tx.checkIn.create({ data: { userId: user.id, toiletId, distanceM } });
+      // Seen by: each person's first check-in here (the submitter is already counted).
+      if (before === 0 && toilet.createdById !== user.id) {
+        await tx.toilet.update({ where: { id: toiletId }, data: { seenBy: { increment: 1 } } });
+      }
       let pts = 0;
       const today = await tx.pointsLedger.count({
         where: { userId: user.id, reason: PointReason.CHECK_IN, createdAt: { gte: sgtDayStart(now) } },
@@ -181,17 +212,122 @@ export class GamificationService implements OnApplicationBootstrap {
       if (await this.points.award(user.id, 'FIRST_CHECK_IN_AT_TOILET', toiletId, { tx })) {
         pts += POINTS.FIRST_CHECK_IN_AT_TOILET;
       }
-      return { id: checkIn.id, pointsAwarded: pts };
+      const confirmation = await confirmByCheckIn(tx, this.points, {
+        toiletId,
+        userId: user.id,
+        distanceM,
+        checkInId: checkIn.id,
+      });
+      return { id: checkIn.id, pointsAwarded: pts, confirmation };
     });
 
-    const [newBadges, features] = await Promise.all([
-      this.evaluateBadges(user.id),
-      this.prisma.toiletFeature.findMany({
-        where: { toiletId, feature: { in: VERIFY_PRIORITY } },
-        select: { feature: true },
+    for (const other of confirmation.evaluate.filter((u) => u !== user.id)) {
+      try {
+        await this.evaluateBadges(other);
+      } catch (err) {
+        this.log.warn(`badge evaluation failed for ${other}: ${String(err)}`);
+      }
+    }
+    const [newBadges, verifyPrompt] = await Promise.all([this.evaluateBadges(user.id), this.verifyPrompt(toiletId)]);
+    return {
+      id,
+      distanceM,
+      pointsAwarded,
+      newBadges,
+      verifyPrompt,
+      confirmedPending: confirmation.confirmedPending,
+      wentLive: confirmation.wentLive,
+      bankedPoints: 0,
+    };
+  }
+
+  /**
+   * Signed-out check-in (PLAN.md §12 E4), identified by the sgw_anon device id. Same 150 m rule and
+   * 2 h cooldown; at most 5 per device per Singapore day. Never votes and never counts toward Seen by.
+   * Earns nothing now: `bankedPoints` is what the device would have earned, paid on sign-in (mergeDevice).
+   */
+  async anonymousCheckIn(deviceId: string, toiletId: string, lat: number, lng: number): Promise<CheckInResult> {
+    const { toilet, distanceM } = await this.loadToiletWithin(toiletId, lat, lng);
+    if (toilet.status === ToiletStatus.PENDING) {
+      throw new UnauthorizedException('Sign in to confirm a new toilet');
+    }
+    if (toilet.status !== ToiletStatus.ACTIVE) throw new BadRequestException('This toilet is not active');
+    const now = new Date();
+    const [recent, today, here] = await Promise.all([
+      this.prisma.checkIn.count({
+        where: { deviceId, toiletId, createdAt: { gt: new Date(now.getTime() - CHECK_IN_COOLDOWN_MS) } },
       }),
+      this.prisma.checkIn.count({ where: { deviceId, userId: null, createdAt: { gte: sgtDayStart(now) } } }),
+      this.prisma.checkIn.count({ where: { deviceId, userId: null, toiletId } }),
     ]);
-    return { id, distanceM, pointsAwarded, newBadges, verifyPrompt: pickVerifyPrompt(features.map((f) => f.feature)) };
+    if (recent > 0) {
+      throw new HttpException('You already checked in here in the last 2 hours', HttpStatus.TOO_MANY_REQUESTS);
+    }
+    if (today >= ANON_CHECK_INS_PER_DAY) {
+      throw new HttpException(
+        `You can check in ${ANON_CHECK_INS_PER_DAY} times a day without signing in. Sign in to keep going.`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    const checkIn = await this.prisma.checkIn.create({ data: { deviceId, toiletId, distanceM } });
+    // The daily cap on CHECK_IN points (5) is never hit here: the device itself is capped at 5 a day.
+    const bankedPoints = POINTS.CHECK_IN + (here === 0 ? POINTS.FIRST_CHECK_IN_AT_TOILET : 0);
+    return {
+      id: checkIn.id,
+      distanceM,
+      pointsAwarded: 0,
+      newBadges: [],
+      verifyPrompt: await this.verifyPrompt(toiletId),
+      confirmedPending: false,
+      wentLive: false,
+      bankedPoints,
+    };
+  }
+
+  /**
+   * On sign-in: move this device's anonymous check-ins and status reports to the user and pay the
+   * banked check-in points, applying the 5-a-day CHECK_IN cap per original Singapore day.
+   * Idempotent: rows already moved are not found again, and ledger rows are unique per refId.
+   */
+  async mergeDevice(userId: string, deviceId: string) {
+    const merged = await this.prisma.$transaction(async (tx) => {
+      const checkIns = await tx.checkIn.findMany({
+        where: { deviceId, userId: null },
+        select: { id: true, toiletId: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      });
+      if (checkIns.length > 0) {
+        await tx.checkIn.updateMany({
+          where: { id: { in: checkIns.map((c) => c.id) } },
+          data: { userId, deviceId: null },
+        });
+      }
+      let points = 0;
+      for (const c of checkIns) {
+        const dayStart = sgtDayStart(c.createdAt);
+        const thatDay = await tx.pointsLedger.count({
+          where: {
+            userId,
+            reason: PointReason.CHECK_IN,
+            createdAt: { gte: dayStart, lt: new Date(dayStart.getTime() + DAY_MS) },
+          },
+        });
+        const opts = { tx, createdAt: c.createdAt };
+        if (thatDay < CHECK_IN_DAILY_POINT_CAP && (await this.points.award(userId, 'CHECK_IN', c.id, opts))) {
+          points += POINTS.CHECK_IN;
+        }
+        if (await this.points.award(userId, 'FIRST_CHECK_IN_AT_TOILET', c.toiletId, opts)) {
+          points += POINTS.FIRST_CHECK_IN_AT_TOILET;
+        }
+      }
+      const reports = await tx.statusReport.updateMany({
+        where: { deviceId, userId: null },
+        data: { userId, deviceId: null },
+      });
+      return { checkIns: checkIns.length, statusReports: reports.count, points };
+    });
+    if (merged.checkIns > 0) await this.evaluateBadges(userId);
+    return merged;
   }
 
   async verify(user: User, toiletId: string, body: { lat: number; lng: number; accurate: boolean; note?: string }) {
@@ -204,6 +340,7 @@ export class GamificationService implements OnApplicationBootstrap {
     } else {
       const reason = 'Check-in: listing inaccurate' + (body.note ? ` - ${body.note}` : '');
       await this.prisma.flag.create({ data: { toiletId, userId: user.id, reason } });
+      await escalateIfFlagged(this.prisma, toiletId);
     }
     return { ok: true as const };
   }

@@ -1,8 +1,14 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma } from '../generated/prisma/client.js';
-import { Role } from '../generated/prisma/enums.js';
+import { Role, SubmissionState } from '../generated/prisma/enums.js';
+import { hasRole } from '../common/auth/auth.guard.js';
+import { TRUSTED_THRESHOLD } from '../gamification/points.service.js';
+import { MAX_OPEN_SUBMISSIONS, openSubmissionsWhere } from '../submissions/resolution.js';
 import type { Me } from './users.dto.js';
+
+/** A handle that is already set can be changed once in this window. */
+export const HANDLE_CHANGE_INTERVAL_MS = 30 * 86_400_000;
 
 /** Handles nobody may claim (impersonation of staff / the app). */
 export const RESERVED_HANDLES = new Set([
@@ -41,14 +47,30 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getMe(userId: string): Promise<Me> {
-    const [user, points] = await Promise.all([
+    const [user, points, openCount] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
         include: { badges: { include: { badge: true }, orderBy: { awardedAt: 'asc' } } },
       }),
       this.prisma.pointsLedger.aggregate({ where: { userId }, _sum: { delta: true } }),
+      this.prisma.submission.count({ where: openSubmissionsWhere(userId) }),
     ]);
     if (!user) throw new NotFoundException('User not found');
+    const since = user.lastSeenActivityAt ?? user.createdAt;
+    const [resolvedSubmissions, newPoints] = await Promise.all([
+      this.prisma.submission.count({
+        where: {
+          submittedById: userId,
+          resolvedAt: { gt: since },
+          state: { in: [SubmissionState.APPROVED, SubmissionState.REJECTED] },
+          // Going live at once is not news: the submitter saw it happen.
+          OR: [{ resolution: null }, { resolution: { not: 'auto_on_site_photo' } }],
+        },
+      }),
+      this.prisma.pointsLedger.aggregate({ where: { userId, createdAt: { gt: since } }, _sum: { delta: true } }),
+    ]);
+    const nextHandleChange =
+      user.handle && user.handleChangedAt ? user.handleChangedAt.getTime() + HANDLE_CHANGE_INTERVAL_MS : 0;
     return {
       id: user.id,
       email: user.email,
@@ -67,14 +89,52 @@ export class UsersService {
         awardedAt: ub.awardedAt.toISOString(),
       })),
       needsHandle: user.handle === null,
+      handleChangeableAt: nextHandleChange > Date.now() ? new Date(nextHandleChange).toISOString() : null,
+      trust: { score: user.trustScore, threshold: TRUSTED_THRESHOLD, isTrusted: hasRole(user, Role.TRUSTED) },
+      openSubmissions: { count: openCount, limit: MAX_OPEN_SUBMISSIONS },
+      unseen: {
+        resolvedSubmissions,
+        badges: user.badges.filter((b) => b.awardedAt > since).length,
+        points: newPoints._sum.delta ?? 0,
+      },
+      lastSeenActivityAt: user.lastSeenActivityAt?.toISOString() ?? null,
     };
+  }
+
+  /** Clears the "since your last visit" counts in GET /me. */
+  async markActivitySeen(userId: string): Promise<{ ok: true; seenAt: string }> {
+    const now = new Date();
+    await this.prisma.user.update({ where: { id: userId }, data: { lastSeenActivityAt: now } });
+    return { ok: true, seenAt: now.toISOString() };
   }
 
   async updateMe(
     userId: string,
     patch: { handle?: string; displayName?: string; leaderboardOptIn?: boolean },
   ): Promise<Me> {
+    let handleChanged = false;
     if (patch.handle !== undefined) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { handle: true, handleChangedAt: true },
+      });
+      // Choosing a first handle is free; changing one is allowed once every 30 days.
+      handleChanged = Boolean(current?.handle) && current?.handle !== patch.handle;
+      if (handleChanged && current?.handleChangedAt) {
+        const next = current.handleChangedAt.getTime() + HANDLE_CHANGE_INTERVAL_MS;
+        if (next > Date.now()) {
+          const day = new Date(next).toLocaleDateString('en-SG', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            timeZone: 'Asia/Singapore',
+          });
+          throw new HttpException(
+            `You can change your handle once every 30 days. You can change it again from ${day}.`,
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
+      }
       if (isReservedHandle(patch.handle)) throw new ConflictException('Handle is not available');
       const taken = await this.prisma.user.findUnique({
         where: { handle: patch.handle },
@@ -89,6 +149,7 @@ export class UsersService {
           handle: patch.handle,
           displayName: patch.displayName,
           leaderboardOptIn: patch.leaderboardOptIn,
+          ...(handleChanged ? { handleChangedAt: new Date() } : {}),
         },
       });
     } catch (e) {

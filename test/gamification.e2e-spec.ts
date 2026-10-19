@@ -65,15 +65,20 @@ describe('Gamification (e2e)', () => {
     expect(r.body.items.some((b: { awardedAt?: string }) => b.awardedAt)).toBe(false);
   });
 
-  it('rejects check-ins that are too far, unauthenticated, or at a pending toilet', async () => {
-    await http().post(`/toilets/${toiletId}/check-ins`).send(base).expect(401);
+  it('rejects check-ins that are too far or at an unknown toilet; allows pending toilets', async () => {
     const far = await http()
       .post(`/toilets/${toiletId}/check-ins`)
       .set('Cookie', ann.cookie)
       .send(offset(base, 300))
       .expect(400);
     expect(far.body.message).toMatch(/300 m/);
-    await http().post(`/toilets/${pendingToiletId}/check-ins`).set('Cookie', ann.cookie).send(offset(base, 20)).expect(400);
+    // A pending toilet with no open submission: a plain check-in that confirms nothing.
+    const pending = await http()
+      .post(`/toilets/${pendingToiletId}/check-ins`)
+      .set('Cookie', ben.cookie)
+      .send(offset(base, 20))
+      .expect(201);
+    expect(pending.body).toMatchObject({ confirmedPending: false, wentLive: false, bankedPoints: 0 });
     await http().post(`/toilets/nope/check-ins`).set('Cookie', ann.cookie).send(base).expect(404);
   });
 
@@ -91,7 +96,8 @@ describe('Gamification (e2e)', () => {
     expect(r.body.verifyPrompt).toEqual(['HAND_SOAP', 'SQUAT', 'BIDET', 'ACCESSIBLE', 'TOILET_PAPER']);
 
     const row = await prisma.checkIn.findUniqueOrThrow({ where: { id: r.body.id } });
-    expect(Object.keys(row).sort()).toEqual(['createdAt', 'distanceM', 'id', 'toiletId', 'userId']);
+    // Never the coordinates: only the distance (deviceId is for signed-out check-ins).
+    expect(Object.keys(row).sort()).toEqual(['createdAt', 'deviceId', 'distanceM', 'id', 'toiletId', 'userId']);
 
     await http().post(`/toilets/${toiletId}/check-ins`).set('Cookie', ann.cookie).send(base).expect(429);
 

@@ -32,13 +32,15 @@ describe('Submissions (e2e)', () => {
     body: Record<string, unknown> = {},
   ) => {
     const photo = await makePhoto(prisma, who.user.id);
+    // Submitted from 500 m away by default, so it waits for nearby approvals (on-site flows: community.e2e-spec.ts).
+    const from = offset(at, 500);
     return http()
       .post('/submissions')
       .set('Cookie', who.cookie)
       .send({
         kind: 'NEW_TOILET',
-        lat: at.lat,
-        lng: at.lng,
+        lat: from.lat,
+        lng: from.lng,
         ...body,
         payload: { lat: at.lat, lng: at.lng, features: { BIDET: true, ACCESSIBLE: false }, photoIds: [photo.id], ...extra },
       })
@@ -64,10 +66,9 @@ describe('Submissions (e2e)', () => {
     await http().get('/submissions/mine').expect(401);
   });
 
-  it('rejects an unknown kind, missing photos, outside Singapore and foreign photos', async () => {
+  it('rejects an unknown kind, outside Singapore and foreign photos', async () => {
     await http().post('/submissions').set('Cookie', alice.cookie).send({ kind: 'NEW_VENUE', payload: {} }).expect(400);
 
-    await newToilet(400, alice, base, { photoIds: [] });
     await newToilet(400, alice, { lat: 1.0, lng: 103.0 });
 
     const bobsPhoto = await makePhoto(prisma, bob.user.id);
@@ -96,7 +97,18 @@ describe('Submissions (e2e)', () => {
       canVote: false,
       myVote: null,
       submittedBy: { handle: `alice_${id}` },
+      onSite: false,
+      hasPhoto: true,
+      path: 'nearby_quorum',
+      nearbyApprovals: 0,
+      needed: 2,
+      escalated: false,
+      reviewerNotes: [],
+      current: null,
+      resolution: null,
+      resolutionText: null,
     });
+    expect(view.submitterDistanceM).toBeGreaterThanOrEqual(499);
     expect(view.photos).toHaveLength(1);
     expect(view.venue).toMatchObject({ name: `Kopitiam ${id}`, type: 'COFFEESHOP', toiletStatus: 'HAS_TOILETS' });
     subId = view.id;
@@ -194,8 +206,11 @@ describe('Submissions (e2e)', () => {
       .set('Cookie', dave.cookie)
       .send({ value: 'APPROVE', ...offset(base, -100) })
       .expect(201);
-    expect(r.body.state).toBe('APPROVED');
+    expect(r.body).toMatchObject({ state: 'APPROVED', resolution: 'community_approved', needed: 0, nearbyApprovals: 2 });
     expect(r.body.resolvedAt).not.toBeNull();
+    // Votes come back anonymised: value, note, when, nearby; never who.
+    expect(r.body.reviewerNotes).toHaveLength(3);
+    expect(Object.keys(r.body.reviewerNotes[0]).sort()).toEqual(['createdAt', 'nearby', 'note', 'value', 'viaCheckIn']);
 
     const toilet = await prisma.toilet.findUniqueOrThrow({ where: { id: toiletId } });
     expect(toilet.status).toBe('ACTIVE');
@@ -245,6 +260,9 @@ describe('Submissions (e2e)', () => {
       })
       .expect(201);
     expect(r.body.toilet.id).toBe(toiletId);
+    // Current → proposed, for the review card.
+    expect(r.body.current).toEqual({ label: 'Unisex at the back', features: { BIDET: true, HAND_SOAP: null } });
+    expect(r.body).toMatchObject({ onSite: true, path: 'nearby_quorum', needed: 2 });
     const v = await http().post(`/submissions/${r.body.id}/votes`).set('Cookie', tina.cookie).send({ value: 'APPROVE' }).expect(201);
     expect(v.body.state).toBe('APPROVED');
 
@@ -307,7 +325,12 @@ describe('Submissions (e2e)', () => {
       .set('Cookie', mo.cookie)
       .send({ state: 'APPROVED', note: 'Looks right' })
       .expect(200);
-    expect(r.body).toMatchObject({ state: 'APPROVED', resolution: 'Looks right' });
+    expect(r.body).toMatchObject({
+      state: 'APPROVED',
+      resolution: 'moderator_approved',
+      resolutionText: 'Approved by a moderator.',
+      resolutionNote: 'Looks right',
+    });
     const sub = await prisma.submission.findUniqueOrThrow({ where: { id: created.body.id }, include: { toilet: true } });
     expect(sub.resolvedById).toBe(mo.user.id);
     expect(sub.toilet?.status).toBe('ACTIVE');
@@ -344,6 +367,11 @@ describe('Submissions (e2e)', () => {
     for (let i = 0; i < 10; i++) {
       await newToilet(201, spammer, offset(far, i * 100), {}, { force: true });
     }
-    await newToilet(429, spammer, offset(far, 2000), {}, { force: true });
+    const blocked = await newToilet(429, spammer, offset(far, 2000), {}, { force: true });
+    expect(blocked.body.message).toMatch(/last 14 days/);
+    // Submissions older than 14 days stop counting toward the cap.
+    const oldest = await prisma.submission.findFirstOrThrow({ where: { submittedById: spammer.user.id } });
+    await prisma.submission.update({ where: { id: oldest.id }, data: { createdAt: new Date(Date.now() - 15 * 86_400_000) } });
+    await newToilet(201, spammer, offset(far, 2000), {}, { force: true });
   });
 });

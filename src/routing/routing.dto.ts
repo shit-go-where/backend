@@ -43,6 +43,8 @@ export class RecommendResponseDto extends createZodDto(
           walkDistanceM: z.number(),
           reasons: z.array(z.string()),
           route: z.object({ polyline: z.array(LatLngTuple), source: RouteSource }).nullable(),
+          /** A pending community toilet nobody has confirmed yet: label it "Unconfirmed" (calm mode only). */
+          unconfirmed: z.boolean(),
         }),
       ),
       searchedRadiusM: z.number(),

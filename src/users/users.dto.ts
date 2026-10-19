@@ -24,6 +24,19 @@ export const MeSchema = z.object({
   points: z.number().int(),
   badges: z.array(BadgeSchema),
   needsHandle: z.boolean(),
+  /** When the handle can next be changed (once every 30 days); null = now. */
+  handleChangeableAt: z.string().nullable(),
+  /** Progress to Trusted: trust points (verified actions) against the threshold. */
+  trust: z.object({ score: z.number().int(), threshold: z.number().int(), isTrusted: z.boolean() }),
+  /** Open submissions from the last 14 days against the cap, so /add can warn up front. */
+  openSubmissions: z.object({ count: z.number().int(), limit: z.number().int() }),
+  /** Since lastSeenActivityAt (or sign-up): submissions decided, badges earned, points earned. */
+  unseen: z.object({
+    resolvedSubmissions: z.number().int(),
+    badges: z.number().int(),
+    points: z.number().int(),
+  }),
+  lastSeenActivityAt: z.string().nullable(),
 });
 export type Me = z.infer<typeof MeSchema>;
 export class MeDto extends createZodDto(MeSchema) {}
@@ -39,6 +52,8 @@ export const UpdateMeSchema = z.object({
   leaderboardOptIn: z.boolean().optional(),
 });
 export class UpdateMeDto extends createZodDto(UpdateMeSchema) {}
+
+export class ActivitySeenDto extends createZodDto(z.object({ ok: z.literal(true), seenAt: z.string() })) {}
 
 export const ActivityQuerySchema = z.object({
   cursor: z.string().min(1).optional(),

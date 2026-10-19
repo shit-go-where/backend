@@ -18,6 +18,7 @@ import {
   AreaType,
   DataSource,
   Feature,
+  SubmissionKind,
   SubmissionState,
   ToiletStatus,
   ToiletTier,
@@ -25,35 +26,62 @@ import {
   VenueType,
 } from '../generated/prisma/enums.js';
 import { bboxAround, haversineM, inSingapore, type LatLng } from '../common/geo.js';
-import { recomputeToiletScore } from '../toilets/scoring.js';
-import { NEAR_VOTE_M, evaluateQuorum } from './quorum.js';
+import { sgtDayStart } from '../gamification/sgt.js';
+import { NEAR_VOTE_M, nearApprovals } from './quorum.js';
+import {
+  AUTO_PUBLISH_PAUSE_MS,
+  MAX_OPEN_SUBMISSIONS,
+  OPEN_STATES,
+  type FinalState,
+  applyResolution,
+  assertVotable,
+  lockSubmission,
+  openSubmissionsWhere,
+  pathOf,
+  recordVote,
+  shouldAutoPublish,
+  stillNeeded,
+} from './resolution.js';
+import { resolutionOf } from './resolution-codes.js';
 import {
   EditToiletPayloadSchema,
-  CloseToiletPayloadSchema,
+  SubmissionPayloadSchema,
   type CreateSubmissionBody,
   type EditToiletPayload,
+  type ModeratorSubmission,
   type NewToiletPayload,
   type SubmissionView,
 } from './submissions.schemas.js';
 
 export const SUBMISSION_TTL_MS = 60 * 86_400_000;
-export const MAX_OPEN_SUBMISSIONS = 10;
+export { MAX_OPEN_SUBMISSIONS };
 export const VENUE_SNAP_M = 60;
 export const DUPLICATE_RADIUS_M = 15;
 const QUEUE_LIMIT = 50;
-const OPEN_STATES: SubmissionState[] = [SubmissionState.PENDING, SubmissionState.NEEDS_INFO];
+const MODERATOR_QUEUE_LIMIT = 200;
+const DAY_MS = 86_400_000;
 
-type Tx = Prisma.TransactionClient;
-type FinalState = 'APPROVED' | 'REJECTED' | 'NEEDS_INFO';
-
-function viewInclude(userId: string) {
+function viewInclude() {
   return {
     toilet: {
-      select: { id: true, label: true, latitude: true, longitude: true, venue: { select: { name: true } } },
+      select: {
+        id: true,
+        label: true,
+        level: true,
+        areaType: true,
+        accessNote: true,
+        latitude: true,
+        longitude: true,
+        venue: { select: { name: true } },
+        features: { select: { feature: true, present: true } },
+      },
     },
     venue: true,
     submittedBy: { select: { handle: true } },
-    votes: { where: { userId }, select: { value: true } },
+    votes: {
+      select: { userId: true, value: true, comment: true, distanceM: true, checkInId: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    },
     photos: {
       where: { confirmed: true },
       select: { id: true, url: true, thumbUrl: true },
@@ -87,18 +115,63 @@ export class SubmissionsService {
 
   /* ─────────────── views ─────────────── */
 
+  /** The toilet's current values for the fields an open EDIT_TOILET would change. */
+  private currentValues(row: SubmissionRow): SubmissionView['current'] {
+    const t = row.toilet;
+    if (row.kind !== SubmissionKind.EDIT_TOILET || !t || !OPEN_STATES.includes(row.state)) return null;
+    const parsed = EditToiletPayloadSchema.safeParse(row.payload);
+    if (!parsed.success) return null;
+    const c = parsed.data.changes;
+    const have = new Map(t.features.map((f) => [f.feature, f.present]));
+    return {
+      ...(c.label !== undefined ? { label: t.label } : {}),
+      ...(c.level !== undefined ? { level: t.level } : {}),
+      ...(c.areaType !== undefined ? { areaType: t.areaType } : {}),
+      ...(c.accessNote !== undefined ? { accessNote: t.accessNote } : {}),
+      ...(c.features
+        ? {
+            features: Object.fromEntries(
+              Object.keys(c.features).map((f) => [f, have.get(f as Feature) ?? null]),
+            ) as Partial<Record<Feature, boolean | null>>,
+          }
+        : {}),
+    };
+  }
+
   private toView(row: SubmissionRow, me: User, from?: LatLng): SubmissionView {
     const now = Date.now();
-    const open = OPEN_STATES.includes(row.state);
-    const expired = open && row.expiresAt.getTime() < now;
-    const myVote = row.votes[0]?.value ?? null;
+    // Past expiry but not yet swept by the expire job: it is headed to the moderators either way.
+    const overdue =
+      (row.state === SubmissionState.PENDING || row.state === SubmissionState.NEEDS_INFO) &&
+      row.expiresAt.getTime() < now;
+    const state = overdue ? SubmissionState.ESCALATED : row.state;
+    const open = OPEN_STATES.includes(state);
+    const myVote = row.votes.find((x) => x.userId === me.id)?.value ?? null;
     const t = row.toilet;
     const v = row.venue;
+    const nearby = nearApprovals(row.votes);
+    const at = row.submittedLat !== null && row.submittedLng !== null ? { lat: row.submittedLat, lng: row.submittedLng } : null;
+    const { code, text } = resolutionOf(row.resolution, row.state);
     return {
       id: row.id,
       kind: row.kind,
-      state: expired ? SubmissionState.EXPIRED : row.state,
+      state,
       payload: row.payload as SubmissionView['payload'],
+      onSite: row.onSite,
+      hasPhoto: row.hasPhoto,
+      path: pathOf(row),
+      nearbyApprovals: nearby,
+      needed: stillNeeded({ ...row, state }, nearby),
+      escalated: state === SubmissionState.ESCALATED,
+      submitterDistanceM: at && t ? Math.round(haversineM(at, { lat: t.latitude, lng: t.longitude })) : null,
+      reviewerNotes: row.votes.map((x) => ({
+        value: x.value,
+        note: x.comment,
+        createdAt: x.createdAt.toISOString(),
+        nearby: x.distanceM !== null && x.distanceM <= NEAR_VOTE_M,
+        viaCheckIn: x.checkInId !== null,
+      })),
+      current: this.currentValues(row),
       toilet: t ? { id: t.id, label: t.label, venueName: t.venue.name, lat: t.latitude, lng: t.longitude } : null,
       venue: v
         ? {
@@ -118,16 +191,18 @@ export class SubmissionsService {
       createdAt: row.createdAt.toISOString(),
       expiresAt: row.expiresAt.toISOString(),
       resolvedAt: row.resolvedAt?.toISOString() ?? null,
-      resolution: row.resolution,
+      resolution: code,
+      resolutionText: text,
+      resolutionNote: row.resolutionNote,
       ...(from && t ? { distanceM: Math.round(haversineM(from, { lat: t.latitude, lng: t.longitude })) } : {}),
       myVote,
       photos: row.photos,
-      canVote: open && !expired && row.submittedById !== me.id && myVote === null,
+      canVote: open && row.resolution !== 'escalated_flagged' && row.submittedById !== me.id && myVote === null,
     };
   }
 
   async get(id: string, me: User): Promise<SubmissionView> {
-    const row = await this.prisma.submission.findUnique({ where: { id }, include: viewInclude(me.id) });
+    const row = await this.prisma.submission.findUnique({ where: { id }, include: viewInclude() });
     if (!row) throw new NotFoundException('Submission not found');
     return this.toView(row, me);
   }
@@ -135,11 +210,48 @@ export class SubmissionsService {
   async mine(me: User): Promise<{ items: SubmissionView[] }> {
     const rows = await this.prisma.submission.findMany({
       where: { submittedById: me.id },
-      include: viewInclude(me.id),
+      include: viewInclude(),
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
     return { items: rows.map((r) => this.toView(r, me)) };
+  }
+
+  /** Island-wide moderator queue: escalated first, then oldest first. */
+  async moderatorQueue(
+    me: User,
+    filter: 'pending' | 'escalated' | 'needs_info' | 'all',
+  ): Promise<{ items: ModeratorSubmission[] }> {
+    const states: Record<typeof filter, SubmissionState[]> = {
+      pending: [SubmissionState.PENDING],
+      escalated: [SubmissionState.ESCALATED],
+      needs_info: [SubmissionState.NEEDS_INFO],
+      all: OPEN_STATES,
+    };
+    const now = new Date();
+    const rows = await this.prisma.submission.findMany({
+      where: { state: { in: OPEN_STATES } },
+      include: viewInclude(),
+      orderBy: { createdAt: 'asc' },
+      take: 1000,
+    });
+    return {
+      items: rows
+        // One malformed row (hand-made data) must not take the whole island-wide queue down.
+        .filter((r) => {
+          const ok = SubmissionPayloadSchema.safeParse(r.payload).success;
+          if (!ok) this.log.warn(`submission ${r.id} has an invalid payload; left out of the moderator queue`);
+          return ok;
+        })
+        .map((r) => ({
+          ...this.toView(r, me),
+          ageDays: Math.floor((now.getTime() - r.createdAt.getTime()) / DAY_MS),
+        }))
+        // Overdue PENDING / NEEDS_INFO read as ESCALATED, so filter on the view's state.
+        .filter((v) => states[filter].includes(v.state))
+        .sort((a, b) => Number(b.escalated) - Number(a.escalated) || a.createdAt.localeCompare(b.createdAt))
+        .slice(0, MODERATOR_QUEUE_LIMIT),
+    };
   }
 
   async queue(me: User, q: { lat: number; lng: number; radius: number }): Promise<{ items: SubmissionView[] }> {
@@ -147,12 +259,13 @@ export class SubmissionsService {
     const bb = bboxAround(from, q.radius);
     const rows = await this.prisma.submission.findMany({
       where: {
+        // Escalated ones stay: a nearby confirmation still settles them before a moderator gets there.
         state: { in: OPEN_STATES },
-        expiresAt: { gt: new Date() },
+        OR: [{ resolution: null }, { resolution: { not: 'escalated_flagged' } }],
         submittedById: { not: me.id },
         toilet: { latitude: { gte: bb.minLat, lte: bb.maxLat }, longitude: { gte: bb.minLng, lte: bb.maxLng } },
       },
-      include: viewInclude(me.id),
+      include: viewInclude(),
       take: 1000,
     });
     const items = rows
@@ -166,20 +279,39 @@ export class SubmissionsService {
   /* ─────────────── create ─────────────── */
 
   async create(me: User, body: CreateSubmissionBody): Promise<SubmissionView> {
-    const open = await this.prisma.submission.count({
-      where: { submittedById: me.id, state: { in: OPEN_STATES }, expiresAt: { gt: new Date() } },
-    });
+    const open = await this.prisma.submission.count({ where: openSubmissionsWhere(me.id) });
     if (open >= MAX_OPEN_SUBMISSIONS) {
       throw new HttpException(
-        `You have ${open} open submissions; wait for some to be reviewed (max ${MAX_OPEN_SUBMISSIONS})`,
+        `You have ${open} submissions from the last 14 days still waiting; wait for some to be reviewed (max ${MAX_OPEN_SUBMISSIONS})`,
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
     const at = body.lat !== undefined && body.lng !== undefined ? { lat: body.lat, lng: body.lng } : null;
     let id: string;
-    if (body.kind === 'NEW_TOILET') id = await this.createNewToilet(me, body.payload, at, body.force ?? false);
-    else id = await this.createForToilet(me, body.kind, body.toiletId, body.payload, at);
+    if (body.kind === 'NEW_TOILET') {
+      const created = await this.createNewToilet(me, body.payload, at, body.force ?? false);
+      id = created.id;
+      // An auto-published toilet counts as an approval for badges, as a quorum would.
+      if (created.autoPublished) await this.evaluateBadgesFor([me.id]);
+    } else id = await this.createForToilet(me, body.kind, body.toiletId, body.payload, at);
     return this.get(id, me);
+  }
+
+  /** Inputs to the auto-publish guardrails: today's auto-publishes and any rejection in the last 30 days. */
+  private async autoPublishHistory(userId: string, now: Date) {
+    const [autoPublishedToday, rejected] = await Promise.all([
+      this.prisma.submission.count({
+        where: { submittedById: userId, autoPublished: true, createdAt: { gte: sgtDayStart(now) } },
+      }),
+      this.prisma.submission.count({
+        where: {
+          submittedById: userId,
+          state: SubmissionState.REJECTED,
+          resolvedAt: { gt: new Date(now.getTime() - AUTO_PUBLISH_PAUSE_MS) },
+        },
+      }),
+    ]);
+    return { autoPublishedToday, rejectedRecently: rejected > 0 };
   }
 
   private async assertPhotos(userId: string, photoIds: string[]): Promise<string[]> {
@@ -194,7 +326,12 @@ export class SubmissionsService {
     return ids;
   }
 
-  private async createNewToilet(me: User, p: NewToiletPayload, at: LatLng | null, force: boolean): Promise<string> {
+  private async createNewToilet(
+    me: User,
+    p: NewToiletPayload,
+    at: LatLng | null,
+    force: boolean,
+  ): Promise<{ id: string; autoPublished: boolean }> {
     const here = { lat: p.lat, lng: p.lng };
     if (!inSingapore(here)) throw new BadRequestException('Location must be inside Singapore');
     if (p.venueId && p.newVenue) throw new BadRequestException('Give either venueId or newVenue, not both');
@@ -248,7 +385,12 @@ export class SubmissionsService {
     }
 
     const now = new Date();
-    return this.prisma.$transaction(async (tx) => {
+    // Trust model v2 (PLAN.md §12 E1): on site + photo goes live at once, within the guardrails.
+    const onSite = at !== null && haversineM(at, here) <= NEAR_VOTE_M;
+    const hasPhoto = photoIds.length > 0;
+    const autoPublished =
+      onSite && hasPhoto && shouldAutoPublish({ onSite, hasPhoto, ...(await this.autoPublishHistory(me.id, now)) });
+    const id = await this.prisma.$transaction(async (tx) => {
       if (!venueId) {
         const venue = await tx.venue.create({
           data: {
@@ -272,6 +414,12 @@ export class SubmissionsService {
           submittedById: me.id,
           submittedLat: at?.lat ?? null,
           submittedLng: at?.lng ?? null,
+          onSite,
+          hasPhoto,
+          autoPublished,
+          ...(autoPublished
+            ? { state: SubmissionState.APPROVED, resolvedAt: now, resolution: 'auto_on_site_photo' }
+            : {}),
           expiresAt: new Date(now.getTime() + SUBMISSION_TTL_MS),
         },
       });
@@ -285,12 +433,16 @@ export class SubmissionsService {
           areaType: p.areaType ?? AreaType.UNKNOWN,
           accessNote: p.accessNote ?? null,
           tier: ToiletTier.COMMUNITY,
-          status: ToiletStatus.PENDING,
+          status: autoPublished ? ToiletStatus.ACTIVE : ToiletStatus.PENDING,
+          lastVerifiedAt: autoPublished ? now : null,
+          seenBy: 1,
           source: DataSource.COMMUNITY,
           sourceKey: `community:${submission.id}`,
           createdById: me.id,
         },
       });
+      // +5 now; the other 15 come when a second person checks in (resolution.ts confirmByCheckIn).
+      if (autoPublished) await this.points.award(me.id, 'NEW_TOILET_SUBMITTED', submission.id, { tx });
       const rows = featureRows(p.features);
       if (rows.length > 0) {
         await tx.toiletFeature.createMany({
@@ -301,6 +453,7 @@ export class SubmissionsService {
       await tx.submission.update({ where: { id: submission.id }, data: { toiletId: toilet.id } });
       return submission.id;
     });
+    return { id, autoPublished };
   }
 
   private async createForToilet(
@@ -327,6 +480,7 @@ export class SubmissionsService {
       }
     }
     const photoIds = 'changes' in payload ? await this.assertPhotos(me.id, payload.photoIds ?? []) : [];
+    const onSite = at !== null && haversineM(at, { lat: toilet.latitude, lng: toilet.longitude }) <= NEAR_VOTE_M;
     return this.prisma.$transaction(async (tx) => {
       const submission = await tx.submission.create({
         data: {
@@ -337,6 +491,8 @@ export class SubmissionsService {
           submittedById: me.id,
           submittedLat: at?.lat ?? null,
           submittedLng: at?.lng ?? null,
+          onSite,
+          hasPhoto: photoIds.length > 0,
           expiresAt: new Date(Date.now() + SUBMISSION_TTL_MS),
         },
       });
@@ -347,17 +503,68 @@ export class SubmissionsService {
     });
   }
 
-  /* ─────────────── votes & resolution ─────────────── */
+  /* ─────────────── needs info ─────────────── */
 
-  private async lock(tx: Tx, id: string) {
-    await tx.$queryRaw`SELECT id FROM "Submission" WHERE id = ${id} FOR UPDATE`;
-    const sub = await tx.submission.findUnique({
-      where: { id },
-      include: { toilet: { select: { latitude: true, longitude: true } } },
+  /**
+   * The submitter answers NEEDS_INFO: a note, more photos and/or a corrected level. The submission
+   * goes back to PENDING with a fresh 60 days; REJECT votes are cleared so those reviewers can look
+   * again, APPROVE votes (and check-in confirmations) stay.
+   */
+  async update(
+    me: User,
+    id: string,
+    body: { note?: string; photoIds?: string[]; level?: string },
+  ): Promise<SubmissionView> {
+    const sub = await this.prisma.submission.findUnique({ where: { id } });
+    if (!sub || sub.submittedById !== me.id) throw new NotFoundException('Submission not found');
+    if (sub.state !== SubmissionState.NEEDS_INFO) {
+      throw new ConflictException('Only a submission that needs more info can be changed');
+    }
+    if (body.level !== undefined && sub.kind === SubmissionKind.CLOSE_TOILET) {
+      throw new BadRequestException('A closure report has no level to change');
+    }
+    const photoIds = await this.assertPhotos(me.id, body.photoIds ?? []);
+    const payload = { ...(sub.payload as Record<string, unknown>) };
+    if (body.note !== undefined) payload.note = body.note;
+    if (photoIds.length > 0) {
+      payload.photoIds = [...new Set([...((payload.photoIds as string[] | undefined) ?? []), ...photoIds])];
+    }
+    if (body.level !== undefined) {
+      if (sub.kind === SubmissionKind.EDIT_TOILET) {
+        payload.changes = { ...(payload.changes as Record<string, unknown>), level: body.level };
+      } else payload.level = body.level;
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await lockSubmission(tx, id);
+      await tx.submissionVote.deleteMany({ where: { submissionId: id, value: 'REJECT' } });
+      const approvals = await tx.submissionVote.count({ where: { submissionId: id, value: 'APPROVE' } });
+      await tx.submission.update({
+        where: { id },
+        data: {
+          payload: payload as Prisma.InputJsonValue,
+          state: SubmissionState.PENDING,
+          resolution: null,
+          resolutionNote: null,
+          approvals,
+          rejections: 0,
+          hasPhoto: sub.hasPhoto || photoIds.length > 0,
+          expiresAt: new Date(Date.now() + SUBMISSION_TTL_MS),
+        },
+      });
+      if (photoIds.length > 0) {
+        await tx.photo.updateMany({
+          where: { id: { in: photoIds } },
+          data: { submissionId: id, ...(sub.toiletId ? { toiletId: sub.toiletId } : {}) },
+        });
+      }
+      if (body.level !== undefined && sub.kind === SubmissionKind.NEW_TOILET && sub.toiletId) {
+        await tx.toilet.update({ where: { id: sub.toiletId }, data: { level: body.level } });
+      }
     });
-    if (!sub) throw new NotFoundException('Submission not found');
-    return sub;
+    return this.get(id, me);
   }
+
+  /* ─────────────── votes & resolution ─────────────── */
 
   async vote(
     me: User,
@@ -365,11 +572,10 @@ export class SubmissionsService {
     body: { value: 'APPROVE' | 'REJECT'; comment?: string; lat?: number; lng?: number },
   ): Promise<SubmissionView> {
     const toEvaluate = await this.prisma.$transaction(async (tx) => {
-      const sub = await this.lock(tx, id);
+      const sub = await lockSubmission(tx, id);
       if (sub.submittedById === me.id) throw new ForbiddenException('You cannot vote on your own submission');
-      if (!OPEN_STATES.includes(sub.state) || sub.expiresAt.getTime() < Date.now()) {
-        throw new ConflictException('Voting on this submission is closed');
-      }
+      // Expiry no longer closes voting: an escalated submission can still be settled by people nearby.
+      assertVotable(sub);
       const existing = await tx.submissionVote.findUnique({ where: { submissionId_userId: { submissionId: id, userId: me.id } } });
       if (existing) throw new ConflictException('You already voted on this submission');
 
@@ -377,35 +583,8 @@ export class SubmissionsService {
         body.lat !== undefined && body.lng !== undefined && sub.toilet
           ? Math.round(haversineM({ lat: body.lat, lng: body.lng }, { lat: sub.toilet.latitude, lng: sub.toilet.longitude }))
           : null;
-      await tx.submissionVote.create({
-        data: { submissionId: id, userId: me.id, value: body.value, comment: body.comment ?? null, distanceM },
-      });
-      const votes = await tx.submissionVote.findMany({
-        where: { submissionId: id },
-        select: { value: true, distanceM: true, user: { select: { role: true } } },
-      });
-      await tx.submission.update({
-        where: { id },
-        data: {
-          approvals: votes.filter((v) => v.value === 'APPROVE').length,
-          rejections: votes.filter((v) => v.value === 'REJECT').length,
-        },
-      });
-      const outcome = evaluateQuorum(
-        sub.kind,
-        votes.map((v) => ({ value: v.value, distanceM: v.distanceM, role: v.user.role })),
-      );
-      if (outcome === 'APPROVED' || outcome === 'REJECTED') {
-        const note = outcome === 'APPROVED' ? 'Approved by community vote' : 'Rejected by moderator vote';
-        return this.applyResolution(tx, sub, outcome, me.id, note);
-      }
-      if (outcome === 'NEEDS_INFO' && sub.state !== SubmissionState.NEEDS_INFO) {
-        await tx.submission.update({
-          where: { id },
-          data: { state: SubmissionState.NEEDS_INFO, resolution: 'Two reviewers rejected it; more info needed' },
-        });
-      }
-      return [];
+      const r = await recordVote(tx, this.points, sub, me, { value: body.value, comment: body.comment, distanceM });
+      return r.evaluate;
     });
     await this.evaluateBadgesFor(toEvaluate);
     return this.get(id, me);
@@ -413,86 +592,15 @@ export class SubmissionsService {
 
   async resolve(moderator: User, id: string, body: { state: FinalState; note?: string }): Promise<SubmissionView> {
     const toEvaluate = await this.prisma.$transaction(async (tx) => {
-      const sub = await this.lock(tx, id);
+      const sub = await lockSubmission(tx, id);
       if (!OPEN_STATES.includes(sub.state)) throw new ConflictException(`Submission is already ${sub.state}`);
-      return this.applyResolution(tx, sub, body.state, moderator.id, body.note ?? `${body.state} by moderator`);
+      const code = ({ APPROVED: 'moderator_approved', REJECTED: 'moderator_rejected', NEEDS_INFO: 'moderator_needs_info' } as const)[
+        body.state
+      ];
+      return applyResolution(tx, this.points, sub, body.state, moderator.id, code, body.note ?? null);
     });
     await this.evaluateBadgesFor(toEvaluate);
     return this.get(id, moderator);
-  }
-
-  /**
-   * Applies a decision inside the caller's transaction: state, toilet effects, points, scores.
-   * Returns the user ids whose badges should be re-evaluated after commit.
-   */
-  private async applyResolution(
-    tx: Tx,
-    sub: { id: string; kind: string; toiletId: string | null; submittedById: string; payload: Prisma.JsonValue },
-    state: FinalState,
-    resolvedById: string,
-    note: string,
-  ): Promise<string[]> {
-    const now = new Date();
-    await tx.submission.update({
-      where: { id: sub.id },
-      data: {
-        state,
-        resolvedAt: state === 'NEEDS_INFO' ? null : now,
-        resolvedById: state === 'NEEDS_INFO' ? null : resolvedById,
-        resolution: note,
-      },
-    });
-    if (state === 'NEEDS_INFO') return [];
-
-    const toiletId = sub.toiletId;
-    if (state === 'APPROVED' && toiletId) {
-      if (sub.kind === 'NEW_TOILET') {
-        const t = await tx.toilet.update({
-          where: { id: toiletId },
-          data: { status: ToiletStatus.ACTIVE, lastVerifiedAt: now },
-          select: { venueId: true },
-        });
-        await tx.venue.update({ where: { id: t.venueId }, data: { toiletStatus: VenueToiletStatus.HAS_TOILETS } });
-      } else if (sub.kind === 'EDIT_TOILET') {
-        const { changes } = EditToiletPayloadSchema.parse(sub.payload);
-        await tx.toilet.update({
-          where: { id: toiletId },
-          data: {
-            ...(changes.label !== undefined ? { label: changes.label } : {}),
-            ...(changes.level !== undefined ? { level: changes.level } : {}),
-            ...(changes.areaType !== undefined ? { areaType: changes.areaType } : {}),
-            ...(changes.accessNote !== undefined ? { accessNote: changes.accessNote } : {}),
-            lastVerifiedAt: now,
-          },
-        });
-        for (const { feature, present } of featureRows(changes.features ?? {})) {
-          await tx.toiletFeature.upsert({
-            where: { toiletId_feature: { toiletId, feature } },
-            create: { toiletId, feature, present, source: DataSource.COMMUNITY, observedAt: now },
-            update: { present, source: DataSource.COMMUNITY, observedAt: now },
-          });
-        }
-      } else if (sub.kind === 'CLOSE_TOILET') {
-        const { status } = CloseToiletPayloadSchema.parse(sub.payload);
-        await tx.toilet.update({ where: { id: toiletId }, data: { status } });
-      }
-    } else if (state === 'REJECTED' && toiletId && sub.kind === 'NEW_TOILET') {
-      await tx.toilet.update({ where: { id: toiletId }, data: { status: ToiletStatus.REJECTED } });
-    }
-
-    const evaluate = new Set<string>();
-    if (state === 'APPROVED') {
-      await this.points.award(sub.submittedById, 'SUBMISSION_APPROVED', sub.id, { tx });
-      evaluate.add(sub.submittedById);
-    }
-    const winning = state === 'APPROVED' ? 'APPROVE' : 'REJECT';
-    const matched = await tx.submissionVote.findMany({ where: { submissionId: sub.id, value: winning }, select: { userId: true } });
-    for (const { userId } of matched) {
-      await this.points.award(userId, 'VOTE_MATCHED_OUTCOME', sub.id, { tx });
-      evaluate.add(userId);
-    }
-    if (toiletId && state === 'APPROVED') await recomputeToiletScore(tx, toiletId);
-    return [...evaluate];
   }
 
   private async evaluateBadgesFor(userIds: string[]) {

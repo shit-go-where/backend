@@ -203,7 +203,7 @@ describe('imports and data quality', () => {
 
   it('returns counts', async () => {
     const res = await request(ctx.server).get('/admin/data-quality').set('Cookie', mod.cookie).expect(200);
-    const keys = ['toilets', 'venues', 'pending', 'flagsOpen', 'photosPending', 'noFeatures', 'stale365d', 'needsResurvey', 'unknownAreaType'];
+    const keys = ['toilets', 'venues', 'pending', 'escalated', 'flagsOpen', 'photosPending', 'noFeatures', 'stale365d', 'needsResurvey', 'unknownAreaType'];
     expect(Object.keys(res.body.counts).sort()).toEqual([...keys].sort());
     for (const k of keys) expect(Number.isInteger(res.body.counts[k])).toBe(true);
     expect(res.body.counts.toilets).toBeGreaterThan(0);
@@ -237,7 +237,7 @@ describe('POST /admin/jobs/:name', () => {
     for (let i = 0; i < 130; i++) await job('nope', TEST_CRON_SECRET).expect(404);
   });
 
-  it('expire-submissions expires due submissions and rejects their pending toilets', async () => {
+  it('expire-submissions escalates due submissions to moderators and keeps their toilets pending', async () => {
     const { toilet } = await makeToilet(ctx.prisma, 'PENDING');
     const { toilet: liveToilet } = await makeToilet(ctx.prisma, 'PENDING');
     const past = new Date(Date.now() - 1000);
@@ -261,11 +261,11 @@ describe('POST /admin/jobs/:name', () => {
     expect(res.body.affected).toBeGreaterThanOrEqual(2);
     const states = await ctx.prisma.submission.findMany({ where: { id: { in: [due.id, info.id, notDue.id] } } });
     const byId = Object.fromEntries(states.map((s) => [s.id, s]));
-    expect(byId[due.id].state).toBe('EXPIRED');
-    expect(byId[due.id].resolvedAt).not.toBeNull();
-    expect(byId[info.id].state).toBe('EXPIRED');
+    expect(byId[due.id]).toMatchObject({ state: 'ESCALATED', resolution: 'escalated_expired', resolvedAt: null });
+    expect(byId[due.id].escalatedAt).not.toBeNull();
+    expect(byId[info.id].state).toBe('ESCALATED');
     expect(byId[notDue.id].state).toBe('PENDING');
-    expect((await ctx.prisma.toilet.findUniqueOrThrow({ where: { id: toilet.id } })).status).toBe('REJECTED');
+    expect((await ctx.prisma.toilet.findUniqueOrThrow({ where: { id: toilet.id } })).status).toBe('PENDING');
     expect((await ctx.prisma.toilet.findUniqueOrThrow({ where: { id: liveToilet.id } })).status).toBe('PENDING');
   });
 
