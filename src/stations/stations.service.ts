@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ToiletStatus, ToiletTier, VenueToiletStatus, VenueType } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { bboxAround } from '../common/geo.js';
+import { bboxAround, haversineM } from '../common/geo.js';
 import { ToiletPresenter, summaryInclude } from '../toilets/toilet-presenter.service.js';
 import { compareToilets } from '../areas/areas.service.js';
 import { areaSlug } from '../areas/regions.js';
@@ -89,14 +89,29 @@ export class StationsService {
     });
   }
 
-  /** Every station A to Z. */
+  /**
+   * Every station A to Z. `indexable` matches the detail page: a station with nothing of its own
+   * on record is still worth a search result when an open toilet is a short walk away.
+   */
   async list(): Promise<StationSummary[]> {
-    const [venues, toilets] = await Promise.all([
+    const [venues, toilets, open] = await Promise.all([
       this.prisma.venue.findMany({ where: stationWhere, select: stationSelect, orderBy: { name: 'asc' } }),
       this.activeStationToilets(),
+      this.prisma.toilet.findMany({
+        where: { status: ToiletStatus.ACTIVE, venue: { toiletStatus: { not: VenueToiletStatus.NONE } } },
+        select: { venueId: true, latitude: true, longitude: true },
+      }),
     ]);
     const byVenue = groupBy(toilets, (t) => t.venueId);
-    return venues.map((v) => summarize(v, byVenue.get(v.id) ?? []));
+    return venues.map((v) => {
+      const s = summarize(v, byVenue.get(v.id) ?? []);
+      if (s.indexable) return s;
+      const origin = { lat: v.latitude, lng: v.longitude };
+      const near = open.some(
+        (t) => t.venueId !== v.id && haversineM(origin, { lat: t.latitude, lng: t.longitude }) <= NEARBY_RADIUS_M,
+      );
+      return near ? { ...s, indexable: true } : s;
+    });
   }
 
   async detail(slug: string, now = new Date()): Promise<StationDetail> {

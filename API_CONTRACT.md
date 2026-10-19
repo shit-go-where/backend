@@ -240,11 +240,11 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 ### Stations and the line board (GROWTH.md 1.2, 1.11)
 - `StationSummary` = `{ slug, name, lines: { code, name }[], lat, lng, toiletStatus: VenueToiletStatus, toiletCount, verifiedCount, bestScore: number | null, lastVerifiedAt: string | null, indexable }`
   for every `MRT_STATION` venue (MRT and LRT). Counts are ACTIVE toilets; toilets at NONE stations are never counted. `slug` = kebab-cased name.
-  `indexable` = has toilets, or a definite NONE / USES_NEARBY answer.
+  `indexable` = has toilets, a definite NONE / USES_NEARBY answer, or an ACTIVE toilet elsewhere within 400 m.
 - `GET /stations` → `{ items: StationSummary[] }` A to Z.
 - `GET /stations/:slug` → `StationSummary & { note: string | null, area: { slug, name } | null, toilets: ToiletSummary[], nearby: { toilet: ToiletSummary, distanceM }[] }`;
   404 unknown. `toilets`: in the station, ACTIVE / CLOSED / RENOVATION (never PENDING), best first. `nearby`: ACTIVE toilets at other places
-  within 400 m, nearest first, max 5. `indexable` is also true when `nearby` is non-empty.
+  within 400 m, nearest first, max 5. `indexable` follows the same rule as the list.
 - `GET /leaderboard/lines` → `{ items: { rank, code, name, stations, stationsWithToilets, scoredStations, avgScore: number | null, freshPct: number | null, checkInsWeek }[] }`.
   An interchange counts for every line it serves. `avgScore` = mean of each station's best toilet score; `freshPct` = % of the line's
   Verified + Community toilets verified within 90 days. Ranked by `avgScore` (ties share a rank, unscored last). Cached 5 min.

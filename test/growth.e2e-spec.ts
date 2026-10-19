@@ -42,6 +42,12 @@ describe('Growth (e2e)', () => {
       // The bad-data toilet at a NONE station is never counted.
       expect(bySlug['bishan-ccl-test']).toMatchObject({ toiletStatus: 'NONE', toiletCount: 0, indexable: true });
       expect(bySlug['nearby-user-test']).toMatchObject({ toiletStatus: 'USES_NEARBY', toiletCount: 0, indexable: true });
+      // Unchecked, nothing of its own, but an open toilet within 400 m: indexable, as its page says.
+      await prisma.venue.update({ where: { id: fx.venues.usesNearby.id }, data: { toiletStatus: 'UNKNOWN' } });
+      const again = await http().get('/stations').expect(200);
+      const unchecked = again.body.items.find((s: { slug: string }) => s.slug === 'nearby-user-test');
+      expect(unchecked).toMatchObject({ toiletStatus: 'UNKNOWN', indexable: true });
+      await prisma.venue.update({ where: { id: fx.venues.usesNearby.id }, data: { toiletStatus: 'USES_NEARBY' } });
     });
 
     it('GET /stations/:slug has its toilets, area and note', async () => {
