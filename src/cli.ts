@@ -1,10 +1,15 @@
 /**
- * Data pipeline CLI. Usage: `pnpm cli <command> [flags]`. See data/README.md.
- * Deliberately framework-free (no Nest): each command is a plain async function.
+ * Data pipeline and Telegram bot CLI. Usage: `pnpm cli <command> [flags]`. See data/README.md
+ * and the Telegram section of README.md.
+ * Deliberately framework-free (no Nest): each command is a plain async function. The one exception
+ * is telegram:poll, which boots the Nest app context from the compiled build to run the bot's handlers.
  */
 import { parseArgv } from './imports/lib/argv.js';
 import { closeDb } from './imports/lib/db.js';
-import { COMMANDS } from './imports/commands.js';
+import { COMMANDS as IMPORT_COMMANDS } from './imports/commands.js';
+import { TELEGRAM_COMMANDS } from './integrations/telegram/commands.js';
+
+const COMMANDS = { ...IMPORT_COMMANDS, ...TELEGRAM_COMMANDS };
 
 async function main() {
   const args = parseArgv(process.argv.slice(2));

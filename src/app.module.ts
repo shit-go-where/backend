@@ -21,6 +21,7 @@ import { AreasModule } from './areas/areas.module.js';
 import { AnalyticsModule } from './analytics/analytics.module.js';
 import { StationsModule } from './stations/stations.module.js';
 import { MetricsModule } from './metrics/metrics.module.js';
+import { TelegramModule } from './integrations/telegram/telegram.module.js';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { MetricsModule } from './metrics/metrics.module.js';
     AreasModule,
     StationsModule,
     MetricsModule,
+    TelegramModule,
   ],
   controllers: [HealthController],
   providers: [
