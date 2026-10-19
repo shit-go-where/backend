@@ -126,6 +126,7 @@ interface Me {
   openSubmissions: { count: number; limit: 10 };                 // open submissions from the last 14 days vs the cap
   unseen: { resolvedSubmissions: number; badges: number; points: number };  // since lastSeenActivityAt (else sign-up)
   lastSeenActivityAt: string | null;
+  telegramLinked: boolean;             // a Telegram chat is linked to this account (BOT.md T15)
 }
 
 // EXPIRED is legacy (old rows only): expiry now escalates to ESCALATED.
@@ -295,6 +296,12 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   `routedWeek` = route starts to them over the last 7 Singapore days. `Me.verifierCredit` (default true) shows your handle as `verifiedBy`.
 - `DELETE /me` → 204, clears cookie. Anonymises the user row (email `deleted-<id>@deleted.invalid`, no handle/avatar/googleSub, "Deleted user", role USER, trust 0) and deletes their check-ins, points ledger and badges. Reviews, submissions, votes, photos, status reports and flags stay, attributed to the anonymous user.
 - `GET /me/activity?cursor&limit=30` (limit max 100) → `{ items: { id, delta, reason, refId, createdAt }[], nextCursor }` newest first.
+- `POST /me/telegram/link-token` → 200 `{ url: string; expiresAt: string }` (BOT.md T15). `url` is
+  `https://t.me/<TELEGRAM_BOT_USERNAME>?start=link_<token>`: a one-time 32-byte token, stored only as its SHA-256 hash, valid 10 minutes,
+  cleared when the bot uses it (a new request replaces the old token). Opening it in Telegram links that chat to the account and moves
+  the chat's anonymous check-ins and reports over (same merge as sign-in). 503 when the bot is not configured
+  (`TELEGRAM_BOT_TOKEN` or `TELEGRAM_BOT_USERNAME` unset). Throttled to 10/min.
+- `DELETE /me/telegram` → 204. Unlinks the chat (and drops an unused link token). Idempotent. `DELETE /me` also clears the link.
 
 ### Media (owner: accounts agent)
 - `POST /media/presign` (auth) `{ contentType: 'image/jpeg'|'image/png'|'image/webp', size: number <= 5_000_000 }` → `{ photoId, uploadUrl, method: 'PUT', headers: Record<string,string> }`.
@@ -422,6 +429,13 @@ All MODERATOR+ unless noted.
 - `POST /admin/jobs/:name` header `x-cron-secret: CRON_SECRET` (no session, not throttled) name ∈ `expire-submissions | archive-status | recompute-scores | metrics` → `{ ok: true, affected: number }`.
   `metrics` upserts the `MetricsDaily` row for the Singapore day that ended most recently (run at 03:00 SGT); affected = 1.
   401 bad/missing secret, 503 when CRON_SECRET is unset, 404 unknown job. `expire-submissions`: PENDING/NEEDS_INFO past `expiresAt` → ESCALATED (`escalatedAt` set, resolution `escalated_expired`); their toilets stay PENDING; affected = submissions. `escalated` (data-quality) = submissions in ESCALATED. `archive-status`: deletes status reports expired > 7 days. `recompute-scores`: affected = toilets recomputed.
+
+### Telegram bot (BOT.md)
+- `POST /integrations/telegram` is the bot's webhook: only when `TELEGRAM_BOT_TOKEN` is set, never throttled, and not in `openapi.json`.
+  Requires header `X-Telegram-Bot-Api-Secret-Token` = `TELEGRAM_WEBHOOK_SECRET` (401 otherwise; 503 when the secret is unset).
+  Always 200 once authenticated; replies go out through the Bot API before it responds.
+- The bot calls the services in-process: check-ins and status reports from unlinked chats use device id `hashTelegramId(chatId)`
+  (same anonymous guardrails as `sgw_anon`), linked chats act as the user. Analytics context `{ surface: 'telegram', source: 'telegram' }`.
 
 ### Analytics (GROWTH.md 0.1)
 - Server-side PostHog events, a no-op unless `POSTHOG_KEY` is set (`POSTHOG_HOST` defaults to the EU cloud). Events never block a response.

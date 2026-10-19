@@ -46,6 +46,8 @@ export const MeSchema = z.object({
    */
   impact: z.object({ toilets: z.number().int(), routedWeek: z.number().int() }),
   lastSeenActivityAt: z.string().nullable(),
+  /** A Telegram chat is linked to this account (BOT.md T15). */
+  telegramLinked: z.boolean(),
 });
 export type Me = z.infer<typeof MeSchema>;
 export class MeDto extends createZodDto(MeSchema) {}
@@ -84,3 +86,8 @@ export const ActivityPageSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 export class ActivityPageDto extends createZodDto(ActivityPageSchema) {}
+
+/** POST /me/telegram/link-token: a one-time t.me deep link that links the chat that opens it. */
+export class TelegramLinkTokenDto extends createZodDto(
+  z.object({ url: z.string(), expiresAt: z.string() }),
+) {}

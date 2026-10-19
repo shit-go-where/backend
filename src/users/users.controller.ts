@@ -1,11 +1,19 @@
 import { Body, Controller, Delete, Get, HttpCode, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiCookieAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '../common/throttle.js';
 import { ZodResponse } from 'nestjs-zod';
 import type { Response } from 'express';
 import { AuthGuard, CurrentUser } from '../common/auth/auth.guard.js';
 import { SESSION_COOKIE, sessionCookieOptions } from '../common/auth/session.js';
 import type { User } from '../generated/prisma/client.js';
-import { ActivityPageDto, ActivityQueryDto, ActivitySeenDto, MeDto, UpdateMeDto } from './users.dto.js';
+import {
+  ActivityPageDto,
+  ActivityQueryDto,
+  ActivitySeenDto,
+  MeDto,
+  TelegramLinkTokenDto,
+  UpdateMeDto,
+} from './users.dto.js';
 import { UsersService } from './users.service.js';
 
 // Only fixed sub-paths here: GET /me/passport lives in the gamification module.
@@ -49,5 +57,21 @@ export class UsersController {
   @ZodResponse({ type: ActivitySeenDto })
   activitySeen(@CurrentUser() user: User) {
     return this.users.markActivitySeen(user.id);
+  }
+
+  /** One-time t.me link that connects a Telegram chat to this account (BOT.md T15). 503 without a bot. */
+  @Post('telegram/link-token')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ZodResponse({ status: 200, type: TelegramLinkTokenDto })
+  telegramLinkToken(@CurrentUser() user: User) {
+    return this.users.createTelegramLinkToken(user.id);
+  }
+
+  @Delete('telegram')
+  @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Telegram chat unlinked' })
+  async telegramUnlink(@CurrentUser() user: User) {
+    await this.users.unlinkTelegram(user.id);
   }
 }

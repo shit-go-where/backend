@@ -276,6 +276,51 @@
         ]
       }
     },
+    "/me/telegram/link-token": {
+      "post": {
+        "operationId": "UsersController_telegramLinkToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelegramLinkTokenDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/me/telegram": {
+      "delete": {
+        "operationId": "UsersController_telegramUnlink",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Telegram chat unlinked"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
     "/toilets/{id}/check-ins": {
       "post": {
         "operationId": "GamificationController_checkIn",
@@ -2482,6 +2527,9 @@
                 "type": "null"
               }
             ]
+          },
+          "telegramLinked": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -2502,7 +2550,8 @@
           "openSubmissions",
           "unseen",
           "impact",
-          "lastSeenActivityAt"
+          "lastSeenActivityAt",
+          "telegramLinked"
         ],
         "additionalProperties": false
       },
@@ -2605,6 +2654,22 @@
         "required": [
           "ok",
           "seenAt"
+        ],
+        "additionalProperties": false
+      },
+      "TelegramLinkTokenDto_Output": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt"
         ],
         "additionalProperties": false
       },

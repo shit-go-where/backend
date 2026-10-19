@@ -1,4 +1,12 @@
-import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { Role, SubmissionState } from '../generated/prisma/enums.js';
@@ -7,6 +15,8 @@ import { TRUSTED_THRESHOLD } from '../gamification/points.service.js';
 import { sgtDateColumn } from '../gamification/sgt.js';
 import { MAX_OPEN_SUBMISSIONS, openSubmissionsWhere } from '../submissions/resolution.js';
 import type { Me } from './users.dto.js';
+import { LINK_PAYLOAD_PREFIX, newLinkToken } from '../integrations/telegram/identity.js';
+import { botDeepLink } from '../integrations/telegram/links.js';
 
 /** A handle that is already set can be changed once in this window. */
 export const HANDLE_CHANGE_INTERVAL_MS = 30 * 86_400_000;
@@ -53,7 +63,10 @@ export class UsersService {
     const [user, points, openCount] = await Promise.all([
       this.prisma.user.findUnique({
         where: { id: userId },
-        include: { badges: { include: { badge: true }, orderBy: { awardedAt: 'asc' } } },
+        include: {
+          badges: { include: { badge: true }, orderBy: { awardedAt: 'asc' } },
+          telegramChat: { select: { userId: true } },
+        },
       }),
       this.prisma.pointsLedger.aggregate({ where: { userId }, _sum: { delta: true } }),
       this.prisma.submission.count({ where: openSubmissionsWhere(userId) }),
@@ -105,6 +118,7 @@ export class UsersService {
       },
       impact: { toilets: impact.toilets, routedWeek: impact.routedWeek },
       lastSeenActivityAt: user.lastSeenActivityAt?.toISOString() ?? null,
+      telegramLinked: user.telegramChat !== null,
     };
   }
 
@@ -138,6 +152,32 @@ export class UsersService {
       routedFrom(new Date(since.getTime() + 86_400_000)),
     ]);
     return { toilets: ids.length, routedWeek, routedSince };
+  }
+
+  /**
+   * Telegram account linking (BOT.md T15): a one-time token, stored as its SHA-256 hash for 10
+   * minutes, inside a t.me deep link. The bot clears it on use. A new request replaces the old one.
+   */
+  async createTelegramLinkToken(userId: string, now = new Date()): Promise<{ url: string; expiresAt: string }> {
+    const username = env.TELEGRAM_BOT_USERNAME;
+    if (!env.TELEGRAM_BOT_TOKEN || !username) throw new ServiceUnavailableException('The Telegram bot is not set up');
+    const { token, hash, expiresAt } = newLinkToken(now);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { telegramLinkTokenHash: hash, telegramLinkTokenExpiresAt: expiresAt },
+    });
+    return { url: botDeepLink(username, `${LINK_PAYLOAD_PREFIX}${token}`), expiresAt: expiresAt.toISOString() };
+  }
+
+  /** Unlinks whichever chat is linked (and drops any unused link token). Idempotent. */
+  async unlinkTelegram(userId: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.telegramChat.updateMany({ where: { userId }, data: { userId: null } }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { telegramLinkTokenHash: null, telegramLinkTokenExpiresAt: null },
+      }),
+    ]);
   }
 
   /** Clears the "since your last visit" counts in GET /me. */
@@ -211,6 +251,8 @@ export class UsersService {
       this.prisma.checkIn.deleteMany({ where: { userId } }),
       this.prisma.pointsLedger.deleteMany({ where: { userId } }),
       this.prisma.userBadge.deleteMany({ where: { userId } }),
+      // The account row stays (anonymised), so the Telegram link is cleared by hand.
+      this.prisma.telegramChat.updateMany({ where: { userId }, data: { userId: null } }),
       this.prisma.user.update({
         where: { id: userId },
         data: {
@@ -222,6 +264,8 @@ export class UsersService {
           leaderboardOptIn: false,
           role: Role.USER,
           trustScore: 0,
+          telegramLinkTokenHash: null,
+          telegramLinkTokenExpiresAt: null,
           deletedAt: new Date(),
         },
       }),
