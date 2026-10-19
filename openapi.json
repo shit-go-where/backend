@@ -896,6 +896,37 @@
         ]
       }
     },
+    "/routing/started": {
+      "post": {
+        "operationId": "RoutingController_started",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteStartedBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteStartedResponseDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "routing"
+        ]
+      }
+    },
     "/routing/recommend": {
       "post": {
         "operationId": "RoutingController_recommend",
@@ -1734,6 +1765,44 @@
         ]
       }
     },
+    "/admin/metrics": {
+      "get": {
+        "operationId": "AdminController_metricsRange",
+        "parameters": [
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 366,
+              "default": 30,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/admin/flags": {
       "get": {
         "operationId": "AdminController_flags",
@@ -2097,6 +2166,79 @@
           "areas"
         ]
       }
+    },
+    "/stations": {
+      "get": {
+        "operationId": "StationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StationListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "stations"
+        ]
+      }
+    },
+    "/stations/{slug}": {
+      "get": {
+        "operationId": "StationsController_detail",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StationDetailDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "stations"
+        ]
+      }
+    },
+    "/leaderboard/lines": {
+      "get": {
+        "operationId": "StationsController_lines",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineBoardDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "stations",
+          "leaderboard"
+        ]
+      }
     }
   },
   "info": {
@@ -2182,6 +2324,9 @@
             "maximum": 9007199254740991
           },
           "leaderboardOptIn": {
+            "type": "boolean"
+          },
+          "verifierCredit": {
             "type": "boolean"
           },
           "points": {
@@ -2293,12 +2438,38 @@
                 "type": "integer",
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
+              },
+              "routed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
               }
             },
             "required": [
               "resolvedSubmissions",
               "badges",
-              "points"
+              "points",
+              "routed"
+            ],
+            "additionalProperties": false
+          },
+          "impact": {
+            "type": "object",
+            "properties": {
+              "toilets": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "routedWeek": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "toilets",
+              "routedWeek"
             ],
             "additionalProperties": false
           },
@@ -2322,6 +2493,7 @@
           "role",
           "trustScore",
           "leaderboardOptIn",
+          "verifierCredit",
           "points",
           "badges",
           "needsHandle",
@@ -2329,6 +2501,7 @@
           "trust",
           "openSubmissions",
           "unseen",
+          "impact",
           "lastSeenActivityAt"
         ],
         "additionalProperties": false
@@ -2346,6 +2519,9 @@
             "maxLength": 50
           },
           "leaderboardOptIn": {
+            "type": "boolean"
+          },
+          "verifierCredit": {
             "type": "boolean"
           }
         }
@@ -3861,6 +4037,25 @@
               }
             ]
           },
+          "verifiedBy": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "handle": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "source": {
             "type": "string"
           },
@@ -3907,6 +4102,7 @@
           "reviews",
           "photos",
           "myReview",
+          "verifiedBy",
           "source",
           "attribution"
         ],
@@ -3950,6 +4146,32 @@
         "required": [
           "items",
           "areas"
+        ],
+        "additionalProperties": false
+      },
+      "RouteStartedBodyDto": {
+        "type": "object",
+        "properties": {
+          "toiletId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "toiletId"
+        ]
+      },
+      "RouteStartedResponseDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
         ],
         "additionalProperties": false
       },
@@ -7035,6 +7257,9 @@
         "properties": {
           "kind": {
             "$ref": "#/components/schemas/StatusKind"
+          },
+          "afterRoute": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -7200,6 +7425,115 @@
         "required": [
           "ok",
           "affected"
+        ],
+        "additionalProperties": false
+      },
+      "MetricsDay_Output": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "description": "Singapore calendar day, YYYY-MM-DD"
+          },
+          "wac": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Distinct contributors (users + anonymous devices) in the 7 days ending `day`"
+          },
+          "contributors": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "checkIns": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "statusReports": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "reviews": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "submissions": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "votes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "freshPct": {
+            "type": "number",
+            "description": "% of active Verified + Community toilets verified within 90 days"
+          },
+          "toiletsByTier": {
+            "type": "object",
+            "properties": {
+              "VERIFIED": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "COMMUNITY": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "IMPORTED": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "VERIFIED",
+              "COMMUNITY",
+              "IMPORTED"
+            ],
+            "additionalProperties": false
+          },
+          "pendingCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "day",
+          "wac",
+          "contributors",
+          "checkIns",
+          "statusReports",
+          "reviews",
+          "submissions",
+          "votes",
+          "freshPct",
+          "toiletsByTier",
+          "pendingCount"
+        ],
+        "additionalProperties": false
+      },
+      "MetricsListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetricsDay_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
         ],
         "additionalProperties": false
       },
@@ -7932,6 +8266,317 @@
           "center",
           "venues",
           "noToiletVenues"
+        ],
+        "additionalProperties": false
+      },
+      "StationSummary_Output": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationLine_Output"
+            }
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "toiletStatus": {
+            "$ref": "#/components/schemas/VenueToiletStatus_Output"
+          },
+          "toiletCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "verifiedCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "bestScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lastVerifiedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "indexable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "lines",
+          "lat",
+          "lng",
+          "toiletStatus",
+          "toiletCount",
+          "verifiedCount",
+          "bestScore",
+          "lastVerifiedAt",
+          "indexable"
+        ],
+        "additionalProperties": false
+      },
+      "StationLine_Output": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "StationListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationSummary_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "StationNearby_Output": {
+        "type": "object",
+        "properties": {
+          "toilet": {
+            "$ref": "#/components/schemas/ToiletSummary_Output"
+          },
+          "distanceM": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "toilet",
+          "distanceM"
+        ],
+        "additionalProperties": false
+      },
+      "StationDetailDto_Output": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationLine_Output"
+            }
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "toiletStatus": {
+            "$ref": "#/components/schemas/VenueToiletStatus_Output"
+          },
+          "toiletCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "verifiedCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "bestScore": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastVerifiedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "indexable": {
+            "type": "boolean"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slug",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "toilets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToiletSummary_Output"
+            }
+          },
+          "nearby": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StationNearby_Output"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "lines",
+          "lat",
+          "lng",
+          "toiletStatus",
+          "toiletCount",
+          "verifiedCount",
+          "bestScore",
+          "lastVerifiedAt",
+          "indexable",
+          "note",
+          "area",
+          "toilets",
+          "nearby"
+        ],
+        "additionalProperties": false
+      },
+      "LineRow_Output": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "stations": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "stationsWithToilets": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "scoredStations": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "avgScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "freshPct": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "checkInsWeek": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "rank",
+          "code",
+          "name",
+          "stations",
+          "stationsWithToilets",
+          "scoredStations",
+          "avgScore",
+          "freshPct",
+          "checkInsWeek"
+        ],
+        "additionalProperties": false
+      },
+      "LineBoardDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LineRow_Output"
+            }
+          }
+        },
+        "required": [
+          "items"
         ],
         "additionalProperties": false
       }

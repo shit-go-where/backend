@@ -97,6 +97,7 @@ interface ToiletDetail extends Omit<ToiletSummary, 'venue'> {
   near: string | null;                 // "120 m from Tampines MRT": closest non-OTHER place within 1.5 km, only when the venue has no address
   openSubmissionId: string | null;     // PENDING toilets: the open NEW_TOILET submission (PENDING/NEEDS_INFO/ESCALATED), for /review?id=; else null
   openingHours: OpeningHours | null;   // effective (toilet's or venue's)
+  verifiedBy: { handle: string } | null; // last "still accurate" verifier (GROWTH.md 1.7); null if unknown, no handle, deleted, or Me.verifierCredit=false
   featureDetails: { feature: Feature; present: boolean; source: string; observedAt: string }[];
   latestSurvey: Survey | null;
   surveyCount: number;
@@ -209,7 +210,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   `photoIds` must be the caller's own `confirmed` photos not attached to another review/toilet, else 400. When given it is the full set (others are detached); omitted keeps existing photos.
   The response (and `ToiletDetail.myReview`) include the author's not-yet-approved photos.
 - `GET /toilets/:id/status` → `{ items: StatusReport[] }` active only.
-- `POST /toilets/:id/status` (optional auth) `{ kind: StatusKind }` → `StatusReport`. TTL 2h, CLOSED_NOW 24h. Same user+toilet+kind within 30 min → returns existing.
+- `POST /toilets/:id/status` (optional auth) `{ kind: StatusKind, afterRoute?: boolean }` → `StatusReport`. `afterRoute` is analytics only (post-route card). TTL 2h, CLOSED_NOW 24h. Same user+toilet+kind within 30 min → returns existing.
   Signed out: allowed. The device gets the `sgw_anon` cookie (see "Anonymous device"); TTL is 1 h for every kind; dedupe is per device;
   a lone anonymous CLOSED_NOW / BROKEN is `unconfirmed: true` and does not affect activeStatus, pins or routing (see StatusReport).
   Max 30 signed-out reports per IP per Singapore day (429 "Too many reports from this network today. Sign in to keep reporting.").
@@ -236,7 +237,21 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   non-OTHER place within 1.5 km (in any area), set only when the place has no address. `center` is the area's namesake MRT station, else the
   listed place nearest the middle. `noToiletVenues` are NONE / USES_NEARBY places in the area.
 
+### Stations and the line board (GROWTH.md 1.2, 1.11)
+- `StationSummary` = `{ slug, name, lines: { code, name }[], lat, lng, toiletStatus: VenueToiletStatus, toiletCount, verifiedCount, bestScore: number | null, lastVerifiedAt: string | null, indexable }`
+  for every `MRT_STATION` venue (MRT and LRT). Counts are ACTIVE toilets; toilets at NONE stations are never counted. `slug` = kebab-cased name.
+  `indexable` = has toilets, or a definite NONE / USES_NEARBY answer.
+- `GET /stations` → `{ items: StationSummary[] }` A to Z.
+- `GET /stations/:slug` → `StationSummary & { note: string | null, area: { slug, name } | null, toilets: ToiletSummary[], nearby: { toilet: ToiletSummary, distanceM }[] }`;
+  404 unknown. `toilets`: in the station, ACTIVE / CLOSED / RENOVATION (never PENDING), best first. `nearby`: ACTIVE toilets at other places
+  within 400 m, nearest first, max 5. `indexable` is also true when `nearby` is non-empty.
+- `GET /leaderboard/lines` → `{ items: { rank, code, name, stations, stationsWithToilets, scoredStations, avgScore: number | null, freshPct: number | null, checkInsWeek }[] }`.
+  An interchange counts for every line it serves. `avgScore` = mean of each station's best toilet score; `freshPct` = % of the line's
+  Verified + Community toilets verified within 90 days. Ranked by `avgScore` (ties share a rank, unscored last). Cached 5 min.
+
 ### Routing (owner: finder agent)
+- `POST /routing/started` `{ toiletId }` → 200 `{ ok: true }`. Someone started walking there: adds 1 to that toilet's count for the
+  Singapore day (`ToiletRouteDaily`, counts only, no person). 404 unless ACTIVE. 100 per IP per day (429), throttled 20/min.
 - `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number } }`
   → `{ items: { toilet: ToiletSummary; score: number; walkSeconds: number; walkDistanceM: number; reasons: string[]; route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null }[]; searchedRadiusM: number; skippedVenues: { name: string; toiletStatus: VenueToiletStatus; note: string | null; distanceM: number }[] }`
   `purpose` adds soft preferences (src/routing/purposes.ts): missing features add cost, nothing is filtered out.
@@ -265,12 +280,15 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 - `POST /auth/logout` → 204, clears cookie.
 - `POST /auth/dev-login` `{ email, displayName? }` → `Me`. Only when `DEV_LOGIN_ENABLED=true` (404 otherwise).
 - `GET /me` → `Me` (401 if signed out).
-- `PATCH /me` `{ handle?: /^[a-z0-9_]{3,20}$/, displayName?: string 1-50, leaderboardOptIn?: boolean }` → `Me` (409 on handle taken or reserved, e.g. `admin`, `sgw`). Handle is trimmed and lowercased before validation.
+- `PATCH /me` `{ handle?: /^[a-z0-9_]{3,20}$/, displayName?: string 1-50, leaderboardOptIn?: boolean, verifierCredit?: boolean }` → `Me` (409 on handle taken or reserved, e.g. `admin`, `sgw`). Handle is trimmed and lowercased before validation.
   This is also how a handle is changed: choosing the first handle is free, changing an existing one is allowed once every 30 days
   (429 "You can change your handle once every 30 days. You can change it again from 18 Nov 2026."). `Me.handleChangeableAt` says when.
 - `POST /me/activity/seen` → 200 `{ ok: true, seenAt: string }`. Sets `lastSeenActivityAt = now`, so `Me.unseen` drops to zeros.
   `Me.unseen` counts since then: `resolvedSubmissions` = own submissions APPROVED/REJECTED since (not auto-published ones),
-  `badges` = badges awarded since, `points` = sum of ledger deltas since.
+  `badges` = badges awarded since, `points` = sum of ledger deltas since, `routed` = route starts (`POST /routing/started`) to toilets
+  you helped on Singapore days after the last visit.
+- `Me.impact` = `{ toilets, routedWeek }` (GROWTH.md 1.3): `toilets` you added (createdBy), last verified, or checked in at within 90 days;
+  `routedWeek` = route starts to them over the last 7 Singapore days. `Me.verifierCredit` (default true) shows your handle as `verifiedBy`.
 - `DELETE /me` → 204, clears cookie. Anonymises the user row (email `deleted-<id>@deleted.invalid`, no handle/avatar/googleSub, "Deleted user", role USER, trust 0) and deletes their check-ins, points ledger and badges. Reviews, submissions, votes, photos, status reports and flags stay, attributed to the anonymous user.
 - `GET /me/activity?cursor&limit=30` (limit max 100) → `{ items: { id, delta, reason, refId, createdAt }[], nextCursor }` newest first.
 
@@ -394,5 +412,18 @@ All MODERATOR+ unless noted.
   nearbyApprovals, needed, reviewerNotes, photos (incl. unapproved), payload and `current` (edits). Resolve with `POST /submissions/:id/resolve`. 400 bad state.
 - `GET /admin/data-quality` → `{ counts: { toilets, venues, pending, escalated, flagsOpen, photosPending, noFeatures, stale365d, needsResurvey, unknownAreaType } }`
 - `GET /admin/data-quality`: `toilets` excludes REJECTED; `pending` = unexpired PENDING/NEEDS_INFO submissions; `noFeatures`, `stale365d` (lastVerifiedAt null or > 365 d), `needsResurvey`, `unknownAreaType` count ACTIVE toilets only.
-- `POST /admin/jobs/:name` header `x-cron-secret: CRON_SECRET` (no session, not throttled) name ∈ `expire-submissions | archive-status | recompute-scores` → `{ ok: true, affected: number }`.
+- `GET /admin/metrics?days=30` (1-366) → `{ items: MetricsDay[] }` newest first. `MetricsDay` = `{ day: 'YYYY-MM-DD' (SGT), wac, contributors, checkIns, statusReports, reviews, submissions, votes, freshPct, toiletsByTier: { VERIFIED, COMMUNITY, IMPORTED }, pendingCount }`.
+  `contributors` = distinct users or anonymous devices with a check-in, status report, review, submission or vote that day; `wac` = the same over the 7 days ending that day;
+  `freshPct` = % of ACTIVE Verified + Community toilets verified within 90 days; tier counts are ACTIVE toilets; `pendingCount` = PENDING toilets.
+- `POST /admin/jobs/:name` header `x-cron-secret: CRON_SECRET` (no session, not throttled) name ∈ `expire-submissions | archive-status | recompute-scores | metrics` → `{ ok: true, affected: number }`.
+  `metrics` upserts the `MetricsDaily` row for the Singapore day that ended most recently (run at 03:00 SGT); affected = 1.
   401 bad/missing secret, 503 when CRON_SECRET is unset, 404 unknown job. `expire-submissions`: PENDING/NEEDS_INFO past `expiresAt` → ESCALATED (`escalatedAt` set, resolution `escalated_expired`); their toilets stay PENDING; affected = submissions. `escalated` (data-quality) = submissions in ESCALATED. `archive-status`: deletes status reports expired > 7 days. `recompute-scores`: affected = toilets recomputed.
+
+### Analytics (GROWTH.md 0.1)
+- Server-side PostHog events, a no-op unless `POSTHOG_KEY` is set (`POSTHOG_HOST` defaults to the EU cloud). Events never block a response.
+- Optional request headers from the web app: `x-sgw-source` (first-touch utm_source, `[a-z0-9-]{1,40}`) and `x-sgw-distinct-id`
+  (the browser's PostHog id, `[A-Za-z0-9$:._-]{1,100}`). Malformed values are ignored.
+- Distinct id: the user id when signed in; `tg:<hash>` for unlinked Telegram chats; else the browser's id; else `anon:<deviceId>`.
+- Events: `checkin`, `status_report` (from the services, so the Telegram bot gets them too), `review`, `submission`, `vote`, `signin`.
+  Common props `surface: 'web' | 'telegram'`, `anonymous`, `source?`; plus `toilet_id`, `toilet_tier`, `distance_m` (rounded to 10 m),
+  `on_pending`, `kind`, `after_route`, `value`, `on_site`, `method`, `new_user` as relevant. No email, name or coordinates.
