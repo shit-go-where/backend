@@ -1,4 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { AnalyticsService } from '../analytics/analytics.service.js';
+import { analyticsFromRequest, baseProps } from '../analytics/analytics.js';
+import type { Request } from 'express';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import type { User } from '../generated/prisma/client.js';
@@ -9,7 +12,10 @@ import { CreateReviewDto, ReviewDto, ReviewListQueryDto, ReviewPageDto } from '.
 @ApiTags('reviews')
 @Controller('toilets/:id/reviews')
 export class ReviewsController {
-  constructor(private readonly reviews: ReviewsService) {}
+  constructor(
+    private readonly reviews: ReviewsService,
+    private readonly analytics: AnalyticsService,
+  ) {}
 
   @Get()
   @ZodResponse({ status: 200, type: ReviewPageDto })
@@ -21,7 +27,13 @@ export class ReviewsController {
   @UseGuards(AuthGuard)
   @ApiCookieAuth('sgw_session')
   @ZodResponse({ status: 201, type: ReviewDto })
-  create(@Param('id') id: string, @Body() body: CreateReviewDto, @CurrentUser() user: User) {
-    return this.reviews.upsert(id, user.id, body);
+  async create(@Param('id') id: string, @Body() body: CreateReviewDto, @CurrentUser() user: User, @Req() req: Request) {
+    const review = await this.reviews.upsert(id, user.id, body);
+    this.analytics.track('review', user.id, {
+      ...baseProps({ userId: user.id }, analyticsFromRequest(req)),
+      toilet_id: id,
+      photos: body.photoIds?.length ?? 0,
+    });
+    return review;
   }
 }

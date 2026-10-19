@@ -38,6 +38,7 @@ export async function createAccountsApp() {
       import('cookie-parser'),
     ]);
   const { PrismaModule } = await import('../src/prisma/prisma.module.js');
+  const { AnalyticsModule } = await import('../src/analytics/analytics.module.js');
   const { PrismaService } = await import('../src/prisma/prisma.service.js');
   const { PointsModule } = await import('../src/gamification/points.module.js');
   const { AuthModule } = await import('../src/auth/auth.module.js');
@@ -51,6 +52,7 @@ export async function createAccountsApp() {
   Module({
     imports: [
       PrismaModule,
+      AnalyticsModule,
       PointsModule,
       AuthModule,
       UsersModule,

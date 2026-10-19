@@ -7,6 +7,7 @@ import type { User } from '../generated/prisma/client.js';
 import { AuthGuard, CurrentUser, OptionalAuthGuard } from '../common/auth/auth.guard.js';
 import { ensureDeviceId } from '../common/auth/anon.js';
 import { sgtDayNumber } from '../gamification/sgt.js';
+import { analyticsFromRequest, type AnalyticsContext } from '../analytics/analytics.js';
 import { StatusService } from './status.service.js';
 import { CreateStatusDto, StatusReportDto, StatusReportListDto } from './status.dto.js';
 
@@ -38,11 +39,13 @@ export class StatusController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (user) return this.status.report(id, { userId: user.id }, body.kind);
+    const base = analyticsFromRequest(req);
+    const analytics: AnalyticsContext = { ...base, extra: { after_route: body.afterRoute ?? false } };
+    if (user) return this.status.report(id, { userId: user.id }, body.kind, undefined, analytics);
     if (!this.anonPerIp.take(clientIp(req), sgtDayNumber(new Date()))) {
       throw new HttpException('Too many reports from this network today. Sign in to keep reporting.', HttpStatus.TOO_MANY_REQUESTS);
     }
-    return this.status.report(id, { deviceId: ensureDeviceId(req, res) }, body.kind);
+    return this.status.report(id, { deviceId: ensureDeviceId(req, res) }, body.kind, undefined, analytics);
   }
 
   @Post('status/:id/confirm')

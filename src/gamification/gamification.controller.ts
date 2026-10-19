@@ -19,6 +19,7 @@ import { AuthGuard, CurrentUser, OptionalAuthGuard } from '../common/auth/auth.g
 import { ensureDeviceId } from '../common/auth/anon.js';
 import { DailyLimiter, clientIp } from '../common/throttle.js';
 import { sgtDayNumber } from './sgt.js';
+import { analyticsFromRequest } from '../analytics/analytics.js';
 import type { User } from '../generated/prisma/client.js';
 import { GamificationService } from './gamification.service.js';
 import {
@@ -52,14 +53,15 @@ export class GamificationController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (user) return this.gamification.checkIn(user, id, body.lat, body.lng);
+    const analytics = analyticsFromRequest(req);
+    if (user) return this.gamification.checkIn(user, id, body.lat, body.lng, analytics);
     if (!this.anonPerIp.take(clientIp(req), sgtDayNumber(new Date()))) {
       throw new HttpException(
         'Too many check-ins from this network today. Sign in to keep going.',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    return this.gamification.anonymousCheckIn(ensureDeviceId(req, res), id, body.lat, body.lng);
+    return this.gamification.anonymousCheckIn(ensureDeviceId(req, res), id, body.lat, body.lng, analytics);
   }
 
   @Post('toilets/:id/verify')

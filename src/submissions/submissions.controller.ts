@@ -1,4 +1,7 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { AnalyticsService } from '../analytics/analytics.service.js';
+import { analyticsFromRequest, baseProps } from '../analytics/analytics.js';
+import type { Request } from 'express';
 import { ApiBody, ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
 import { AuthGuard, CurrentUser, MinRole, RolesGuard } from '../common/auth/auth.guard.js';
@@ -23,17 +26,28 @@ import {
 @ApiCookieAuth()
 @Controller('submissions')
 export class SubmissionsController {
-  constructor(@Inject(SubmissionsService) private readonly submissions: SubmissionsService) {}
+  constructor(
+    @Inject(SubmissionsService) private readonly submissions: SubmissionsService,
+    @Inject(AnalyticsService) private readonly analytics: AnalyticsService,
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard)
   @ApiBody({ type: CreateSubmissionDto })
   @ZodResponse({ status: 201, type: SubmissionViewDto })
-  create(
+  async create(
     @CurrentUser() user: User,
     @Body(new ZodValidationPipe(CreateSubmissionSchema)) body: CreateSubmissionBody,
+    @Req() req: Request,
   ) {
-    return this.submissions.create(user, body);
+    const view = await this.submissions.create(user, body);
+    this.analytics.track('submission', user.id, {
+      ...baseProps({ userId: user.id }, analyticsFromRequest(req)),
+      kind: view.kind,
+      state: view.state,
+      on_site: body.lat !== undefined && body.lng !== undefined,
+    });
+    return view;
   }
 
   @Get('queue')
@@ -68,8 +82,15 @@ export class SubmissionsController {
   @Post(':id/votes')
   @UseGuards(AuthGuard)
   @ZodResponse({ status: 201, type: SubmissionViewDto })
-  vote(@CurrentUser() user: User, @Param('id') id: string, @Body() body: VoteDto) {
-    return this.submissions.vote(user, id, body);
+  async vote(@CurrentUser() user: User, @Param('id') id: string, @Body() body: VoteDto, @Req() req: Request) {
+    const view = await this.submissions.vote(user, id, body);
+    this.analytics.track('vote', user.id, {
+      ...baseProps({ userId: user.id }, analyticsFromRequest(req)),
+      value: body.value,
+      kind: view.kind,
+      on_site: body.lat !== undefined && body.lng !== undefined,
+    });
+    return view;
   }
 
   @Post(':id/resolve')

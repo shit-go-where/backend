@@ -9,6 +9,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PointsService } from '../gamification/points.service.js';
 import type { StatusReportView } from '../toilets/toilet.schemas.js';
 import { isUnconfirmed } from './unconfirmed.js';
+import { AnalyticsService } from '../analytics/analytics.service.js';
+import { WEB, baseProps, distinctIdFor, type AnalyticsContext } from '../analytics/analytics.js';
 
 const HOUR = 3_600_000;
 export const STATUS_TTL_MS = 2 * HOUR;
@@ -36,6 +38,7 @@ export class StatusService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly points: PointsService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   /** `others` = the toilet's unexpired reports, to decide whether an anonymous closure is confirmed. */
@@ -56,8 +59,9 @@ export class StatusService {
   }
 
   private async assertToilet(toiletId: string) {
-    const t = await this.prisma.toilet.findUnique({ where: { id: toiletId }, select: { status: true } });
+    const t = await this.prisma.toilet.findUnique({ where: { id: toiletId }, select: { status: true, tier: true } });
     if (!t || t.status === 'REJECTED') throw new NotFoundException('Toilet not found');
+    return t;
   }
 
   async active(toiletId: string, userId: string | null, now = new Date()) {
@@ -74,9 +78,12 @@ export class StatusService {
     };
   }
 
-  /** Same reporter (user or device) + toilet + kind within 30 min returns the existing report. */
-  async report(toiletId: string, who: Reporter, kind: StatusKind, now = new Date()) {
-    await this.assertToilet(toiletId);
+  /**
+   * Same reporter (user or device) + toilet + kind within 30 min returns the existing report.
+   * `analytics` says where it came from (web by default; the Telegram bot passes its own).
+   */
+  async report(toiletId: string, who: Reporter, kind: StatusKind, now = new Date(), analytics: AnalyticsContext = WEB) {
+    const toilet = await this.assertToilet(toiletId);
     const reporter = who.userId !== undefined ? { userId: who.userId } : { deviceId: who.deviceId, userId: null };
     const existing = await this.prisma.statusReport.findFirst({
       where: { toiletId, ...reporter, kind, createdAt: { gte: new Date(now.getTime() - DEDUPE_WINDOW_MS) } },
@@ -92,6 +99,13 @@ export class StatusService {
         createdAt: now,
         expiresAt: new Date(now.getTime() + ttlFor(kind, anonymous)),
       },
+    });
+    this.analytics.track('status_report', distinctIdFor(who, analytics), {
+      after_route: false,
+      ...baseProps(who, analytics),
+      toilet_id: toiletId,
+      toilet_tier: toilet.tier,
+      kind,
     });
     return this.view(r, false, await this.unexpired(toiletId, now));
   }

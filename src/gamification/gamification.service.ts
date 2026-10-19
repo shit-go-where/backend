@@ -19,6 +19,8 @@ import { rankWithTies } from './ranking.js';
 import { sgtDayStart } from './sgt.js';
 import type { BadgeView, CheckInResult, Leaderboard } from './gamification.schemas.js';
 import { confirmByCheckIn, escalateIfFlagged } from '../submissions/resolution.js';
+import { AnalyticsService } from '../analytics/analytics.service.js';
+import { WEB, baseProps, distinctIdFor, roundDistance, type AnalyticsContext } from '../analytics/analytics.js';
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
@@ -58,6 +60,7 @@ export class GamificationService implements OnApplicationBootstrap {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(PointsService) private readonly points: PointsService,
+    @Inject(AnalyticsService) private readonly analytics: AnalyticsService,
   ) {}
 
   /** Badge rows must exist before any UserBadge insert. Cheap idempotent upserts. */
@@ -155,7 +158,7 @@ export class GamificationService implements OnApplicationBootstrap {
   private async loadToiletWithin(toiletId: string, lat: number, lng: number) {
     const toilet = await this.prisma.toilet.findUnique({
       where: { id: toiletId },
-      select: { id: true, status: true, latitude: true, longitude: true, createdById: true },
+      select: { id: true, status: true, tier: true, latitude: true, longitude: true, createdById: true },
     });
     if (!toilet) throw new NotFoundException('Toilet not found');
     const distanceM = Math.round(haversineM({ lat, lng }, { lat: toilet.latitude, lng: toilet.longitude }));
@@ -179,7 +182,13 @@ export class GamificationService implements OnApplicationBootstrap {
    * Signed-in check-in. At a PENDING toilet someone else added (or an auto-published one awaiting
    * its second person), it also counts as an APPROVE vote (submissions/resolution.ts confirmByCheckIn).
    */
-  async checkIn(user: User, toiletId: string, lat: number, lng: number): Promise<CheckInResult> {
+  async checkIn(
+    user: User,
+    toiletId: string,
+    lat: number,
+    lng: number,
+    analytics: AnalyticsContext = WEB,
+  ): Promise<CheckInResult> {
     // Coordinates are used for verification only and never stored (PLAN.md §11 B8).
     const { toilet, distanceM } = await this.loadToiletWithin(toiletId, lat, lng);
     if (toilet.status !== ToiletStatus.ACTIVE && toilet.status !== ToiletStatus.PENDING) {
@@ -229,6 +238,13 @@ export class GamificationService implements OnApplicationBootstrap {
       }
     }
     const [newBadges, verifyPrompt] = await Promise.all([this.evaluateBadges(user.id), this.verifyPrompt(toiletId)]);
+    this.analytics.track('checkin', distinctIdFor({ userId: user.id }, analytics), {
+      ...baseProps({ userId: user.id }, analytics),
+      toilet_id: toiletId,
+      toilet_tier: toilet.tier,
+      distance_m: roundDistance(distanceM),
+      on_pending: toilet.status === ToiletStatus.PENDING,
+    });
     return {
       id,
       distanceM,
@@ -246,7 +262,13 @@ export class GamificationService implements OnApplicationBootstrap {
    * 2 h cooldown; at most 5 per device per Singapore day. Never votes and never counts toward Seen by.
    * Earns nothing now: `bankedPoints` is what the device would have earned, paid on sign-in (mergeDevice).
    */
-  async anonymousCheckIn(deviceId: string, toiletId: string, lat: number, lng: number): Promise<CheckInResult> {
+  async anonymousCheckIn(
+    deviceId: string,
+    toiletId: string,
+    lat: number,
+    lng: number,
+    analytics: AnalyticsContext = WEB,
+  ): Promise<CheckInResult> {
     const { toilet, distanceM } = await this.loadToiletWithin(toiletId, lat, lng);
     if (toilet.status === ToiletStatus.PENDING) {
       throw new UnauthorizedException('Sign in to confirm a new toilet');
@@ -272,6 +294,13 @@ export class GamificationService implements OnApplicationBootstrap {
     const checkIn = await this.prisma.checkIn.create({ data: { deviceId, toiletId, distanceM } });
     // The daily cap on CHECK_IN points (5) is never hit here: the device itself is capped at 5 a day.
     const bankedPoints = POINTS.CHECK_IN + (here === 0 ? POINTS.FIRST_CHECK_IN_AT_TOILET : 0);
+    this.analytics.track('checkin', distinctIdFor({ deviceId }, analytics), {
+      ...baseProps({}, analytics),
+      toilet_id: toiletId,
+      toilet_tier: toilet.tier,
+      distance_m: roundDistance(distanceM),
+      on_pending: false,
+    });
     return {
       id: checkIn.id,
       distanceM,
@@ -336,7 +365,10 @@ export class GamificationService implements OnApplicationBootstrap {
       throw new BadRequestException('This toilet is not verified yet');
     }
     if (body.accurate) {
-      await this.prisma.toilet.update({ where: { id: toiletId }, data: { lastVerifiedAt: new Date() } });
+      await this.prisma.toilet.update({
+        where: { id: toiletId },
+        data: { lastVerifiedAt: new Date(), lastVerifiedById: user.id },
+      });
     } else {
       const reason = 'Check-in: listing inaccurate' + (body.note ? ` - ${body.note}` : '');
       await this.prisma.flag.create({ data: { toiletId, userId: user.id, reason } });

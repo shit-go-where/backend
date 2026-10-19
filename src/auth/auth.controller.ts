@@ -26,6 +26,7 @@ import { MeDto } from '../users/users.dto.js';
 import { UsersService } from '../users/users.service.js';
 import { clearAnonCookie, readDeviceId } from '../common/auth/anon.js';
 import { GamificationService } from '../gamification/gamification.service.js';
+import { AnalyticsService } from '../analytics/analytics.service.js';
 import {
   AuthService,
   OAUTH_STATE_COOKIE,
@@ -81,7 +82,18 @@ export class AuthController {
     private readonly auth: AuthService,
     private readonly users: UsersService,
     private readonly gamification: GamificationService,
+    private readonly analytics: AnalyticsService,
   ) {}
+
+  /** `signin` event (GROWTH.md 0.1). New = account created in the last minute. */
+  private trackSignin(user: { id: string; createdAt: Date }, method: 'google' | 'dev') {
+    this.analytics.track('signin', user.id, {
+      surface: 'web',
+      anonymous: false,
+      method,
+      new_user: Date.now() - user.createdAt.getTime() < 60_000,
+    });
+  }
 
   /**
    * After any sign-in: move this browser's anonymous check-ins and status reports (sgw_anon) to the
@@ -133,6 +145,7 @@ export class AuthController {
     }
     const user = await this.auth.upsertGoogleUser(profile);
     await this.mergeAnonymous(user.id, req, res);
+    this.trackSignin(user, 'google');
     res.cookie(SESSION_COOKIE, createSessionToken(user.id), sessionCookieOptions());
     res.redirect(302, appUrl(saved.redirect));
   }
@@ -153,6 +166,7 @@ export class AuthController {
     if (!env.DEV_LOGIN_ENABLED) throw new NotFoundException();
     const user = await this.auth.upsertDevUser(body.email, body.displayName);
     await this.mergeAnonymous(user.id, req, res);
+    this.trackSignin(user, 'dev');
     res.cookie(SESSION_COOKIE, createSessionToken(user.id), sessionCookieOptions());
     return this.users.getMe(user.id);
   }

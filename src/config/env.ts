@@ -41,6 +41,9 @@ const EnvSchema = z.object({
   CRON_SECRET: optional,
   DEV_LOGIN_ENABLED: bool,
   SENTRY_DSN: optional,
+  /** PostHog project key (GROWTH.md 0.1). Unset = no server-side analytics. */
+  POSTHOG_KEY: optional,
+  POSTHOG_HOST: z.string().default('https://eu.i.posthog.com'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

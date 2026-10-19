@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { PrismaModule } from '../src/prisma/prisma.module.js';
+import { AnalyticsModule } from '../src/analytics/analytics.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { PointsModule } from '../src/gamification/points.module.js';
 import { GamificationModule } from '../src/gamification/gamification.module.js';
@@ -14,7 +15,7 @@ import type { Role, VenueType } from '../src/generated/prisma/enums.js';
 
 /** Only the modules under test, so other features' modules cannot break these specs. */
 @Module({
-  imports: [PrismaModule, PointsModule, GamificationModule, SubmissionsModule],
+  imports: [PrismaModule, AnalyticsModule, PointsModule, GamificationModule, SubmissionsModule],
   providers: [
     { provide: APP_PIPE, useClass: ZodValidationPipe },
     { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
