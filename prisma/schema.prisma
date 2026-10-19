@@ -289,6 +289,10 @@ model User {
   badges             UserBadge[]
   surveys            Survey[]
   photoApprovals     PhotoApproval[]
+  // Telegram bot account linking (BOT.md T15). The token is a SHA-256 hash, valid 10 minutes, cleared on use.
+  telegramChat       TelegramChat?
+  telegramLinkTokenHash      String?
+  telegramLinkTokenExpiresAt DateTime?
 }
 
 // ───────────────────────────── contributions ─────────────────────────────
@@ -540,4 +544,32 @@ model MetricsDaily {
   toiletsByTier Json
   pendingCount  Int
   createdAt     DateTime @default(now())
+}
+
+// ───────────────────────────── Telegram bot (BOT.md §6) ─────────────────────────────
+
+enum TelegramChatType {
+  PRIVATE
+  GROUP
+  SUPERGROUP
+  CHANNEL
+}
+
+/// One row per chat that has used the bot. No names, usernames, phone numbers, message text or
+/// coordinates. Deleted by /stop.
+model TelegramChat {
+  chatId      BigInt           @id
+  type        TelegramChatType
+  /// /go: the next location in this window ranks urgent.
+  urgentUntil DateTime?
+  /// Saved hard filters (/filters).
+  filters     Feature[]        @default([])
+  areaType    AreaType?
+  openNow     Boolean          @default(false)
+  /// Linked account (T15). Account deletion clears it.
+  userId      String?          @unique
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime         @default(now())
+  /// Written at most once an hour.
+  lastSeenAt  DateTime         @default(now())
 }

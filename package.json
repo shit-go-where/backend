@@ -43,6 +43,7 @@
     "@vercel/functions": "^3.10.1",
     "cookie-parser": "^1.4.7",
     "csv-parse": "^7.0.3",
+    "grammy": "1.46.0",
     "nestjs-zod": "^5.5.0",
     "pg": "^8.23.1",
     "posthog-node": "^5.56.2",

@@ -44,6 +44,16 @@ const EnvSchema = z.object({
   /** PostHog project key (GROWTH.md 0.1). Unset = no server-side analytics. */
   POSTHOG_KEY: optional,
   POSTHOG_HOST: z.string().default('https://eu.i.posthog.com'),
+  /** Telegram bot (BOT.md). Unset = no bot and no webhook route. From BotFather. */
+  TELEGRAM_BOT_TOKEN: optional,
+  /** Random 32+ chars; Telegram sends it in X-Telegram-Bot-Api-Secret-Token on every webhook call. */
+  TELEGRAM_WEBHOOK_SECRET: optional,
+  /** Bot username without the @, e.g. shitgowherebot. Needed for t.me deep links and account linking. */
+  TELEGRAM_BOT_USERNAME: optional,
+  /** Channel for broadcasts (v1.5), e.g. @shitgowhere. */
+  TELEGRAM_CHANNEL_ID: optional,
+  /** Override the Bot API root (default https://api.telegram.org), for tests and local stubs. */
+  TELEGRAM_API_ROOT: optional,
 });
 
 export type Env = z.infer<typeof EnvSchema>;
