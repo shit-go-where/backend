@@ -18,10 +18,14 @@ import { MediaModule } from './media/media.module.js';
 import { GamificationModule } from './gamification/gamification.module.js';
 import { AdminModule } from './admin/admin.module.js';
 import { AreasModule } from './areas/areas.module.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
+import { StationsModule } from './stations/stations.module.js';
+import { MetricsModule } from './metrics/metrics.module.js';
 
 @Module({
   imports: [
     PrismaModule,
+    AnalyticsModule,
     PointsModule,
     AuthModule,
     UsersModule,
@@ -36,6 +40,8 @@ import { AreasModule } from './areas/areas.module.js';
     GamificationModule,
     AdminModule,
     AreasModule,
+    StationsModule,
+    MetricsModule,
   ],
   controllers: [HealthController],
   providers: [

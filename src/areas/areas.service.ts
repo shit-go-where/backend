@@ -15,7 +15,7 @@ const NEAR_MAX_M = 1500;
 const TIER_RANK: Record<ToiletTier, number> = { VERIFIED: 0, COMMUNITY: 1, IMPORTED: 2 };
 
 /** Open before closed, verified before imported, cleaner first, unscored last. */
-function compareToilets(a: ToiletSummary, b: ToiletSummary): number {
+export function compareToilets(a: ToiletSummary, b: ToiletSummary): number {
   return (
     Number(a.status !== 'ACTIVE') - Number(b.status !== 'ACTIVE') ||
     TIER_RANK[a.tier] - TIER_RANK[b.tier] ||
