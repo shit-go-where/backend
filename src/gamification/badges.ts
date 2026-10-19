@@ -15,7 +15,15 @@ export type BadgeRule =
   | { type: 'approvedPhotos'; min: number }
   | { type: 'checkInBetweenSgtHours'; fromHour: number; toHour: number }
   | { type: 'checkInStreakDays'; min: number }
-  | { type: 'minRole'; role: Role };
+  | { type: 'minRole'; role: Role }
+  /**
+   * One of the first `max` accounts to contribute: a check-in or an approved submission. Awarded in
+   * order of evaluation (on the next action), while fewer than `max` accounts hold it.
+   */
+  | { type: 'founding'; max: number };
+
+export const FOUNDING_BADGE_ID = 'founding-contributor';
+export const FOUNDING_MAX = 100;
 
 export interface BadgeDef {
   id: string;
@@ -55,9 +63,12 @@ export const BADGES: BadgeDef[] = [
   { id: 'night-owl', name: 'Night Owl', description: 'Checked in between midnight and 5 am.', icon: '🦉', rule: { type: 'checkInBetweenSgtHours', fromHour: 0, toHour: 5 } },
   { id: 'streak-7', name: 'Seven-Day Streak', description: 'Checked in on 7 consecutive days.', icon: '🔥', rule: { type: 'checkInStreakDays', min: 7 } },
   { id: 'trusted', name: 'Trusted', description: 'Earned trusted reviewer status.', icon: '🛡️', rule: { type: 'minRole', role: 'TRUSTED' } },
+  { id: 'founding-contributor', name: 'Founding Contributor', description: 'One of the first 100 people to check in or add a toilet.', icon: '🌱', rule: { type: 'founding', max: FOUNDING_MAX } },
 ];
 
 export interface BadgeStats {
+  /** Accounts that already hold the founding-contributor badge (0 if not needed). */
+  foundingHolders?: number;
   checkIns: { createdAt: Date; toiletId: string; venueId: string }[];
   /** For each line: venue ids of all MRT stations with toilets on that line. */
   lineStations: Partial<Record<MrtLine, string[]>>;
@@ -99,6 +110,8 @@ export function ruleSatisfied(rule: BadgeRule, s: BadgeStats): boolean {
       return longestSgtDayStreak(s.checkIns.map((c) => c.createdAt)) >= rule.min;
     case 'minRole':
       return ROLE_RANK[s.role] >= ROLE_RANK[rule.role];
+    case 'founding':
+      return (s.checkIns.length > 0 || s.approvedSubmissions > 0) && (s.foundingHolders ?? 0) < rule.max;
   }
 }
 
