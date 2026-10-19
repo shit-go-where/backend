@@ -256,3 +256,13 @@ export function rank<C extends RankCandidate>(
     })
     .sort((a, b) => a.cost - b.cost || a.candidate.distanceM - b.candidate.distanceM);
 }
+
+/**
+ * Urgent results, re-ordered once the real walking times are in. Ranking runs on straight-line distance, so a
+ * toilet across a road can rank above one that is a shorter walk; urgent mode promises the nearest, so it sorts
+ * by the walk minutes people will see, and keeps the ranking (cleaner, better trusted) within the same minute.
+ */
+export function byWalkMinutes<T extends { walkSeconds: number; score: number }>(items: T[]): T[] {
+  const mins = (s: number) => Math.max(1, Math.round(s / 60));
+  return [...items].sort((a, b) => mins(a.walkSeconds) - mins(b.walkSeconds) || b.score - a.score);
+}

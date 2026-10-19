@@ -2,6 +2,7 @@ import {
   DEFAULT_WEIGHTS,
   URGENT_WEIGHTS,
   ago,
+  byWalkMinutes,
   cost,
   isBlocked,
   issuePenalty,
@@ -210,5 +211,33 @@ describe('reasons', () => {
     expect(ago(minsAgo(0), now)).toBe('just now');
     expect(ago(minsAgo(5), now)).toBe('5 min ago');
     expect(ago(minsAgo(130), now)).toBe('2 h ago');
+  });
+});
+
+describe('byWalkMinutes', () => {
+  it('puts the shortest walk first, whatever the straight-line ranking said', () => {
+    const items = [
+      { id: 'mcd', walkSeconds: 300, score: 90 },
+      { id: 'nsl', walkSeconds: 170, score: 80 },
+      { id: 'nel', walkSeconds: 190, score: 85 },
+    ];
+    expect(byWalkMinutes(items).map((i) => i.id)).toEqual(['nel', 'nsl', 'mcd']);
+  });
+
+  it('keeps the better-ranked toilet first within the same walk minute', () => {
+    const items = [
+      { id: 'a', walkSeconds: 130, score: 60 },
+      { id: 'b', walkSeconds: 100, score: 90 },
+    ];
+    expect(byWalkMinutes(items).map((i) => i.id)).toEqual(['b', 'a']);
+  });
+
+  it('does not reorder the input array', () => {
+    const items = [
+      { id: 'a', walkSeconds: 600, score: 1 },
+      { id: 'b', walkSeconds: 60, score: 1 },
+    ];
+    byWalkMinutes(items);
+    expect(items[0].id).toBe('a');
   });
 });
