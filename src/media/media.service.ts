@@ -25,6 +25,12 @@ import {
 export const MEDIA_STORAGE = Symbol('MEDIA_STORAGE');
 export const PRESIGN_EXPIRY_S = 600;
 export const THUMB_WIDTH = 400;
+/**
+ * Decoded-size ceiling for uploads. The app resizes to 1600 px before upload (about 2.6 MP), so
+ * 40 MP is generous; sharp's own default (268 MP) lets a small, highly compressed PNG decode to
+ * gigabytes and exhaust the function's memory.
+ */
+export const MAX_INPUT_PIXELS = 40_000_000;
 
 /** S3/R2 when bucket + keys are configured, else local files under backend/uploads. */
 export function createStorageFromEnv(): Storage {
@@ -81,12 +87,13 @@ export class MediaService {
     }
   }
 
-  async presign(userId: string, contentType: ImageType) {
+  /** `size` (the declared byte count, <= 5 MB) is signed into the URL, so R2 refuses any other length. */
+  async presign(userId: string, contentType: ImageType, size?: number) {
     const id = randomUUID();
     const key = `tmp/${userId}/${id}.${EXT_BY_TYPE[contentType]}`;
     const uploadUrl = this.isLocal
       ? `/api/media/${id}/upload`
-      : await this.storage.presignPut(key, contentType, PRESIGN_EXPIRY_S);
+      : await this.storage.presignPut(key, contentType, PRESIGN_EXPIRY_S, size);
     await this.prisma.photo.create({
       data: { id, key, url: '', contentType, uploadedById: userId },
     });
@@ -145,7 +152,7 @@ export class MediaService {
     const original = await this.storage.get(photo.key);
     let meta: Awaited<ReturnType<ReturnType<typeof sharp>["metadata"]>>;
     try {
-      meta = await sharp(original).metadata();
+      meta = await sharp(original, { limitInputPixels: false }).metadata(); // header only; size checked below
     } catch {
       await this.discardTmp(photo.key);
       throw new BadRequestException('File is not a valid image');
@@ -154,13 +161,17 @@ export class MediaService {
       await this.discardTmp(photo.key);
       throw new BadRequestException(`File content is ${meta.format ?? 'unknown'}, expected ${type}`);
     }
+    if ((meta.width ?? 0) * (meta.height ?? 0) > MAX_INPUT_PIXELS) {
+      await this.discardTmp(photo.key);
+      throw new BadRequestException('Image dimensions are too large');
+    }
 
     // A valid header does not guarantee decodable pixel data (truncated/corrupt uploads),
     // so decoding failures are the client's fault: 400, not 500.
     let full: Buffer;
     let thumb: Buffer;
     try {
-      const base = sharp(original).rotate();
+      const base = sharp(original, { limitInputPixels: MAX_INPUT_PIXELS }).rotate();
       full =
         type === 'image/jpeg'
           ? await base.clone().jpeg({ quality: 85 }).toBuffer()

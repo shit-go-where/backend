@@ -6,7 +6,8 @@ moderation and gamification. The frontend (separate repo) reaches it through a N
 rewrite, so in production the browser never talks to this service directly.
 
 Design and roadmap: [`../PLAN.md`](../PLAN.md). Endpoint contract: [`API_CONTRACT.md`](API_CONTRACT.md).
-First production deploy: [`../DEPLOY.md`](../DEPLOY.md).
+First production deploy: [`../DEPLOY.md`](../DEPLOY.md). Operations (incidents, rollback, restore,
+secret rotation, takedowns, bans): [`docs/RUNBOOKS.md`](docs/RUNBOOKS.md).
 
 - Stack: NestJS 12, TypeScript 6, Prisma 7.10 (`prisma-client` generator + `@prisma/adapter-pg`),
   zod via `nestjs-zod`, vitest, oxlint, pnpm 12, Node 24.
@@ -98,11 +99,13 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | Variable | Required | Local default | Production value |
 |---|---|---|---|
 | `DATABASE_URL` | yes | `postgresql://sgw:sgw@localhost:5433/sgw` | Neon **pooled** URL (`-pooler` host, `?sslmode=require`) |
-| `DIRECT_URL` | for migrations/seed/CLI | same as above | Neon **direct** URL (non-pooler host) |
+| `DIRECT_URL` | for migrations/seed/CLI | same as above | Neon **direct** URL (non-pooler host). Needed at **build** time too: `pnpm vercel-build` runs `prisma migrate deploy` with it |
+| `DATABASE_URL_UNPOOLED` | no | unset | What Neon's Vercel integration injects instead of `DIRECT_URL`; `prisma.config.ts` and the CLI fall back to it (order: `DIRECT_URL`, `DATABASE_URL_UNPOOLED`, `DATABASE_URL`). Not read by `env.ts` |
+| `SHADOW_DATABASE_URL` | local `db:migrate`, CI | unset | Scratch database for `prisma migrate diff` / `migrate dev`; never set on Vercel |
 | `PORT` | no | `4000` | not needed on Vercel |
 | `NODE_ENV` | no | `development` | Vercel sets `production` |
-| `FRONTEND_ORIGIN` | no | `http://localhost:3000` | frontend origin (CORS for Swagger/local tools only) |
-| `PUBLIC_APP_URL` | no | `http://localhost:3000` | frontend origin; OAuth redirect is `PUBLIC_APP_URL/api/auth/callback` |
+| `FRONTEND_ORIGIN` | no | `http://localhost:3000` | frontend origin (CORS for Swagger/local tools only; the browser reaches the API through the same-origin rewrite) |
+| `PUBLIC_APP_URL` | **yes in production** (the default is localhost) | `http://localhost:3000` | final frontend origin, e.g. `https://shitgowhere.com`; OAuth redirect is `PUBLIC_APP_URL/api/auth/callback`, and every bot/email link derives from it |
 | `AUTH_SECRET` | yes, 16+ chars | `change-me-...` | `openssl rand -base64 48` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | for Google login | empty | Google OAuth web client |
 | `ONEMAP_EMAIL` / `ONEMAP_PASSWORD` | for routing + geocoding | empty | OneMap account |
@@ -111,10 +114,12 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | `S3_BUCKET` | for photos | empty | photo bucket name |
 | `S3_PUBLIC_URL` | for photos | empty | bucket public URL (`https://pub-<hash>.r2.dev`) or custom domain |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | for photos | empty | R2 API token scoped to the photo bucket |
-| `ADMIN_EMAILS` | no | `you@example.com` | comma-separated; promoted to ADMIN on first login |
+| `ADMIN_EMAILS` | no | `you@example.com` | comma-separated; promoted to ADMIN at **every** login (removing an address does not demote; see RUNBOOKS 8) |
 | `CRON_SECRET` | for `/admin/jobs/*` | `change-me` | random; same value as the GitHub secret |
+| `API_PROXY_SECRET` | recommended | empty | `openssl rand -hex 32`; the **same value** in the frontend project. The Next `/api` rewrite sends it with each phone's IP (`x-sgw-client-ip`); without it Vercel's proxy hides the client IP and every visitor shares one rate-limit bucket |
 | `DEV_LOGIN_ENABLED` | no | `true` | **unset** (boot fails if `true` in production) |
-| `SENTRY_DSN` | no | empty | optional |
+| `SENTRY_DSN` | no | empty | **accepted but not used anywhere yet**: no error tracking is wired (see Observability) |
+| `POSTHOG_KEY` / `POSTHOG_HOST` | no | empty / `https://eu.i.posthog.com` | PostHog EU project key for server-side events (check-ins, reports, ...). Unset = nothing is sent |
 | `TELEGRAM_BOT_TOKEN` | for the bot | empty (bot off) | BotFather token; unset = no bot, no webhook route |
 | `TELEGRAM_WEBHOOK_SECRET` | for the webhook | empty | 32+ random chars (`openssl rand -hex 32`) |
 | `TELEGRAM_BOT_USERNAME` | for links | empty | bot username without `@`; needed for `/me` "Connect Telegram" and group deep links |
@@ -136,7 +141,9 @@ recommend, OneMap search, check-in and status services in-process; all links der
 - **What it does (v1):** `/start`, location → top 3 (calm) or closest (`/go`, urgent for 2 min),
   typed place → OneMap search → top 3, `/toilet <place>` (alias `/near`, works in groups),
   `/filters`, check-in and status report buttons (anonymous under `hashTelegramId(chatId)` until
-  linked), `/privacy`, `/stop` (deletes the chat row), `/unlink`. Account linking: `/me`
+  linked), `/privacy`, `/stop` (deletes the chat row), `/unlink`. Results are a list with one
+  button per toilet; tapping one opens a card with Navigate / Details / I'm here / Report, and
+  check-ins, reports and filters edit the message in place. Account linking: `/me`
   "Connect Telegram" → `POST /me/telegram/link-token` → `https://t.me/<bot>?start=link_<token>`.
 - **Stored:** one `TelegramChat` row per chat (chat id, type, pending urgent mode, saved filters,
   linked user id, timestamps). Never names, usernames, phone numbers, message text or coordinates.
@@ -194,14 +201,24 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
 - Env vars per environment:
   - **Production**: everything in the table above with production values; `DATABASE_URL` /
     `DIRECT_URL` from the Neon `main` branch.
-  - **Preview**: same, except the database (Neon's Vercel integration injects a per-branch
+  - **Preview**: same, except the database. **A Preview scope must never hold the production
+    `DATABASE_URL` / `DIRECT_URL`**: preview builds also run `prisma migrate deploy`, so an unmerged PR
+    would migrate production. (Neon's Vercel integration injects a per-branch
     `DATABASE_URL` + `DATABASE_URL_UNPOOLED`; without the integration, `preview-db.yml` writes
     branch-scoped `DATABASE_URL` / `DIRECT_URL`), and `PUBLIC_APP_URL` / `FRONTEND_ORIGIN` set
     to the frontend preview alias if you want them right. Google login only works on origins
     registered in the OAuth client, so use production for login testing.
 - Deployment protection: Hobby protects preview URLs with Vercel Authentication. The frontend's
   server-side rewrite cannot log in, so point the frontend's Preview `API_ORIGIN` at the API
-  production URL, or disable protection on the API project's previews.
+  production URL, or disable protection on the API project's previews. Check that the production
+  URL (`<api>/health`) answers without a login page, because cron, Telegram and the frontend rewrite
+  all call it anonymously.
+- Hobby plan: personal, **non-commercial** use only (Vercel's fair-use terms; ads, sponsorship or a
+  paid product make it commercial, which needs Pro), a single seat, runtime logs kept for about an
+  hour, and hard monthly allowances (function time, invocations, bandwidth) that pause the project
+  rather than bill. Confirm the plan against <https://vercel.com/pricing> and
+  <https://vercel.com/docs/limits> before launch.
+- Regions line up: Vercel `sin1` (both projects), Neon `ap-southeast-1`, R2 location hint APAC.
 
 ### Neon
 
@@ -221,7 +238,7 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
      ```json
      [
        {
-         "AllowedOrigins": ["https://<frontend>.vercel.app", "http://localhost:3000"],
+         "AllowedOrigins": ["https://shitgowhere.com", "https://<frontend>.vercel.app", "http://localhost:3000"],
          "AllowedMethods": ["PUT", "GET", "HEAD"],
          "AllowedHeaders": ["content-type", "content-length"],
          "ExposeHeaders": ["ETag"],
@@ -229,6 +246,14 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
        }
      ]
      ```
+     The browser PUTs straight to R2 from the **site's origin**, so the production domain must be in
+     `AllowedOrigins` (add `https://www.` too if it serves content instead of redirecting). Without
+     it, every photo upload fails in the browser while the API looks healthy. The `r2.dev` address is
+     rate limited and meant for development; for launch connect a custom domain (for example
+     `photos.shitgowhere.com`) and set `S3_PUBLIC_URL` to it.
+   - The `tmp/` lifecycle rule is the only cleanup of abandoned uploads (the app removes `tmp/`
+     objects it confirms or rejects, nothing else). Rows in `Photo` with `confirmed = false` are not
+     purged by any job.
 2. Backup bucket (e.g. `sgw-backups`), **private** (no public access). Optionally add a lifecycle
    rule deleting `db/` objects after 35 days as a backstop to the workflow's 30-day cleanup.
 3. API tokens (R2 -> Manage API tokens): one *Object Read & Write* token scoped to the photo
@@ -247,10 +272,21 @@ Consent screen: external, scopes `openid email profile`.
 The redirect goes through the **frontend** origin (Next rewrites `/api/*` to this API), which is
 what keeps the session cookie first-party.
 
+Before launch, with the real domain: add `https://shitgowhere.com` and
+`https://shitgowhere.com/api/auth/callback` to the client, set `PUBLIC_APP_URL` to the same origin
+(a mismatch gives `redirect_uri_mismatch`), and **publish the consent screen**. Check:
+Google Cloud console -> Google Auth Platform (older UI: APIs & Services -> OAuth consent screen) ->
+Audience / Publishing status must read *In production*. In *Testing* only listed test users (max 100)
+can sign in. With only the `openid email profile` scopes no Google verification review is needed, but
+the app name, logo, support email, homepage and privacy-policy link on the consent screen should
+match the site.
+
 ### OneMap
 
 Register at <https://www.onemap.gov.sg/apidocs/register>; the email and password go in
-`ONEMAP_EMAIL` / `ONEMAP_PASSWORD`. Tokens last 3 days and are refreshed and cached by the API.
+`ONEMAP_EMAIL` / `ONEMAP_PASSWORD`. Tokens last 3 days; the API caches the current one in the `KeyValue` table (`onemap:token`), renews it
+30 minutes before expiry and retries once on a 401/403. A wrong or expired account is silent to users
+(routes fall back to straight-line estimates); look for `OneMap token failed` in the logs.
 
 ### GitHub Actions secrets and variables (this repo)
 
@@ -258,7 +294,8 @@ Register at <https://www.onemap.gov.sg/apidocs/register>; the email and password
 |---|---|---|
 | `DIRECT_URL` | secret | `scheduled.yml` (CLI imports, `pg_dump`) - Neon `main` direct URL |
 | `CRON_SECRET` | secret | `scheduled.yml` maintenance calls |
-| `R2_BACKUP_ACCESS_KEY_ID` / `R2_BACKUP_SECRET_ACCESS_KEY` | secret | backup upload |
+| `R2_BACKUP_ACCESS_KEY_ID` / `R2_BACKUP_SECRET_ACCESS_KEY` | secret | backup upload, download for verification |
+| `BACKUP_HEARTBEAT_URL` | secret, optional but recommended | dead-man's-switch URL (healthchecks.io, Better Stack, ...) pinged after every *verified* backup; alerts you when backups stop, including when GitHub disables the schedule |
 | `ONEMAP_EMAIL` / `ONEMAP_PASSWORD` | secret, optional | imports that geocode |
 | `NEON_API_KEY` | secret | `preview-db.yml` |
 | `VERCEL_TOKEN` | secret, optional | `preview-db.yml` without the Neon integration |
@@ -274,7 +311,45 @@ Register at <https://www.onemap.gov.sg/apidocs/register>; the email and password
 
 On every PR and push to `main`: install, lint, typecheck, unit tests, `prisma migrate deploy`
 against a `postgres:17-alpine` service, schema drift guard, e2e tests, `pnpm openapi` (uploaded
-as the `openapi` artifact).
+as the `openapi` artifact). A separate, non-blocking `audit` job runs `pnpm audit --prod`. CI does
+**not** gate Vercel: Vercel builds on push regardless (see "Deploy gate"). Actions are pinned to
+major tags and kept current by Dependabot (`.github/dependabot.yml`).
+
+### Backups (`scheduled.yml`)
+
+Nightly at 03:00 SGT: `maintenance` (metrics, expire submissions, archive status reports) then
+`backup`: `pg_dump --no-owner --no-privileges` of the whole database (plain SQL, so it includes the
+`_prisma_migrations` table; no roles, no extensions are needed) -> gzip -> `s3://<bucket>/db/sgw-<UTC stamp>.sql.gz`,
+sweep of objects older than 30 days (the newest 7 are always kept), then `verify-backup`: downloads
+that object and restores it into a throwaway Postgres (`.github/scripts/verify-restore.sh`), checks
+the row counts and pings `BACKUP_HEARTBEAT_URL`. Run `verify-backup` alone from the Actions tab to
+check the newest object at any time. To restore for real: [`docs/RUNBOOKS.md`](docs/RUNBOOKS.md) section 6.
+GitHub disables scheduled workflows after 60 days without repository activity; the heartbeat is how
+you find out (a weekly `keepalive` job and Dependabot PRs make it unlikely).
+
+### Deploy gate (Vercel `ignoreCommand`)
+
+`vercel.json` runs `.github/scripts/vercel-ignore-build.mjs` before every Git-triggered build:
+
+- **Always on:** a build is skipped when the diff since the last successful build only touches docs,
+  CI config or tests. Anything unexpected (no previous build, shallow clone, script error) builds.
+- **Opt-in CI gate:** set `SGW_REQUIRE_CI=1` in the project's *Production* environment variables and a
+  production build waits (default 10 minutes, `SGW_CI_WAIT_S`) for the commit's GitHub Actions checks,
+  cancels the deploy if one failed and builds if none reported in time. `[skip-ci-gate]` in the commit
+  message bypasses it for a hotfix. For a private repo also set `GITHUB_TOKEN` (read access to checks).
+  Hobby has one concurrent build, so a waiting gate delays the builds behind it. The simplest
+  alternative with the same effect for normal flow is branch protection: require the CI check on PRs
+  into `main` and only merge through PRs.
+
+### Observability
+
+What exists: Vercel runtime logs (about one hour on Hobby), `GET /health` (checks the database with
+`SELECT 1`), PostHog events from the API, the nightly workflow results. What does not: error tracking
+(`SENTRY_DSN` is read and ignored), an uptime monitor, alerts. Set up an external monitor (UptimeRobot,
+Better Stack, healthchecks.io) on `<site>/api/health` and `<site>/`, 1-5 minute interval, alert on two
+failures. Note `/health` queries the database, so a 1-minute probe keeps Neon's compute awake all day
+and uses the free allowance; use a 5-minute interval or accept the cost. `docs/probe-production.sh`
+records headers, redirects and latency spread of the live site.
 
 ## Accounts you must create
 

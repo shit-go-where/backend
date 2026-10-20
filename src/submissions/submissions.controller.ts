@@ -4,6 +4,7 @@ import { analyticsFromRequest, baseProps } from '../analytics/analytics.js';
 import type { Request } from 'express';
 import { ApiBody, ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodResponse, ZodValidationPipe } from 'nestjs-zod';
+import { Throttle } from '../common/throttle.js';
 import { AuthGuard, CurrentUser, MinRole, RolesGuard } from '../common/auth/auth.guard.js';
 import type { User } from '../generated/prisma/client.js';
 import { Role } from '../generated/prisma/enums.js';
@@ -33,6 +34,7 @@ export class SubmissionsController {
 
   @Post()
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiBody({ type: CreateSubmissionDto })
   @ZodResponse({ status: 201, type: SubmissionViewDto })
   async create(
@@ -74,6 +76,7 @@ export class SubmissionsController {
   /** Answer NEEDS_INFO: owner only, puts it back to PENDING. */
   @Patch(':id')
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ZodResponse({ status: 200, type: SubmissionViewDto })
   update(@CurrentUser() user: User, @Param('id') id: string, @Body() body: UpdateSubmissionDto) {
     return this.submissions.update(user, id, body);
@@ -81,6 +84,7 @@ export class SubmissionsController {
 
   @Post(':id/votes')
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @ZodResponse({ status: 201, type: SubmissionViewDto })
   async vote(@CurrentUser() user: User, @Param('id') id: string, @Body() body: VoteDto, @Req() req: Request) {
     const view = await this.submissions.vote(user, id, body);

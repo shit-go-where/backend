@@ -95,7 +95,7 @@ interface Survey {
 
 interface Review {
   id: string; cleanliness: number /*1-5*/; comment: string | null; createdAt: string;
-  user: { handle: string | null; avatarUrl: string | null };
+  user: { handle: string | null; avatarUrl: string | null };   // avatarUrl is always null (profile pictures are not public)
   photos: PhotoRef[];
 }
 
@@ -230,9 +230,12 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   Signed out: allowed. The device gets the `sgw_anon` cookie (see "Anonymous device"); TTL is 1 h for every kind; dedupe is per device;
   a lone anonymous CLOSED_NOW / BROKEN is `unconfirmed: true` and does not affect activeStatus, pins or routing (see StatusReport).
   Max 30 signed-out reports per IP per Singapore day (429 "Too many reports from this network today. Sign in to keep reporting.").
-- `POST /status/:id/confirm` (auth, signed-in only, also for anonymous reports) → `StatusReport` (200). A confirmation makes an unconfirmed anonymous closure count. Extends expiresAt by 1h (max 6h past createdAt, never shortens a 24h CLOSED_NOW). Awards STATUS_CONFIRMED to the original reporter (refId = `${statusReportId}:${confirmerId}`). Own report → 400; unknown/expired → 404; confirming twice is a no-op returning the report.
+- `POST /status/:id/confirm` (auth, signed-in only, also for anonymous reports) → `StatusReport` (200). A confirmation makes an unconfirmed anonymous closure count. Extends expiresAt by 1h (max 6h past createdAt, never shortens a 24h CLOSED_NOW). Awards STATUS_CONFIRMED to the original reporter (refId = `${statusReportId}:${confirmerId}`), at most once per confirmer per reporter per Singapore day (later confirmations still count for the report, they just pay nothing). Own report → 400; unknown/expired → 404; confirming twice is a no-op returning the report.
   Anonymous reporters earn no STATUS_CONFIRMED (their reports move to their account on sign-in; earlier confirmations are not paid).
   Rate limits: POST status 10/min, confirm 30/min, flags 5/min (per signed-in user, else client IP; src/common/throttle.ts).
+  Other route limits (same keying, default 120/min elsewhere): check-ins 10/min, verify 5/min, reviews 10/min,
+  POST/PATCH submissions 10/min, votes 20/min, media presign and confirm 30/min, recommend 30/min, walk 30/min, geo/search 60/min.
+  All counters are in memory per function instance (advisory, reset on cold start).
 - `POST /toilets/:id/flags` (auth) `{ reason: string 3-500 }` → `{ id }`. When 2 distinct people (not the submitter) have open flags on a
   toilet that was auto-published (trust model v2), it goes back to PENDING and its submission to ESCALATED (`escalated_flagged`).
   `POST /toilets/:id/verify` with `accurate: false` creates a Flag too and counts the same way.
@@ -310,7 +313,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   you helped on Singapore days after the last visit.
 - `Me.impact` = `{ toilets, routedWeek }` (GROWTH.md 1.3): `toilets` you added (createdBy), last verified, or checked in at within 90 days;
   `routedWeek` = route starts to them over the last 7 Singapore days. `Me.verifierCredit` (default true) shows your handle as `verifiedBy`.
-- `DELETE /me` → 204, clears cookie. Anonymises the user row (email `deleted-<id>@deleted.invalid`, no handle/avatar/googleSub, "Deleted user", role USER, trust 0) and deletes their check-ins, points ledger and badges. Reviews, submissions, votes, photos, status reports and flags stay, attributed to the anonymous user.
+- `DELETE /me` → 204, clears cookie. Anonymises the user row (email `deleted-<id>@deleted.invalid`, no handle/avatar/googleSub, "Deleted user", role USER, trust 0) and deletes their check-ins, points ledger and badges. Reviews, submissions, votes, photos, status reports and flags stay, attributed to the anonymous user, minus: `submittedLat/Lng` on their submissions (so `submitterDistanceM` reads null), their vote comments, and the reason text of their resolved flags (open flags keep it for the moderator).
 - `GET /me/activity?cursor&limit=30` (limit max 100) → `{ items: { id, delta, reason, refId, createdAt }[], nextCursor }` newest first.
 - `POST /me/telegram/link-token` → 200 `{ url: string; expiresAt: string }` (BOT.md T15). `url` is
   `https://t.me/<TELEGRAM_BOT_USERNAME>?start=link_<token>`: a one-time 32-byte token, stored only as its SHA-256 hash, valid 10 minutes,
@@ -353,6 +356,8 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   Includes ones I already voted on (`myVote` set, `canVote` false). `photos` include unapproved ones.
 - `GET /submissions/mine` (auth) → `{ items: SubmissionView[] }` newest first, max 100.
 - `GET /submissions/:id` (auth) → `SubmissionView` (404). `state` reads `ESCALATED` once an open submission is past `expiresAt`.
+  `photos` on any `SubmissionView`: unapproved photos are included while the submission is open (and not `escalated_flagged`), and
+  always for the submitter and MODERATOR+; otherwise only approved photos.
 - `PATCH /submissions/:id` (auth, owner only, else 404) `{ note?: string 1-1000, photoIds?: string[] (max 10), level?: string 1-20 }`
   (at least one; 400 otherwise) → 200 `SubmissionView`. Only in NEEDS_INFO (409 "Only a submission that needs more info can be changed").
   `note` → `payload.note`; `photoIds` (own confirmed, unattached, else 400) are appended to `payload.photoIds` and attached (hasPhoto updated);
@@ -387,6 +392,8 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 - Expiry: the `expire-submissions` job moves PENDING/NEEDS_INFO past `expiresAt` to ESCALATED (`escalated_expired`) and leaves the toilet
   PENDING (it still shows as unconfirmed and can still be confirmed nearby). It never rejects.
 - Points: NEW_TOILET_SUBMITTED +5, NEW_TOILET_CONFIRMED +15 (counts toward trust), SUBMISSION_APPROVED +20 for every other approved submission.
+- Trust (`trustScore`, TRUSTED at 50) counts SUBMISSION_APPROVED, NEW_TOILET_CONFIRMED, STATUS_CONFIRMED, VOTE_MATCHED_OUTCOME and
+  SURVEY_COMPLETED only. REVIEW_WITH_PHOTO is points only: it is paid before anyone has looked at the photo.
   Points already paid stay if a flagged toilet is later rejected.
 - Moderator queue: `GET /admin/submissions` (below).
 
@@ -417,7 +424,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   PENDING/REJECTED toilets. accurate → lastVerifiedAt=now; not accurate → Flag with reason `Check-in: listing inaccurate - <note>`.
 - `GET /me/passport` (auth) → `{ stamped: number; total: number; stations: { venueId, name, lines: string[], stampedAt: string | null }[] }`
   All MRT_STATION venues with toiletStatus HAS_TOILETS, by name. `stampedAt` = the user's earliest check-in at that station.
-- `GET /leaderboard/users?scope=week|all` (default `week` = last 7 days, optional auth) → `{ items: { rank, handle, avatarUrl, points }[]; me: { rank: number | null; points: number } | null }`
+- `GET /leaderboard/users?scope=week|all` (default `week` = last 7 days, optional auth) → `{ items: { rank, handle, avatarUrl, points }[]; me: { rank: number | null; points: number } | null }` (`avatarUrl` always null)
   Opt-in users with a handle and > 0 points, top 100. Ties share a rank (1, 2, 2, 4). `items` cached 5 min per scope.
   `me` is null when signed out; `me.rank` is null when the user is not opted in.
 - `GET /leaderboard/toilets?area=` → `{ items: { rank: number; toilet: ToiletSummary; score: number }[]; areas: string[] }`

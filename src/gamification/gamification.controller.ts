@@ -17,7 +17,7 @@ import { ZodResponse } from 'nestjs-zod';
 import type { Request, Response } from 'express';
 import { AuthGuard, CurrentUser, OptionalAuthGuard } from '../common/auth/auth.guard.js';
 import { ensureDeviceId } from '../common/auth/anon.js';
-import { DailyLimiter, clientIp } from '../common/throttle.js';
+import { DailyLimiter, Throttle, clientIp } from '../common/throttle.js';
 import { sgtDayNumber } from './sgt.js';
 import { analyticsFromRequest } from '../analytics/analytics.js';
 import type { User } from '../generated/prisma/client.js';
@@ -44,6 +44,7 @@ export class GamificationController {
   /** Signed out works too: the device gets an sgw_anon cookie and its points are banked (PLAN.md §12 E4). */
   @Post('toilets/:id/check-ins')
   @UseGuards(OptionalAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiCookieAuth()
   @ZodResponse({ status: 201, type: CheckInResultDto })
   checkIn(
@@ -64,8 +65,10 @@ export class GamificationController {
     return this.gamification.anonymousCheckIn(ensureDeviceId(req, res), id, body.lat, body.lng, analytics);
   }
 
+  /** `accurate: false` creates a Flag, so this shares the flag endpoint's tight limit. */
   @Post('toilets/:id/verify')
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiCookieAuth()
   @ZodResponse({ status: 200, type: OkDto })
   verify(@CurrentUser() user: User, @Param('id') id: string, @Body() body: VerifyDto) {

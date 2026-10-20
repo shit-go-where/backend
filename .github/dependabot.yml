@@ -1,0 +1,16 @@
+# Keeps the pinned GitHub Actions current and gives the repo regular activity (which also keeps
+# GitHub from disabling scheduled workflows after 60 days of silence). npm updates are left to
+# `pnpm update` plus Dependabot security alerts (enable in Settings -> Code security).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Singapore
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ['*']

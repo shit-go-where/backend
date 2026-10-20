@@ -54,6 +54,8 @@ export function isReservedHandle(handle: string): boolean {
 }
 
 export const DELETED_EMAIL_DOMAIN = 'deleted.invalid';
+/** Replaces the text of a deleted account's resolved flags. */
+export const DELETED_FLAG_REASON = 'Removed: the reporter deleted their account';
 
 @Injectable()
 export class UsersService {
@@ -244,10 +246,18 @@ export class UsersService {
 
   /**
    * PDPA deletion. Personal data is removed; contributions (reviews, submissions, votes, photos,
-   * status reports, flags) stay but point at an anonymous "Deleted user" with no handle.
+   * status reports, flags) stay but point at an anonymous "Deleted user" with no handle. Where the
+   * person stood when submitting, their review-vote notes and the text of their resolved flags go
+   * too (an open flag keeps its reason until a moderator has dealt with it).
    */
   async deleteMe(userId: string): Promise<void> {
     await this.prisma.$transaction([
+      this.prisma.submission.updateMany({
+        where: { submittedById: userId },
+        data: { submittedLat: null, submittedLng: null },
+      }),
+      this.prisma.submissionVote.updateMany({ where: { userId }, data: { comment: null } }),
+      this.prisma.flag.updateMany({ where: { userId, resolved: true }, data: { reason: DELETED_FLAG_REASON } }),
       this.prisma.checkIn.deleteMany({ where: { userId } }),
       this.prisma.pointsLedger.deleteMany({ where: { userId } }),
       this.prisma.userBadge.deleteMany({ where: { userId } }),

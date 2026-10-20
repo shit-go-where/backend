@@ -19,14 +19,17 @@ export const POINTS: Record<PointReason, number> = {
   NEW_TOILET_CONFIRMED: 15,
 };
 
-/** Reasons that count toward trust (actions verified by others). */
-const TRUST_REASONS = new Set<PointReason>([
+/**
+ * Reasons that count toward trust (actions verified by others). REVIEW_WITH_PHOTO is not one: it
+ * is paid as soon as any confirmed photo is attached, before anyone has looked at it, so ten photo
+ * reviews used to make anyone TRUSTED on their own.
+ */
+export const TRUST_REASONS: ReadonlySet<PointReason> = new Set<PointReason>([
   'SUBMISSION_APPROVED',
   'NEW_TOILET_CONFIRMED',
   'STATUS_CONFIRMED',
   'VOTE_MATCHED_OUTCOME',
   'SURVEY_COMPLETED',
-  'REVIEW_WITH_PHOTO',
 ]);
 
 export const TRUSTED_THRESHOLD = 50;

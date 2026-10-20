@@ -58,7 +58,7 @@ export class MediaController {
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ZodResponse({ type: PresignResultDto })
   presign(@CurrentUser() user: User, @Body() body: PresignDto) {
-    return this.media.presign(user.id, body.contentType);
+    return this.media.presign(user.id, body.contentType, body.size);
   }
 
   /** Dev fallback only (no S3 configured): stands in for the presigned PUT. */
@@ -79,6 +79,8 @@ export class MediaController {
   @HttpCode(200)
   @ApiCookieAuth()
   @UseGuards(AuthGuard)
+  // Each confirm downloads and re-encodes an image with sharp: CPU and memory per call.
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ZodResponse({ type: MediaPhotoRefDto })
   confirm(@CurrentUser() user: User, @Param('id') id: string) {
     return this.media.confirm(user.id, id);

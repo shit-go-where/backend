@@ -3,5 +3,6 @@
   "framework": "nestjs",
   "regions": ["sin1"],
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm vercel-build"
+  "buildCommand": "pnpm vercel-build",
+  "ignoreCommand": "node .github/scripts/vercel-ignore-build.mjs"
 }

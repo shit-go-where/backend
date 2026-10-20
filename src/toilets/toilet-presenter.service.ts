@@ -37,7 +37,7 @@ export type ToiletWithSummary = Prisma.ToiletGetPayload<{
 }>;
 
 const reviewInclude = {
-  user: { select: { handle: true, avatarUrl: true } },
+  user: { select: { handle: true } },
   photos: { select: { id: true, url: true, thumbUrl: true, approved: true } },
 } satisfies Prisma.ReviewInclude;
 
@@ -219,7 +219,9 @@ export class ToiletPresenter {
       cleanliness: r.cleanliness,
       comment: r.comment,
       createdAt: r.createdAt.toISOString(),
-      user: { handle: r.user.handle, avatarUrl: r.user.avatarUrl },
+      // Always null: the Google profile picture is not shown anywhere public, so it is not sent either.
+      // The field stays in the contract until the frontend drops it.
+      user: { handle: r.user.handle, avatarUrl: null },
       photos: r.photos
         .filter((p) => includeUnapproved || p.approved)
         .map((p) => ({ id: p.id, url: p.url, thumbUrl: p.thumbUrl })),

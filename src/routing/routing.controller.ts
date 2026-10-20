@@ -45,7 +45,9 @@ export class RoutingController {
     return { ok: true as const };
   }
 
+  /** Each call can spend up to 3 OneMap route requests on the shared account. */
   @Post('recommend')
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ZodResponse({ status: 200, type: RecommendResponseDto })
   recommend(@Body() body: RecommendBodyDto) {
     return this.recommender.recommend(body);
@@ -53,6 +55,7 @@ export class RoutingController {
 
   /** OneMap walking route (token stays server-side). Falls back to a straight-line estimate. */
   @Get('walk')
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @ZodResponse({ status: 200, type: WalkResponseDto })
   async walk(@Query() q: WalkQueryDto) {
     const from = { lat: q.fromLat, lng: q.fromLng };
@@ -77,7 +80,9 @@ export class RoutingController {
 export class GeoController {
   constructor(private readonly onemap: OneMapService) {}
 
+  /** Typed search (debounced 300 ms in the app); one OneMap call each. */
   @Get('search')
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @ZodResponse({ status: 200, type: GeoSearchResponseDto })
   async search(@Query() q: GeoSearchQueryDto) {
     return { items: (await this.onemap.search(q.q)).slice(0, 10) };

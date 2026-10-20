@@ -7,14 +7,25 @@
 #            (cron has no "last day", so it fires on the 28th-31st and a gate step checks
 #             that tomorrow is the 1st)
 #
-# GitHub disables scheduled workflows after 60 days without repository activity; re-enable
-# from the Actions tab if that happens.
+# GitHub disables scheduled workflows in a public repo after 60 days without repository activity.
+# Defences, in order of strength:
+#   1. BACKUP_HEARTBEAT_URL: a dead-man's-switch ping (healthchecks.io or similar) after every
+#      verified backup. If the schedule is disabled or the backup breaks, the monitor stops hearing
+#      from us and emails you. This is the one that matters.
+#   2. Normal repo activity (merges, Dependabot PRs; see .github/dependabot.yml).
+#   3. The `keepalive` job below (weekly, best effort: it re-enables this workflow through the API).
+# If the workflow is disabled anyway: Actions tab -> Scheduled -> Enable workflow.
 #
 # Secrets: DIRECT_URL, CRON_SECRET, R2_BACKUP_ACCESS_KEY_ID, R2_BACKUP_SECRET_ACCESS_KEY,
-#          optional ONEMAP_EMAIL, ONEMAP_PASSWORD
+#          optional ONEMAP_EMAIL, ONEMAP_PASSWORD, optional BACKUP_HEARTBEAT_URL
 # Vars:    API_URL (API project production URL, no trailing slash, e.g. https://sgw-api.vercel.app),
 #          R2_ACCOUNT_ID, R2_BACKUP_BUCKET, optional PG_DUMP_IMAGE (default postgres:17-alpine;
 #          must be >= the Neon server's major version)
+#
+# Backups: plain-SQL pg_dump (--no-owner --no-privileges) of the whole database, gzip'd, uploaded as
+# db/sgw-<UTC stamp>.sql.gz. The `verify-backup` job downloads that exact object and restores it into
+# a throwaway Postgres, so a green run means "restorable", not just "uploaded". Restore procedure:
+# docs/RUNBOOKS.md.
 
 name: Scheduled
 
@@ -34,6 +45,8 @@ on:
           - nightly
           - maintenance
           - backup
+          - verify-backup
+          - keepalive
           - weekly-osm
           - monthly-imports
           - seed
@@ -82,6 +95,11 @@ jobs:
       )
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    concurrency:
+      group: sgw-backup
+      cancel-in-progress: false
+    outputs:
+      file: ${{ steps.dump.outputs.file }}
     env:
       DIRECT_URL: ${{ secrets.DIRECT_URL }}
       PG_DUMP_IMAGE: ${{ vars.PG_DUMP_IMAGE || 'postgres:17-alpine' }}
@@ -96,6 +114,7 @@ jobs:
       RETENTION_DAYS: '30'
     steps:
       - name: Dump database
+        id: dump
         run: |
           test -n "$DIRECT_URL" || { echo "::error::secrets.DIRECT_URL is not set"; exit 1; }
           stamp=$(date -u +%Y-%m-%dT%H%MZ)
@@ -106,7 +125,11 @@ jobs:
           gzip -t "$file"
           size=$(stat -c %s "$file")
           if [ "$size" -lt 1024 ]; then echo "::error::dump is only $size bytes"; exit 1; fi
+          # A plain dump ends with this line; its absence means pg_dump was cut off.
+          gzip -dc "$file" | tail -n 5 | grep -q 'PostgreSQL database dump complete' \
+            || { echo "::error::dump has no completion trailer"; exit 1; }
           echo "FILE=$file" >> "$GITHUB_ENV"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
           echo "Dump $file: $size bytes"
 
       - name: Upload to R2
@@ -114,18 +137,79 @@ jobs:
           aws s3 cp "$FILE" "s3://$BUCKET/db/$FILE" --endpoint-url "$R2_ENDPOINT" --only-show-errors
           echo "Uploaded s3://$BUCKET/db/$FILE" >> "$GITHUB_STEP_SUMMARY"
 
+      # Never leaves fewer than 7 backups, however old, so a long outage of the dump step cannot
+      # let the retention sweep eat the last good copies.
       - name: Delete backups older than retention
         run: |
           cutoff=$(date -u -d "$RETENTION_DAYS days ago" +%Y-%m-%d)
-          # `aws s3 ls` prints: <date> <time> <size> <key>
+          # `aws s3 ls` prints: <date> <time> <size> <key>; names carry a UTC stamp, so sort = age.
           aws s3 ls "s3://$BUCKET/db/" --endpoint-url "$R2_ENDPOINT" \
-            | while read -r day _time _size key; do
-                [ -n "$key" ] || continue
+            | awk '$4 ~ /^sgw-.*\.sql\.gz$/ {print $1, $4}' | sort -k2 \
+            | head -n -7 \
+            | while read -r day key; do
                 if [[ "$day" < "$cutoff" ]]; then
                   echo "delete db/$key ($day)"
                   aws s3 rm "s3://$BUCKET/db/$key" --endpoint-url "$R2_ENDPOINT" --only-show-errors
                 fi
               done
+
+  # Downloads what the backup job just uploaded and restores it into a throwaway Postgres.
+  # Also runnable alone (Run workflow -> verify-backup), which checks the newest object in R2.
+  verify-backup:
+    needs: backup
+    if: >-
+      !cancelled() && (
+        needs.backup.result == 'success' || inputs.job == 'verify-backup'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PG_DUMP_IMAGE: ${{ vars.PG_DUMP_IMAGE || 'postgres:17-alpine' }}
+      BUCKET: ${{ vars.R2_BACKUP_BUCKET }}
+      R2_ENDPOINT: https://${{ vars.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      EXPECTED_FILE: ${{ needs.backup.outputs.file }}
+      HEARTBEAT_URL: ${{ secrets.BACKUP_HEARTBEAT_URL }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Download the backup
+        run: |
+          file="$EXPECTED_FILE"
+          if [ -z "$file" ]; then
+            file=$(aws s3 ls "s3://$BUCKET/db/" --endpoint-url "$R2_ENDPOINT" \
+              | awk '$4 ~ /^sgw-.*\.sql\.gz$/ {print $4}' | sort | tail -n 1)
+          fi
+          test -n "$file" || { echo "::error::no backups found in s3://$BUCKET/db/"; exit 1; }
+          echo "Verifying db/$file"
+          aws s3 cp "s3://$BUCKET/db/$file" "$file" --endpoint-url "$R2_ENDPOINT" --only-show-errors
+          echo "FILE=$file" >> "$GITHUB_ENV"
+      - name: Restore into a throwaway Postgres and check it
+        run: .github/scripts/verify-restore.sh "$FILE"
+      # Dead-man's switch: only reached when the dump, upload and restore all worked.
+      - name: Ping the heartbeat monitor
+        if: env.HEARTBEAT_URL != '' && github.event_name == 'schedule'
+        run: curl --fail --silent --show-error --retry 3 --max-time 15 "$HEARTBEAT_URL"
+
+  # Best effort: calling the "enable workflow" API on this workflow counts as activity for the
+  # 60-day auto-disable timer (a documented workaround, not a GitHub guarantee). The heartbeat on
+  # the backup is the real safety net.
+  keepalive:
+    if: github.event.schedule == '0 20 * * 0' || inputs.job == 'keepalive'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/scheduled.yml/enable"
 
   weekly-osm:
     if: github.event.schedule == '0 20 * * 0' || inputs.job == 'weekly-osm'
@@ -144,6 +228,8 @@ jobs:
       ONEMAP_PASSWORD: ${{ secrets.ONEMAP_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
       # (passing both makes pnpm/action-setup fail).
       - name: Resolve pnpm version
@@ -175,6 +261,8 @@ jobs:
     env: *cli-env
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Resolve pnpm version
         id: pnpm-version
         run: |
@@ -197,6 +285,7 @@ jobs:
   monthly-gate:
     if: github.event.schedule == '0 21 28-31 * *' || inputs.job == 'monthly-imports'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       run: ${{ steps.gate.outputs.run }}
     steps:
@@ -223,6 +312,8 @@ jobs:
     env: *cli-env
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
       # (passing both makes pnpm/action-setup fail).
       - name: Resolve pnpm version

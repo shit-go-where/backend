@@ -17,7 +17,8 @@ export interface ObjectHead {
 /** Minimal object-store surface used by MediaService. Keys look like `photos/<id>.jpg`. */
 export interface Storage {
   readonly kind: 's3' | 'local';
-  presignPut(key: string, contentType: string, expiresInS: number): Promise<string>;
+  /** `size`, when given, is signed into the URL: the upload must be exactly that many bytes. */
+  presignPut(key: string, contentType: string, expiresInS: number, size?: number): Promise<string>;
   head(key: string): Promise<ObjectHead | null>;
   get(key: string): Promise<Buffer>;
   put(key: string, body: Buffer, contentType: string): Promise<void>;
@@ -50,11 +51,17 @@ export class S3Storage implements Storage {
     });
   }
 
-  presignPut(key: string, contentType: string, expiresInS: number): Promise<string> {
-    const cmd = new PutObjectCommand({ Bucket: this.cfg.bucket, Key: key, ContentType: contentType });
+  presignPut(key: string, contentType: string, expiresInS: number, size?: number): Promise<string> {
+    const cmd = new PutObjectCommand({
+      Bucket: this.cfg.bucket,
+      Key: key,
+      ContentType: contentType,
+      // Without a signed length the URL accepted any size (up to the store's 5 GB PUT limit).
+      ...(size !== undefined ? { ContentLength: size } : {}),
+    });
     return getSignedUrl(this.client, cmd, {
       expiresIn: expiresInS,
-      signableHeaders: new Set(['content-type']),
+      signableHeaders: new Set(size !== undefined ? ['content-type', 'content-length'] : ['content-type']),
     });
   }
 

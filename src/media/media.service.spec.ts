@@ -119,6 +119,30 @@ describe('MediaService with S3 (mocked R2)', () => {
     });
   });
 
+  it('signs the declared size into the presigned PUT', async () => {
+    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+    const svc = new MediaService(fakePrisma() as never, storage());
+    await svc.presign('user1', 'image/jpeg', 123_456);
+    const [, command, opts] = vi.mocked(getSignedUrl).mock.calls.at(-1) as unknown as [
+      unknown,
+      { input: Record<string, unknown> },
+      { signableHeaders: Set<string> },
+    ];
+    expect(command.input).toMatchObject({ ContentType: 'image/jpeg', ContentLength: 123_456 });
+    expect([...opts.signableHeaders].sort()).toEqual(['content-length', 'content-type']);
+  });
+
+  it('rejects an image whose decoded size is over the pixel cap (decompression bomb)', async () => {
+    const prisma = fakePrisma();
+    const svc = new MediaService(prisma as never, storage());
+    const { photoId } = await svc.presign('user1', 'image/png');
+    // 8000 x 6000 = 48 MP of one colour: a few hundred KB as PNG, 192 MB once decoded.
+    const bomb = await sharp({ create: { width: 8000, height: 6000, channels: 3, background: '#000' } }).png().toBuffer();
+    objects.set(`tmp/user1/${photoId}.png`, { body: bomb, type: 'image/png' });
+    await expect(svc.confirm('user1', photoId)).rejects.toThrow('Image dimensions are too large');
+    expect(objects.has(`tmp/user1/${photoId}.png`)).toBe(false);
+  });
+
   it('confirm moves to photos/, writes a 400px webp thumb and strips EXIF', async () => {
     const prisma = fakePrisma();
     const svc = new MediaService(prisma as never, storage());

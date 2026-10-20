@@ -13,6 +13,11 @@ export async function createApp(): Promise<INestApplication> {
   // so CORS only matters for local tools and Swagger UI.
   app.enableCors({ origin: env.FRONTEND_ORIGIN, credentials: true });
   app.enableShutdownHooks();
+  if (env.NODE_ENV === 'production' && !env.API_PROXY_SECRET) {
+    console.warn(
+      'API_PROXY_SECRET is unset: behind the Next /api rewrite every visitor shares one IP, so per-IP rate limits apply to all of them together. Set the same value in both Vercel projects.',
+    );
+  }
   SwaggerModule.setup('docs', app, buildOpenApi(app), { jsonDocumentUrl: 'openapi.json' });
   return app;
 }
