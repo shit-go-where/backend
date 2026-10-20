@@ -432,7 +432,7 @@ describe('Google OAuth', () => {
 });
 
 describe('media (local dev storage)', () => {
-  it('presign → PUT upload → confirm → served file', async () => {
+  it('presign → PUT upload → confirm → access-checked read', async () => {
     const { cookie, me } = await login(ctx.server, email('media'));
     const img = await jpegBytes();
     const pre = await request(ctx.server)
@@ -472,18 +472,52 @@ describe('media (local dev storage)', () => {
     const conf = await request(ctx.server).post(`/media/${id}/confirm`).set('Cookie', cookie).expect(200);
     expect(conf.body).toEqual({
       id,
-      url: `/api/media/files/photos/${id}.jpg`,
-      thumbUrl: `/api/media/files/thumbs/${id}.webp`,
+      url: `/api/media/photos/${id}`,
+      thumbUrl: `/api/media/photos/${id}/thumb`,
     });
     const row = await ctx.prisma.photo.findUniqueOrThrow({ where: { id } });
     expect(row).toMatchObject({ confirmed: true, approved: false, uploadedById: me.id });
 
-    const full = await request(ctx.server).get(`/media/files/photos/${id}.jpg`).expect(200);
+    // Not approved yet: the uploader and admins only, never cached; everyone else 404.
+    const full = await request(ctx.server).get(`/media/photos/${id}`).set('Cookie', cookie).expect(200);
     expect(full.headers['content-type']).toMatch(/image\/jpeg/);
-    const thumb = await request(ctx.server).get(`/media/files/thumbs/${id}.webp`).expect(200);
+    expect(full.headers['cache-control']).toBe('private, no-store');
+    const thumb = await request(ctx.server).get(`/media/photos/${id}/thumb`).set('Cookie', cookie).expect(200);
     expect(thumb.headers['content-type']).toMatch(/image\/webp/);
+    await request(ctx.server).get(`/media/photos/${id}`).expect(404);
+    await request(ctx.server).get(`/media/photos/${id}/thumb`).expect(404);
+    await request(ctx.server).get(`/media/photos/${id}`).set('Cookie', other.cookie).expect(404);
+    const admin = await login(ctx.server, TEST_ADMIN_EMAIL);
+    await request(ctx.server).get(`/media/photos/${id}`).set('Cookie', admin.cookie).expect(200);
+
+    // Approved: public, and the browser/CDN may keep it for the rest of the signing window.
+    await ctx.prisma.photo.update({ where: { id }, data: { approved: true } });
+    const pub = await request(ctx.server).get(`/media/photos/${id}`).expect(200);
+    expect(pub.headers['content-type']).toMatch(/image\/jpeg/);
+    expect(pub.headers['cache-control']).toMatch(/^public, max-age=\d+, s-maxage=\d+$/);
+
+    // The old unauthenticated dev file route is gone, and raw uploads were never readable.
+    await request(ctx.server).get(`/media/files/photos/${id}.jpg`).expect(404);
     await request(ctx.server).get(`/media/files/tmp/${me.id}/${id}.jpg`).expect(404);
-    await request(ctx.server).get(`/media/files/photos/..%2F..%2Fpackage.json`).expect(404);
+    await request(ctx.server).get(`/media/photos/..%2F..%2Fpackage.json`).expect(404);
+  });
+
+  it('an uploaded but unconfirmed photo is unreadable, even by its uploader', async () => {
+    const { cookie } = await login(ctx.server, email('media6'));
+    const img = await jpegBytes();
+    const pre = await request(ctx.server)
+      .post('/media/presign')
+      .set('Cookie', cookie)
+      .send({ contentType: 'image/jpeg', size: img.length })
+      .expect(200);
+    await request(ctx.server)
+      .put(`/media/${pre.body.photoId}/upload`)
+      .set('Cookie', cookie)
+      .set('Content-Type', 'image/jpeg')
+      .send(img)
+      .expect(204);
+    await request(ctx.server).get(`/media/photos/${pre.body.photoId}`).set('Cookie', cookie).expect(404);
+    await request(ctx.server).get(`/media/photos/${pre.body.photoId}`).expect(404);
   });
 
   it('rejects anonymous, oversize and unsupported presigns', async () => {

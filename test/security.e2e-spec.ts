@@ -9,6 +9,8 @@ import { createApp } from '../src/app.factory.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createAnonToken } from '../src/common/auth/anon.js';
 import { TRUSTED_THRESHOLD } from '../src/gamification/points.service.js';
+import { MediaService } from '../src/media/media.service.js';
+import { S3Storage, type Storage } from '../src/media/storage.js';
 import { makePhoto, makeToilet, makeUser, makeVenue, offset, randomSgPoint, runId } from './contrib-fixtures.js';
 
 type U = Awaited<ReturnType<typeof makeUser>>;
@@ -103,6 +105,58 @@ describe('Security: authorisation, IDOR and abuse rules (e2e)', () => {
       await prisma.photo.update({ where: { id: photoId }, data: { approved: true } });
       const later = await http().get(`/submissions/${sub.id}`).set('Cookie', bob.cookie).expect(200);
       expect(later.body.photos.map((p: { id: string }) => p.id)).toEqual([photoId]);
+    });
+
+    it('photo read URLs follow the same visibility, as short-lived presigned redirects (private bucket)', async () => {
+      // Signing needs no network, so a fake R2 endpoint shows exactly what the browser is sent.
+      const media = app.get(MediaService) as unknown as { storage: Storage };
+      const local = media.storage;
+      media.storage = new S3Storage({
+        bucket: 'sgw-photos',
+        accessKeyId: 'AKIDEXAMPLE',
+        secretAccessKey: 'secret',
+        endpoint: 'https://acct.r2.cloudflarestorage.com',
+        region: 'auto',
+      });
+      try {
+        const sub = await pendingSubmission(alice, true);
+        const photoId = sub.photos[0]!.id;
+        const read = (cookie?: string) => {
+          const r = http().get(`/media/photos/${photoId}`);
+          return cookie ? r.set('Cookie', cookie) : r;
+        };
+        // Open submission: any signed-in reviewer, never anonymous; nothing is cacheable.
+        const asBob = await read(bob.cookie).expect(302);
+        expect(asBob.headers['cache-control']).toBe('private, no-store');
+        const loc = new URL(asBob.headers.location as string);
+        expect(loc.host).toBe('acct.r2.cloudflarestorage.com');
+        expect(loc.pathname).toMatch(/^\/sgw-photos\/photos\/e2e-/);
+        expect(loc.searchParams.get('X-Amz-Expires')).toBe('600');
+        await read().expect(404);
+
+        await http().post(`/submissions/${sub.id}/resolve`).set('Cookie', mo.cookie).send({ state: 'REJECTED' }).expect(200);
+        // Decided and unapproved: the uploader and TRUSTED+ only.
+        await read(bob.cookie).expect(404);
+        await read().expect(404);
+        await read(alice.cookie).expect(302);
+        await read(tess.cookie).expect(302);
+        await read(mo.cookie).expect(302);
+
+        // Approved: public, signed for the hour window, cacheable until it ends.
+        await prisma.photo.update({ where: { id: photoId }, data: { approved: true } });
+        const pub = await read().expect(302);
+        expect(pub.headers['cache-control']).toMatch(/^public, max-age=\d+, s-maxage=\d+$/);
+        expect(new URL(pub.headers.location as string).searchParams.get('X-Amz-Expires')).toBe('7200');
+        // No thumbnail on this row: 404, not a URL to a missing object.
+        await http().get(`/media/photos/${photoId}/thumb`).expect(404);
+
+        // An upload that was never confirmed has no read URL for anyone, its uploader included.
+        const raw = await makePhoto(prisma, alice.user.id, false);
+        await http().get(`/media/photos/${raw.id}`).set('Cookie', alice.cookie).expect(404);
+        await http().get(`/media/photos/${raw.id}`).set('Cookie', mo.cookie).expect(404);
+      } finally {
+        media.storage = local;
+      }
     });
 
     it('parallel on-site submissions cannot beat the 3-a-day auto-publish cap', async () => {

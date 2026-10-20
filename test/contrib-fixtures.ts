@@ -64,9 +64,9 @@ export async function makeUser(
 }
 
 export async function makePhoto(prisma: PrismaService, userId: string, confirmed = true) {
-  const key = `e2e/${runId()}-${runId()}.jpg`;
+  const key = `photos/e2e-${runId()}-${runId()}.jpg`;
   return prisma.photo.create({
-    data: { key, url: `https://img.test/${key}`, contentType: 'image/jpeg', uploadedById: userId, confirmed },
+    data: { key, url: '', contentType: 'image/jpeg', uploadedById: userId, confirmed },
   });
 }
 

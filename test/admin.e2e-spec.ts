@@ -29,8 +29,8 @@ async function confirmedPhoto(uploadedById: string, toiletId?: string) {
     data: {
       id,
       key: `photos/${id}.jpg`,
-      url: `/api/media/files/photos/${id}.jpg`,
-      thumbUrl: `/api/media/files/thumbs/${id}.webp`,
+      url: `/api/media/photos/${id}`,
+      thumbUrl: `/api/media/photos/${id}/thumb`,
       contentType: 'image/jpeg',
       uploadedById,
       toiletId,

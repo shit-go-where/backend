@@ -1772,6 +1772,66 @@
         ]
       }
     },
+    "/media/photos/{id}": {
+      "get": {
+        "operationId": "MediaController_photo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The image itself (local dev storage only)"
+          },
+          "302": {
+            "description": "Location: presigned GET, valid for at least the Cache-Control max-age"
+          },
+          "404": {
+            "description": "No such photo, or not visible to this viewer"
+          }
+        },
+        "summary": "Read a photo: 302 to a short-lived presigned URL",
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/media/photos/{id}/thumb": {
+      "get": {
+        "operationId": "MediaController_thumb",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The image itself (local dev storage only)"
+          },
+          "302": {
+            "description": "Location: presigned GET, valid for at least the Cache-Control max-age"
+          },
+          "404": {
+            "description": "No such photo or thumbnail, or not visible to this viewer"
+          }
+        },
+        "summary": "Read a photo thumbnail (400 px webp): 302 to a short-lived presigned URL",
+        "tags": [
+          "media"
+        ]
+      }
+    },
     "/admin/jobs/{name}": {
       "post": {
         "operationId": "AdminJobsController_run",

@@ -15,18 +15,20 @@ import {
 import {
   ApiConsumes,
   ApiCookieAuth,
-  ApiExcludeEndpoint,
+  ApiFoundResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '../common/throttle.js';
 import { ZodResponse } from 'nestjs-zod';
 import type { Request, Response } from 'express';
-import { AuthGuard, CurrentUser } from '../common/auth/auth.guard.js';
+import { AuthGuard, CurrentUser, OptionalAuthGuard } from '../common/auth/auth.guard.js';
 import type { User } from '../generated/prisma/client.js';
 import { MAX_UPLOAD_BYTES, MediaPhotoRefDto, PresignDto, PresignResultDto } from './media.dto.js';
-import { MediaService } from './media.service.js';
-import { LocalStorage, contentTypeForKey, isSafeKey } from './storage.js';
+import { MediaService, type PhotoRead } from './media.service.js';
 
 /** Reads a raw request body up to `limit` bytes (image/* is not consumed by Nest's parsers). */
 export async function readRawBody(req: Request, limit: number): Promise<Buffer> {
@@ -86,27 +88,52 @@ export class MediaController {
     return this.media.confirm(user.id, id);
   }
 
-  /** Dev fallback only: serves files stored under backend/uploads. */
-  @Get('files/*key')
-  @ApiExcludeEndpoint()
-  files(@Req() req: Request, @Res() res: Response) {
-    const storage = this.media.storage;
-    if (!(storage instanceof LocalStorage)) throw new NotFoundException();
-    const raw = (req.params as Record<string, string | string[]>).key;
-    const key = Array.isArray(raw) ? raw.join('/') : raw;
-    if (!key || !isSafeKey(key) || key.startsWith('tmp/')) throw new NotFoundException();
+  /**
+   * Photo reads (the bucket is private). Every PhotoRef `url`/`thumbUrl` points here. Approved
+   * photos: anyone. Unapproved: the uploader, TRUSTED+, and signed-in reviewers of an open
+   * submission (photo-urls.ts canViewPhoto). Everything else, including raw tmp/ uploads: 404.
+   * The answer is a 302 to a presigned GET (R2/S3), or the file itself with local dev storage.
+   */
+  @Get('photos/:id')
+  @UseGuards(OptionalAuthGuard)
+  // One request per <img>; a toilet page can show dozens. Cheap (one indexed read + an HMAC).
+  @Throttle({ default: { limit: 600, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Read a photo: 302 to a short-lived presigned URL' })
+  @ApiFoundResponse({ description: 'Location: presigned GET, valid for at least the Cache-Control max-age' })
+  @ApiOkResponse({ description: 'The image itself (local dev storage only)' })
+  @ApiNotFoundResponse({ description: 'No such photo, or not visible to this viewer' })
+  async photo(@CurrentUser({ optional: true }) user: User | null, @Param('id') id: string, @Res() res: Response) {
+    this.send(res, await this.media.readPhoto(user, id, 'full'));
+  }
+
+  @Get('photos/:id/thumb')
+  @UseGuards(OptionalAuthGuard)
+  @Throttle({ default: { limit: 600, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Read a photo thumbnail (400 px webp): 302 to a short-lived presigned URL' })
+  @ApiFoundResponse({ description: 'Location: presigned GET, valid for at least the Cache-Control max-age' })
+  @ApiOkResponse({ description: 'The image itself (local dev storage only)' })
+  @ApiNotFoundResponse({ description: 'No such photo or thumbnail, or not visible to this viewer' })
+  async thumb(@CurrentUser({ optional: true }) user: User | null, @Param('id') id: string, @Res() res: Response) {
+    this.send(res, await this.media.readPhoto(user, id, 'thumb'));
+  }
+
+  private send(res: Response, read: PhotoRead) {
+    res.setHeader('Cache-Control', read.cacheControl);
+    if (read.kind === 'redirect') {
+      res.redirect(302, read.url);
+      return;
+    }
     res.sendFile(
-      storage.path(key),
+      read.path,
       {
         dotfiles: 'deny',
-        headers: {
-          'Content-Type': contentTypeForKey(key) ?? 'application/octet-stream',
-          'X-Content-Type-Options': 'nosniff',
-          'Cache-Control': 'public, max-age=3600',
-        },
+        headers: { 'Content-Type': read.contentType, 'X-Content-Type-Options': 'nosniff' },
       },
       (err) => {
-        if (err && !res.headersSent) res.status(404).json({ statusCode: 404, message: 'Not Found' });
+        if (err && !res.headersSent) {
+          res.setHeader('Cache-Control', 'no-store');
+          res.status(404).json({ statusCode: 404, message: 'Not Found' });
+        }
       },
     );
   }

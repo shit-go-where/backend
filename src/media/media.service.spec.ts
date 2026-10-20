@@ -46,8 +46,14 @@ vi.mock('@aws-sdk/client-s3', () => {
   };
 });
 vi.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: vi.fn(async (_c: unknown, command: { input: Record<string, unknown> }) =>
-    `https://acct.r2.cloudflarestorage.com/bucket/${String(command.input.Key)}?X-Amz-Signature=sig`,
+  getSignedUrl: vi.fn(
+    async (
+      _c: unknown,
+      command: { name: string; input: Record<string, unknown> },
+      opts: { expiresIn: number; signingDate?: Date },
+    ) =>
+      `https://acct.r2.cloudflarestorage.com/bucket/${String(command.input.Key)}?op=${command.name}` +
+      `&X-Amz-Date=${(opts.signingDate ?? new Date()).toISOString()}&X-Amz-Expires=${opts.expiresIn}&X-Amz-Signature=sig`,
   ),
 }));
 
@@ -60,7 +66,7 @@ function fakePrisma() {
     rows,
     photo: {
       create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
-        const row = { thumbUrl: null, confirmed: false, approved: false, approvals: 0, ...data };
+        const row = { thumbUrl: null, confirmed: false, approved: false, approvals: 0, submission: null, ...data };
         rows.set(data.id as string, row);
         return row;
       }),
@@ -93,7 +99,6 @@ describe('MediaService with S3 (mocked R2)', () => {
       secretAccessKey: 's',
       endpoint: 'https://acct.r2.cloudflarestorage.com',
       region: 'auto',
-      publicUrl: 'https://img.example.com',
     });
 
   it('configures the client for R2', () => {
@@ -150,10 +155,11 @@ describe('MediaService with S3 (mocked R2)', () => {
     objects.set(`tmp/user1/${photoId}.jpg`, { body: await jpeg(), type: 'image/jpeg' });
 
     const ref = await svc.confirm('user1', photoId);
+    // API read paths, never bucket URLs: the bucket is private.
     expect(ref).toEqual({
       id: photoId,
-      url: `https://img.example.com/photos/${photoId}.jpg`,
-      thumbUrl: `https://img.example.com/thumbs/${photoId}.webp`,
+      url: `/api/media/photos/${photoId}`,
+      thumbUrl: `/api/media/photos/${photoId}/thumb`,
     });
     expect(objects.has(`tmp/user1/${photoId}.jpg`)).toBe(false);
     const thumb = await sharp(objects.get(`thumbs/${photoId}.webp`)!.body).metadata();
@@ -181,6 +187,94 @@ describe('MediaService with S3 (mocked R2)', () => {
   });
 });
 
+const user = (id: string, role: 'USER' | 'TRUSTED' | 'MODERATOR' | 'ADMIN' = 'USER') =>
+  ({ id, role }) as never;
+
+describe('MediaService.readPhoto with S3 (private bucket)', () => {
+  const s3 = () =>
+    new S3Storage({
+      bucket: 'bucket',
+      accessKeyId: 'k',
+      secretAccessKey: 's',
+      endpoint: 'https://acct.r2.cloudflarestorage.com',
+      region: 'auto',
+    });
+  const NOW = Date.parse('2026-10-20T10:17:30Z');
+
+  function setup(row: Record<string, unknown>) {
+    const prisma = fakePrisma();
+    prisma.rows.set('p1', {
+      id: 'p1',
+      key: 'photos/p1.jpg',
+      thumbUrl: '/api/media/photos/p1/thumb',
+      confirmed: true,
+      approved: true,
+      uploadedById: 'owner',
+      submission: null,
+      ...row,
+    });
+    return new MediaService(prisma as never, s3());
+  }
+
+  it('approved: anyone gets a 302 to a GET signed for the hour window, cacheable until it ends', async () => {
+    const svc = setup({});
+    const read = await svc.readPhoto(null, 'p1', 'full', NOW);
+    expect(read).toEqual({
+      kind: 'redirect',
+      url:
+        'https://acct.r2.cloudflarestorage.com/bucket/photos/p1.jpg?op=GetObject' +
+        '&X-Amz-Date=2026-10-20T10:00:00.000Z&X-Amz-Expires=7200&X-Amz-Signature=sig',
+      // 10:17:30 -> the window ends at 11:00:00: 42.5 min = 2550 s.
+      cacheControl: 'public, max-age=2550, s-maxage=2550',
+    });
+    // Same window, same URL (the browser's image cache keeps working).
+    const later = await svc.readPhoto(user('someone'), 'p1', 'full', NOW + 20 * 60_000);
+    expect(later.kind === 'redirect' && later.url).toBe(read.kind === 'redirect' && read.url);
+  });
+
+  it('thumb reads thumbs/<id>.webp; 404 when the row has no thumbnail', async () => {
+    const read = await setup({}).readPhoto(null, 'p1', 'thumb', NOW);
+    expect(read.kind === 'redirect' && read.url).toContain('/bucket/thumbs/p1.webp?');
+    await expect(setup({ thumbUrl: null }).readPhoto(null, 'p1', 'thumb', NOW)).rejects.toThrow(/not found/i);
+  });
+
+  it('pending: uploader and TRUSTED+ only, short window, never cached', async () => {
+    const svc = setup({ approved: false });
+    await expect(svc.readPhoto(null, 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    await expect(svc.readPhoto(user('stranger'), 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    const own = await svc.readPhoto(user('owner'), 'p1', 'full', NOW);
+    expect(own).toMatchObject({ kind: 'redirect', cacheControl: 'private, no-store' });
+    // 10:17:30 -> 5-minute window starting 10:15:00, valid 10 minutes.
+    expect(own.kind === 'redirect' && own.url).toContain('X-Amz-Date=2026-10-20T10:15:00.000Z&X-Amz-Expires=600');
+    for (const role of ['TRUSTED', 'MODERATOR', 'ADMIN'] as const) {
+      await expect(svc.readPhoto(user('mod', role), 'p1', 'full', NOW)).resolves.toMatchObject({ kind: 'redirect' });
+    }
+  });
+
+  it('pending on a submission: any signed-in reviewer while it is open and not flagged', async () => {
+    const open = setup({ approved: false, submission: { state: 'PENDING', resolution: null } });
+    await expect(open.readPhoto(user('reviewer'), 'p1', 'full', NOW)).resolves.toMatchObject({ kind: 'redirect' });
+    await expect(open.readPhoto(null, 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    const flagged = setup({ approved: false, submission: { state: 'ESCALATED', resolution: 'escalated_flagged' } });
+    await expect(flagged.readPhoto(user('reviewer'), 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    const decided = setup({ approved: false, submission: { state: 'REJECTED', resolution: 'rejected_votes' } });
+    await expect(decided.readPhoto(user('reviewer'), 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    await expect(decided.readPhoto(user('owner'), 'p1', 'full', NOW)).resolves.toMatchObject({ kind: 'redirect' });
+  });
+
+  it('never signs raw uploads: unconfirmed rows and tmp/ keys are 404 for everyone, uploader included', async () => {
+    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+    vi.mocked(getSignedUrl).mockClear();
+    const unconfirmed = setup({ confirmed: false, approved: false, key: 'tmp/owner/p1.jpg' });
+    await expect(unconfirmed.readPhoto(user('owner'), 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    await expect(unconfirmed.readPhoto(user('a', 'ADMIN'), 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    const odd = setup({ key: 'tmp/owner/p1.jpg' });
+    await expect(odd.readPhoto(null, 'p1', 'full', NOW)).rejects.toThrow(/not found/i);
+    await expect(setup({}).readPhoto(null, 'nope', 'full', NOW)).rejects.toThrow(/not found/i);
+    expect(getSignedUrl).not.toHaveBeenCalled();
+  });
+});
+
 describe('MediaService with local storage (real files)', () => {
   let dir: string;
   beforeAll(async () => {
@@ -190,7 +284,7 @@ describe('MediaService with local storage (real files)', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
-  it('uploads through the API, confirms and serves under /api/media/files', async () => {
+  it('uploads through the API, confirms, and reads back through the access-checked route', async () => {
     const prisma = fakePrisma();
     const local = new LocalStorage(dir);
     const svc = new MediaService(prisma as never, local);
@@ -202,11 +296,25 @@ describe('MediaService with local storage (real files)', () => {
     );
     await svc.uploadLocal('u', r.photoId, 'image/jpeg', await jpeg(300, 200));
     const ref = await svc.confirm('u', r.photoId);
-    expect(ref.url).toBe(`/api/media/files/photos/${r.photoId}.jpg`);
-    expect(ref.thumbUrl).toBe(`/api/media/files/thumbs/${r.photoId}.webp`);
+    expect(ref.url).toBe(`/api/media/photos/${r.photoId}`);
+    expect(ref.thumbUrl).toBe(`/api/media/photos/${r.photoId}/thumb`);
     const thumb = await sharp(await readFile(join(dir, 'thumbs', `${r.photoId}.webp`))).metadata();
     expect(thumb.width).toBe(300); // never enlarged
     expect(await local.head(`tmp/u/${r.photoId}.jpg`)).toBeNull();
+
+    // Pending: the uploader gets the file (never cached), strangers a 404.
+    const own = await svc.readPhoto(user('u'), r.photoId, 'thumb');
+    expect(own).toEqual({
+      kind: 'file',
+      path: join(dir, 'thumbs', `${r.photoId}.webp`),
+      contentType: 'image/webp',
+      cacheControl: 'private, no-store',
+    });
+    await expect(svc.readPhoto(null, r.photoId, 'full')).rejects.toThrow(/not found/i);
+    prisma.rows.get(r.photoId)!.approved = true;
+    const pub = await svc.readPhoto(null, r.photoId, 'full');
+    expect(pub).toMatchObject({ kind: 'file', path: join(dir, 'photos', `${r.photoId}.jpg`), contentType: 'image/jpeg' });
+    expect(pub.cacheControl).toMatch(/^public, max-age=\d+, s-maxage=\d+$/);
 
     await svc.deletePhotoObjects({ id: r.photoId, key: `photos/${r.photoId}.jpg` });
     expect(await local.head(`photos/${r.photoId}.jpg`)).toBeNull();
