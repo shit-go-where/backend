@@ -62,7 +62,14 @@ describe('access / hours / level / venue type', () => {
   });
   it('level prefers level:ref', () => {
     expect(levelOf({ level: '0', 'level:ref': 'L1' })).toBe('L1');
-    expect(levelOf({ level: '-1' })).toBe('-1');
+    expect(levelOf({ level: '-1' })).toBe('B1');
+  });
+  it('OSM numeric levels count the ground floor as 0', () => {
+    expect(levelOf({ level: '0' })).toBe('L1');
+    expect(levelOf({ level: '2' })).toBe('L3');
+    expect(levelOf({ level: '-2' })).toBe('B2');
+    expect(levelOf({ level: '1;2' })).toBe('1;2');
+    expect(levelOf({})).toBeNull();
   });
   it('venue type from tags', () => {
     expect(venueTypeFromTags({ shop: 'mall' })).toBe('MALL');

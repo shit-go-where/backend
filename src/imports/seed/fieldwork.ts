@@ -10,6 +10,7 @@ import {
 import { loadEnrichment, type Enrichment } from '../enrich.js';
 import { inSingapore } from '../lib/geo.js';
 import { toJson, type RunCounts } from '../lib/importRun.js';
+import { levelFields } from '../../common/level.js';
 
 const SOURCE: DataSource = 'FIELDWORK_2024';
 /** Feature sources that an import must never overwrite. */
@@ -222,7 +223,7 @@ export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log
             label: t.label,
             latitude: c.lat,
             longitude: c.lng,
-            level: e?.level ?? t.level,
+            ...levelFields(e?.level ?? t.level),
             areaType: e?.areaType ?? t.areaType,
             nearestExit: e?.nearestExit ?? null,
             accessNote: e?.notes ?? null,
@@ -246,7 +247,7 @@ export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log
           longitude: c.lng,
           tier: ex.tier === 'VERIFIED' ? ex.tier : t.tier,
           label: ex.label ?? t.label,
-          level: e?.level ?? ex.level ?? t.level,
+          ...levelFields(e?.level ?? ex.level ?? t.level),
           areaType: e?.areaType ?? (ex.areaType === 'UNKNOWN' ? t.areaType : ex.areaType),
           nearestExit: e?.nearestExit ?? ex.nearestExit,
           accessNote: e?.notes ?? ex.accessNote,
@@ -260,6 +261,7 @@ export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log
           tier: ex.tier,
           label: ex.label,
           level: ex.level,
+          levelOrder: ex.levelOrder,
           areaType: ex.areaType,
           nearestExit: ex.nearestExit,
           accessNote: ex.accessNote,
@@ -288,12 +290,12 @@ export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log
     }
     await db.$transaction(async (tx) => {
       const data = {
-        level: e.level ?? ex.level,
+        ...levelFields(e.level ?? ex.level),
         areaType: e.areaType ?? ex.areaType,
         nearestExit: e.nearestExit ?? ex.nearestExit,
         accessNote: e.notes ?? ex.accessNote,
       };
-      if (!same(data, { level: ex.level, areaType: ex.areaType, nearestExit: ex.nearestExit, accessNote: ex.accessNote }))
+      if (!same(data, { level: ex.level, levelOrder: ex.levelOrder, areaType: ex.areaType, nearestExit: ex.nearestExit, accessNote: ex.accessNote }))
         await tx.toilet.update({ where: { id: ex.id }, data });
       await syncFeatures(tx, ex.id, ex.features, e.features.map((f) => ({ ...f, source: 'ADMIN' as const, observedAt: new Date() })), 'ADMIN', featT);
     });

@@ -7,6 +7,7 @@ import { readJson, writeJson } from '../lib/files.js';
 import { inSingapore, PointIndex } from '../lib/geo.js';
 import { politeFetch, type CacheMode } from '../lib/http.js';
 import { toJson, type RunCounts } from '../lib/importRun.js';
+import { levelFields } from '../../common/level.js';
 import { paths } from '../lib/paths.js';
 import { stableStringify, syncFeatures, tally, type FeatureWant } from '../seed/fieldwork.js';
 import {
@@ -212,7 +213,7 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
       label: onFeature ? null : tags['name'] ?? null,
       latitude: ll.lat,
       longitude: ll.lng,
-      level: levelOf(tags),
+      ...levelFields(levelOf(tags)),
       accessNote: access.note,
       openingHours: !onFeature && openingHoursOf(tags) ? toJson(openingHoursOf(tags)) : undefined,
       tier: 'IMPORTED' as const,
@@ -230,6 +231,7 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
         latitude: existing.latitude,
         longitude: existing.longitude,
         level: existing.level,
+        levelOrder: existing.levelOrder,
         accessNote: existing.accessNote,
         openingHours: existing.openingHours ?? undefined,
         tier: existing.tier,

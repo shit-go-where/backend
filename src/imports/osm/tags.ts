@@ -90,9 +90,19 @@ export function openingHoursOf(tags: Tags): OpeningHours | null {
   return { type: 'osm', value: v };
 }
 
-/** Prefer a human level reference ("L1", "B2") over the OSM numeric level. */
+/**
+ * Prefer a human level reference ("L1", "B2") over the OSM numeric level. OSM counts the ground
+ * floor as 0, Singapore as L1, so a bare `level=1` is L2 here and `level=-1` is B1.
+ */
 export function levelOf(tags: Tags): string | null {
-  return tags['level:ref'] ?? tags['addr:floor'] ?? tags['level'] ?? null;
+  const ref = tags['level:ref'] ?? tags['addr:floor'];
+  if (ref) return ref;
+  const lv = tags['level']?.trim();
+  if (lv && /^-?\d+$/.test(lv)) {
+    const n = Number(lv);
+    return n >= 0 ? `L${n + 1}` : `B${-n}`;
+  }
+  return lv || null;
 }
 
 export function venueTypeFromTags(tags: Tags): VenueTypeName {

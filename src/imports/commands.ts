@@ -10,6 +10,7 @@ import { importOsm } from './osm/import.js';
 import { importDatagov, DATAGOV_DATASET_NAMES, type DatagovDatasetName } from './datagov/import.js';
 import { importWikidata } from './wikidata/import.js';
 import { recomputeAllScores } from '../toilets/scoring.js';
+import { backfillLevels } from './levels.js';
 
 export interface Command {
   description: string;
@@ -98,6 +99,14 @@ export const COMMANDS: Record<string, Command> = {
   'recompute-scores': {
     description: 'Recompute Toilet.scoreCleanliness / reviewCount for every toilet',
     run: recompute,
+  },
+  'levels:backfill': {
+    description: 'Normalise every Toilet.level ("level 3" -> "L3") and fill levelOrder (once, after the level_order migration). --dry-run',
+    run: async (args) => {
+      const dryRun = flagBool(args.flags, 'dry-run');
+      const r = await backfillLevels(getDb(), { dryRun });
+      console.log(`  ${r.changed} of ${r.scanned} toilets ${dryRun ? 'would change' : 'updated'}`);
+    },
   },
   all: {
     description:

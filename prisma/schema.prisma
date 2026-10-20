@@ -183,7 +183,10 @@ model Toilet {
   label            String?
   latitude         Float
   longitude        Float
+  // Normalised ("B1", "L3", "M", "B1; L3"): src/common/level.ts. Free text when it can't be read.
   level            String?
+  // Sort key derived from level: B2 = -2, L1 = 1, M = 1.5, a list = its lowest; null when unknown.
+  levelOrder       Float?
   areaType         AreaType           @default(UNKNOWN)
   nearestExit      String?
   accessNote       String?
@@ -217,7 +220,7 @@ model Toilet {
 
   @@index([latitude, longitude])
   @@index([status, tier])
-  @@index([venueId])
+  @@index([venueId, levelOrder])
 }
 
 model ToiletFeature {
