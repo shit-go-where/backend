@@ -66,8 +66,11 @@ export class ToiletsService {
       }),
       select: {
         id: true,
+        venueId: true,
         latitude: true,
         longitude: true,
+        level: true,
+        levelOrder: true,
         tier: true,
         status: true,
         scoreCleanliness: true,

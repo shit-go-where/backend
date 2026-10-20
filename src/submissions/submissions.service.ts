@@ -26,6 +26,7 @@ import {
   VenueType,
 } from '../generated/prisma/enums.js';
 import { bboxAround, haversineM, inSingapore, type LatLng } from '../common/geo.js';
+import { levelFields, levelsOverlap, normalizeLevel } from '../common/level.js';
 import { sgtDayStart } from '../gamification/sgt.js';
 import { NEAR_VOTE_M, nearApprovals } from './quorum.js';
 import {
@@ -93,11 +94,36 @@ function viewInclude() {
 }
 type SubmissionRow = Prisma.SubmissionGetPayload<{ include: ReturnType<typeof viewInclude> }>;
 
-/** Levels match when equal (case/space-insensitive) or when either is unknown. */
+/**
+ * Levels match when they share a floor once normalised ("1", "L1" and "Level 1" are one floor;
+ * "B1; L3" matches "L3"), or when either is unknown.
+ */
 export function sameLevel(a: string | null | undefined, b: string | null | undefined): boolean {
-  const n = (s: string | null | undefined) => (s ?? '').trim().toUpperCase().replace(/\s+/g, '');
-  return !n(a) || !n(b) || n(a) === n(b);
+  return levelsOverlap(a, b);
 }
+
+/** A level someone typed, normalised ("level 3" → "L3"). 400 when nothing of it is left (";"). */
+export function cleanLevel(v: string | undefined): string | undefined {
+  if (v === undefined) return undefined;
+  const level = normalizeLevel(v);
+  if (!level) throw new BadRequestException('level must name a floor, e.g. B1 or L3');
+  return level;
+}
+
+/** The body with its level (NEW_TOILET) or level change (EDIT_TOILET) normalised before anything is stored. */
+function withCleanLevel(body: CreateSubmissionBody): CreateSubmissionBody {
+  if (body.kind === 'NEW_TOILET' && body.payload.level !== undefined) {
+    return { ...body, payload: { ...body.payload, level: cleanLevel(body.payload.level) } };
+  }
+  if (body.kind === 'EDIT_TOILET' && body.payload.changes.level !== undefined) {
+    const changes = { ...body.payload.changes, level: cleanLevel(body.payload.changes.level) };
+    return { ...body, payload: { ...body.payload, changes } };
+  }
+  return body;
+}
+
+export const LEVEL_NEEDED_MESSAGE =
+  'This place already has a toilet listed. Add the level (for example B1 or L3) so people can tell them apart.';
 
 const featureRows = (features: Partial<Record<Feature, boolean>>) =>
   Object.entries(features)
@@ -282,7 +308,8 @@ export class SubmissionsService {
 
   /* ─────────────── create ─────────────── */
 
-  async create(me: User, body: CreateSubmissionBody): Promise<SubmissionView> {
+  async create(me: User, raw: CreateSubmissionBody): Promise<SubmissionView> {
+    const body = withCleanLevel(raw);
     const open = await this.prisma.submission.count({ where: openSubmissionsWhere(me.id) });
     if (open >= MAX_OPEN_SUBMISSIONS) {
       throw new HttpException(
@@ -346,6 +373,14 @@ export class SubmissionsService {
       const venue = await this.prisma.venue.findUnique({ where: { id: p.venueId }, select: { id: true } });
       if (!venue) throw new BadRequestException('venueId does not exist');
       venueId = venue.id;
+      // Malls and stations have toilets on several floors at one spot: a second toilet at a place
+      // someone picked needs its level, or the map can't tell them apart (the 409 guard can't either).
+      if (!p.level) {
+        const listed = await this.prisma.toilet.count({
+          where: { venueId, status: { in: [ToiletStatus.ACTIVE, ToiletStatus.PENDING] } },
+        });
+        if (listed > 0) throw new BadRequestException(LEVEL_NEEDED_MESSAGE);
+      }
     } else if (!p.newVenue) {
       const bb = bboxAround(here, VENUE_SNAP_M);
       const candidates = await this.prisma.venue.findMany({
@@ -433,7 +468,7 @@ export class SubmissionsService {
           label: p.label ?? null,
           latitude: p.lat,
           longitude: p.lng,
-          level: p.level ?? null,
+          ...levelFields(p.level),
           areaType: p.areaType ?? AreaType.UNKNOWN,
           accessNote: p.accessNote ?? null,
           tier: ToiletTier.COMMUNITY,
@@ -517,8 +552,9 @@ export class SubmissionsService {
   async update(
     me: User,
     id: string,
-    body: { note?: string; photoIds?: string[]; level?: string },
+    raw: { note?: string; photoIds?: string[]; level?: string },
   ): Promise<SubmissionView> {
+    const body = { ...raw, level: cleanLevel(raw.level) };
     const sub = await this.prisma.submission.findUnique({ where: { id } });
     if (!sub || sub.submittedById !== me.id) throw new NotFoundException('Submission not found');
     if (sub.state !== SubmissionState.NEEDS_INFO) {
@@ -562,7 +598,7 @@ export class SubmissionsService {
         });
       }
       if (body.level !== undefined && sub.kind === SubmissionKind.NEW_TOILET && sub.toiletId) {
-        await tx.toilet.update({ where: { id: sub.toiletId }, data: { level: body.level } });
+        await tx.toilet.update({ where: { id: sub.toiletId }, data: levelFields(body.level) });
       }
     });
     return this.get(id, me);

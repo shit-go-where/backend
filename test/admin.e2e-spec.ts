@@ -156,14 +156,14 @@ describe('PATCH /admin/toilets/:id', () => {
         status: 'RENOVATION',
         label: 'Near Exit A',
         areaType: 'UNPAID_AREA',
-        level: 'B1',
+        level: 'basement 1',
         accessNote: null,
         needsResurvey: true,
         features: { BIDET: false, ACCESSIBLE: true },
       })
       .expect(200, { id: toilet.id });
     const t = await ctx.prisma.toilet.findUniqueOrThrow({ where: { id: toilet.id }, include: { features: true } });
-    expect(t).toMatchObject({ status: 'RENOVATION', label: 'Near Exit A', areaType: 'UNPAID_AREA', level: 'B1', needsResurvey: true });
+    expect(t).toMatchObject({ status: 'RENOVATION', label: 'Near Exit A', areaType: 'UNPAID_AREA', level: 'B1', levelOrder: -1, needsResurvey: true });
     const byF = Object.fromEntries(t.features.map((f) => [f.feature, f]));
     expect(byF.BIDET).toMatchObject({ present: false, source: 'ADMIN' });
     expect(byF.ACCESSIBLE).toMatchObject({ present: true, source: 'ADMIN' });

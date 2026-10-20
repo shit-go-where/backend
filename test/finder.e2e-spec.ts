@@ -106,6 +106,13 @@ describe('Finder (e2e)', () => {
     expect(ids).toEqual([fx.toilets.a1.id, fx.toilets.a2.id, fx.toilets.b1.id].sort());
     expect(res.body.items[0]).toHaveProperty('venueType');
     expect(res.body.items[0]).toHaveProperty('hasIssue', false);
+    // Level and venue, so the map can stack a building's floors (levelOrder derived when not stored yet).
+    const a1 = res.body.items.find((p: { id: string }) => p.id === fx.toilets.a1.id);
+    expect(a1).toMatchObject({ venueId: fx.venues.mall.id, level: 'L1', levelOrder: 1 });
+    const a2 = res.body.items.find((p: { id: string }) => p.id === fx.toilets.a2.id);
+    expect(a2).toMatchObject({ venueId: fx.venues.mall.id, level: 'B1', levelOrder: -1 });
+    const b1 = res.body.items.find((p: { id: string }) => p.id === fx.toilets.b1.id);
+    expect(b1).toMatchObject({ level: null, levelOrder: null });
     await http().get('/toilets/in-bounds?minLat=1.36&maxLat=1.34&minLng=103.84&maxLng=103.86').expect(400);
   });
 
@@ -141,6 +148,10 @@ describe('Finder (e2e)', () => {
         expect.objectContaining({ feature: 'SQUAT', present: false }),
       );
       expect(res.body.features).not.toContain('SQUAT');
+      // The other ACTIVE toilet in the mall; pending and renovating ones are left out.
+      expect(res.body.siblings).toEqual([
+        { id: fx.toilets.a2.id, label: 'B1 food court', level: 'B1', levelOrder: -1, status: 'ACTIVE' },
+      ]);
     });
 
     it('attribution for OSM and data.gov sources, venue hours fallback', async () => {

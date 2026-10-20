@@ -3513,6 +3513,21 @@
           },
           "venueType": {
             "$ref": "#/components/schemas/VenueType_Output"
+          },
+          "venueId": {
+            "type": "string"
+          },
+          "level": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "levelOrder": {
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [
@@ -3523,7 +3538,10 @@
           "status",
           "scoreCleanliness",
           "hasIssue",
-          "venueType"
+          "venueType",
+          "venueId",
+          "level",
+          "levelOrder"
         ],
         "additionalProperties": false
       },
@@ -3793,6 +3811,43 @@
           "id",
           "url",
           "thumbUrl"
+        ],
+        "additionalProperties": false
+      },
+      "ToiletSibling_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "level": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "levelOrder": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ToiletStatus_Output"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "level",
+          "levelOrder",
+          "status"
         ],
         "additionalProperties": false
       },
@@ -4133,6 +4188,12 @@
                 "type": "null"
               }
             ]
+          },
+          "siblings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToiletSibling_Output"
+            }
           }
         },
         "required": [
@@ -4169,7 +4230,8 @@
           "myReview",
           "verifiedBy",
           "source",
-          "attribution"
+          "attribution",
+          "siblings"
         ],
         "additionalProperties": false
       },

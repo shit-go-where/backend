@@ -53,7 +53,7 @@ interface ToiletSummary {
   label: string | null;
   venue: VenueLite;
   lat: number; lng: number;
-  level: string | null;
+  level: string | null;             // normalised (see "Levels"): "B1", "L3", "M", "B1; L3"; free text if unreadable
   areaType: AreaType;
   tier: ToiletTier;
   status: ToiletStatus;
@@ -75,7 +75,16 @@ interface ToiletSummary {
 interface ToiletPin {                // minimal, for map rendering
   id: string; lat: number; lng: number; tier: ToiletTier; status: ToiletStatus;
   scoreCleanliness: number | null; hasIssue: boolean; venueType: VenueType;
+  venueId: string;                   // groups a building's toilets (map stacks, same-building clusters, floor picker)
+  level: string | null;              // as ToiletSummary.level
+  levelOrder: number | null;         // sort key (see "Levels"); null when the level is unknown or unreadable
 }
+
+// Levels (src/common/level.ts; frontend/lib/level.ts mirrors it). Every write of a toilet's level is
+// normalised: trimmed, case-insensitive; "basement 1", "b1", "B01", "-1" → "B1"; "level 3", "l3", "lvl 3", "3",
+// "03", "#03" → "L3"; "ground", "g", "gf", "ground floor" (and "0") → "L1" (ground is L1 in Singapore);
+// "mezzanine", "m" → "M"; lists split on ; , / & " and " are normalised part by part and joined with "; ".
+// Anything unreadable is kept as typed (trimmed). levelOrder: B<n> → -n, L<n> → n, M → 1.5, a list → its lowest.
 
 interface Survey {
   id: string; surveyedAt: string; phase: string | null;
@@ -106,6 +115,8 @@ interface ToiletDetail extends Omit<ToiletSummary, 'venue'> {
   myReview: Review | null;             // when signed in
   source: string;                      // DataSource
   attribution: string | null;          // e.g. "© OpenStreetMap contributors" for OSM
+  siblings: { id: string; label: string | null; level: string | null; levelOrder: number | null; status: ToiletStatus }[];
+                                       // the other ACTIVE toilets at the same venue, lowest levelOrder first, unknown levels last (max 50)
 }
 
 interface StatusReport {
@@ -317,12 +328,17 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   NEW_TOILET: `photoIds` (optional, 0–10) must be the user's own confirmed photos not attached to another submission (400);
   location must be inside Singapore (400). Venue: `venueId`, else `newVenue` creates a COMMUNITY venue, else snaps to the
   nearest venue within 60 m, else creates a COMMUNITY venue (type OTHER, named after `label`).
-  Duplicate guard: an ACTIVE/PENDING toilet within 15 m at the same venue and same level (unknown level matches any)
-  → 409 `{ statusCode, message, candidateIds: string[], candidates: ToiletSummary[] }`; resend with `force: true` to override.
+  `payload.level` is normalised before it is stored (see "Levels"; 400 "level must name a floor, e.g. B1 or L3" when nothing
+  is left of it). Level required: with an explicit `venueId` whose venue already has an ACTIVE or PENDING toilet, a missing
+  `level` → 400 "This place already has a toilet listed. Add the level (for example B1 or L3) so people can tell them apart."
+  (also with `force: true`). Optional otherwise (new places, snapped venues).
+  Duplicate guard: an ACTIVE/PENDING toilet within 15 m at the same venue and same level → 409
+  `{ statusCode, message, candidateIds: string[], candidates: ToiletSummary[] }`; resend with `force: true` to override.
+  Levels are compared normalised ("1", "L1" and "Level 1" match; "B1; L3" matches "L3"); an unknown level matches any.
   Creates a Toilet with tier COMMUNITY, `seenBy = 1`. Trust model v2 decides its status (see "Trust model v2" below):
   on site (lat/lng within 150 m of the pin) + at least one photo → ACTIVE at once, submission APPROVED with `resolution: 'auto_on_site_photo'`,
   NEW_TOILET_SUBMITTED +5 now (badges evaluated); otherwise PENDING (dashed pin). Expires after 60 days (then ESCALATED, never rejected).
-  EDIT_TOILET / CLOSE_TOILET need `toiletId` of an ACTIVE toilet (404 / 400). EDIT `changes` must not be empty.
+  EDIT_TOILET / CLOSE_TOILET need `toiletId` of an ACTIVE toilet (404 / 400). EDIT `changes` must not be empty; `changes.level` is normalised.
   EDIT_TOILET also needs `lat/lng` within 150 m of the toilet (400 when missing or farther): only someone there can edit it.
   429 when the user already has 10 open (PENDING/NEEDS_INFO/ESCALATED) submissions created in the last 14 days
   (older ones do not count). `Me.openSubmissions` exposes `{ count, limit }` so /add can warn up front.
@@ -335,7 +351,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 - `PATCH /submissions/:id` (auth, owner only, else 404) `{ note?: string 1-1000, photoIds?: string[] (max 10), level?: string 1-20 }`
   (at least one; 400 otherwise) → 200 `SubmissionView`. Only in NEEDS_INFO (409 "Only a submission that needs more info can be changed").
   `note` → `payload.note`; `photoIds` (own confirmed, unattached, else 400) are appended to `payload.photoIds` and attached (hasPhoto updated);
-  `level` → `payload.level` and the pending toilet's level (NEW_TOILET) or `payload.changes.level` (EDIT_TOILET); 400 for CLOSE_TOILET.
+  `level` (normalised) → `payload.level` and the pending toilet's level (NEW_TOILET) or `payload.changes.level` (EDIT_TOILET); 400 for CLOSE_TOILET.
   Effect: state PENDING, REJECT votes deleted (those reviewers can vote again), APPROVE votes kept, `rejections` 0, resolution cleared,
   `expiresAt` = now + 60 days.
 - `POST /submissions/:id/votes` (auth) `{ value: 'APPROVE'|'REJECT', comment?, lat?, lng? }` → 201 `SubmissionView`.
@@ -414,7 +430,7 @@ All MODERATOR+ unless noted.
 - `POST /admin/photos/:id/approve` (TRUSTED+; 1 MODERATOR or 2 TRUSTED approvals publish) → `{ approved: boolean, approvals }`.
   409 if the same user already approved; 403 approving your own photo (ADMIN exempt); already-published → returns `{ approved: true }`.
 - `POST /admin/photos/:id/reject` (MODERATOR+) → `{ ok: true }` deletes object.
-- `PATCH /admin/toilets/:id` `{ status?, label?: string|null, areaType?, level?: string|null, accessNote?: string|null, needsResurvey?, features?: Partial<Record<Feature,boolean>> }` → `{ id }`. Features are written with `source=ADMIN`, `observedAt=now`. Unknown keys → 400.
+- `PATCH /admin/toilets/:id` `{ status?, label?: string|null, areaType?, level?: string|null, accessNote?: string|null, needsResurvey?, features?: Partial<Record<Feature,boolean>> }` → `{ id }`. Features are written with `source=ADMIN`, `observedAt=now`. `level` is normalised (`""` clears it). Unknown keys → 400.
 - `PATCH /admin/users/:id/role` (ADMIN) `{ role }` → `{ id, role }`. 400 when changing your own role.
 - `GET /admin/imports` → `{ items: ImportRun[] }`
 - `GET /admin/submissions?state=pending|escalated|needs_info|all` (default `all` = PENDING + NEEDS_INFO + ESCALATED) →

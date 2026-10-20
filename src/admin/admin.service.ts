@@ -19,6 +19,7 @@ import { hasRole } from '../common/auth/auth.guard.js';
 import { MediaService } from '../media/media.service.js';
 import { recomputeAllScores } from '../toilets/scoring.js';
 import { MetricsService } from '../metrics/metrics.service.js';
+import { levelFields } from '../common/level.js';
 import type { JobName } from './admin.dto.js';
 
 /** TRUSTED approvals needed to publish a photo (a single MODERATOR+ approval publishes). */
@@ -142,7 +143,9 @@ export class AdminService {
   async patchToilet(id: string, patch: ToiletPatch) {
     const exists = await this.prisma.toilet.findUnique({ where: { id }, select: { id: true } });
     if (!exists) throw new NotFoundException('Toilet not found');
-    const { features, ...fields } = patch;
+    const { features, level, ...rest } = patch;
+    // Admin edits go through the same level normalisation as everyone else's.
+    const fields = level !== undefined ? { ...rest, ...levelFields(level) } : rest;
     const now = new Date();
     const featureWrites = Object.entries(features ?? {}).map(([feature, present]) =>
       this.prisma.toiletFeature.upsert({

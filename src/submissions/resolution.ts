@@ -16,6 +16,7 @@ import {
 } from '../generated/prisma/enums.js';
 import type { PointsService } from '../gamification/points.service.js';
 import { recomputeToiletScore } from '../toilets/scoring.js';
+import { levelFields } from '../common/level.js';
 import { NEAR_VOTE_M, evaluateQuorum, nearApprovals, nearNeeded } from './quorum.js';
 import { CloseToiletPayloadSchema, EditToiletPayloadSchema } from './submissions.schemas.js';
 import type { ResolutionCode } from './resolution-codes.js';
@@ -143,7 +144,7 @@ export async function applyResolution(
         where: { id: toiletId },
         data: {
           ...(changes.label !== undefined ? { label: changes.label } : {}),
-          ...(changes.level !== undefined ? { level: changes.level } : {}),
+          ...(changes.level !== undefined ? levelFields(changes.level) : {}),
           ...(changes.areaType !== undefined ? { areaType: changes.areaType } : {}),
           ...(changes.nearestExit !== undefined ? { nearestExit: changes.nearestExit } : {}),
           ...(changes.accessNote !== undefined ? { accessNote: changes.accessNote } : {}),

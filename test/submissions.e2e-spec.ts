@@ -398,4 +398,28 @@ describe('Submissions (e2e)', () => {
     await prisma.submission.update({ where: { id: oldest.id }, data: { createdAt: new Date(Date.now() - 15 * 86_400_000) } });
     await newToilet(201, spammer, offset(far, 2000), {}, { force: true });
   });
+  it('normalises levels, compares them normalised, and needs one at a place that has toilets', async () => {
+    const lev = await makeUser(prisma, `lev-${id}`);
+    const spot = randomSgPoint();
+    const first = await newToilet(201, lev, spot, { newVenue: { name: `Level Mall ${id}`, type: 'MALL' }, level: 'Level 1' });
+    expect(first.body.payload.level).toBe('L1');
+    const mall = first.body.venue.id as string;
+    const t1 = await prisma.toilet.findUniqueOrThrow({ where: { id: first.body.toilet.id } });
+    expect(t1).toMatchObject({ level: 'L1', levelOrder: 1 });
+
+    // "1" is the same floor as "L1" at the same spot.
+    const dup = await newToilet(409, lev, offset(spot, 3), { venueId: mall, level: '1' });
+    expect(dup.body.candidateIds).toEqual([t1.id]);
+    expect(dup.body.candidates[0].level).toBe('L1');
+
+    // A second toilet at a place someone picked needs its level, forced or not.
+    const missing = await newToilet(400, lev, offset(spot, 3), { venueId: mall });
+    expect(missing.body.message).toMatch(/Add the level/);
+    await newToilet(400, lev, offset(spot, 3), { venueId: mall }, { force: true });
+
+    const b2 = await newToilet(201, lev, offset(spot, 3), { venueId: mall, level: 'basement 2' });
+    expect(b2.body.payload.level).toBe('B2');
+    const t2 = await prisma.toilet.findUniqueOrThrow({ where: { id: b2.body.toilet.id } });
+    expect(t2).toMatchObject({ level: 'B2', levelOrder: -2 });
+  });
 });

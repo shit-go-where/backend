@@ -7,6 +7,7 @@ import { isOpenAt, type OpeningHours } from '../common/opening-hours.js';
 import { countedReports } from '../status/unconfirmed.js';
 import type { Review, ToiletDetail, ToiletPin, ToiletSummary } from './toilet.schemas.js';
 import { nearText } from './near.js';
+import { levelOrder } from '../common/level.js';
 
 /** Prisma include needed to build a ToiletSummary. Depends on `now` for unexpired status reports. */
 export function summaryInclude(now: Date) {
@@ -162,8 +163,11 @@ export class ToiletPresenter {
 
   toPin(t: {
     id: string;
+    venueId: string;
     latitude: number;
     longitude: number;
+    level: string | null;
+    levelOrder: number | null;
     tier: ToiletTier;
     status: ToiletPin['status'];
     scoreCleanliness: number | null;
@@ -179,7 +183,33 @@ export class ToiletPresenter {
       scoreCleanliness: t.scoreCleanliness,
       hasIssue: countedReports(t.statusReports).some((r) => r.kind !== 'ALL_GOOD'),
       venueType: t.venue.type,
+      venueId: t.venueId,
+      level: t.level,
+      levelOrder: ToiletPresenter.levelOrderOf(t),
     };
+  }
+
+  /** The stored sort key, else derived from the text (rows from before the level_order backfill). */
+  static levelOrderOf(t: { level: string | null; levelOrder: number | null }): number | null {
+    return t.levelOrder ?? levelOrder(t.level);
+  }
+
+  /** The other ACTIVE toilets at a venue, lowest level first, unknown levels last. */
+  async siblings(t: { id: string; venueId: string }): Promise<ToiletDetail['siblings']> {
+    const rows = await this.prisma.toilet.findMany({
+      where: { venueId: t.venueId, id: { not: t.id }, status: 'ACTIVE' },
+      select: { id: true, label: true, level: true, levelOrder: true, status: true },
+      // A mall has a handful; the cap only guards against a mis-snapped import.
+      take: 50,
+    });
+    return rows
+      .map((r) => ({ ...r, levelOrder: ToiletPresenter.levelOrderOf(r) }))
+      .sort(
+        (a, b) =>
+          (a.levelOrder ?? Infinity) - (b.levelOrder ?? Infinity) ||
+          (a.level ?? '').localeCompare(b.level ?? '') ||
+          (a.label ?? '').localeCompare(b.label ?? ''),
+      );
   }
 
   /** Public reviews show approved photos only; `includeUnapproved` for the author's own view. */
@@ -283,6 +313,7 @@ export class ToiletPresenter {
           : null,
       source: t.source,
       attribution: ATTRIBUTION[t.source] ?? null,
+      siblings: await this.siblings(t),
     };
   }
 }

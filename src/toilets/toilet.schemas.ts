@@ -121,6 +121,11 @@ export const ToiletPinSchema = z
     scoreCleanliness: z.number().nullable(),
     hasIssue: z.boolean(),
     venueType: VenueTypeSchema,
+    venueId: z.string(),
+    /** Normalised ("B1", "L3", "M", "B1; L3"), or free text when it couldn't be read; null when unknown. */
+    level: z.string().nullable(),
+    /** Sort key for level: B2 = -2, L1 = 1, M = 1.5, a list = its lowest; null when unknown. */
+    levelOrder: z.number().nullable(),
   })
   .meta({ id: 'ToiletPin' });
 export type ToiletPin = z.infer<typeof ToiletPinSchema>;
@@ -154,6 +159,17 @@ export const ReviewSchema = z
   .meta({ id: 'Review' });
 export type Review = z.infer<typeof ReviewSchema>;
 
+/** Another toilet at the same place, for the "other toilets in this building" row. */
+export const ToiletSiblingSchema = z
+  .object({
+    id: z.string(),
+    label: z.string().nullable(),
+    level: z.string().nullable(),
+    levelOrder: z.number().nullable(),
+    status: ToiletStatusSchema,
+  })
+  .meta({ id: 'ToiletSibling' });
+
 export const ToiletDetailSchema = z
   .object({
     ...toiletSummaryShape,
@@ -185,6 +201,8 @@ export const ToiletDetailSchema = z
     verifiedBy: z.object({ handle: z.string() }).nullable(),
     source: z.string(),
     attribution: z.string().nullable(),
+    /** The other ACTIVE toilets at the same venue, lowest level first (unknown levels last). */
+    siblings: z.array(ToiletSiblingSchema),
   })
   .meta({ id: 'ToiletDetail' });
 export type ToiletDetail = z.infer<typeof ToiletDetailSchema>;
