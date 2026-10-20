@@ -8,6 +8,8 @@ import { OneMapService } from './onemap.service.js';
 import { countedReports } from '../status/unconfirmed.js';
 import { rankUnconfirmedLower, unconfirmedReasons } from './unconfirmed.js';
 import { PURPOSE_NEEDS, type Purpose } from './purposes.js';
+import { floorReason, floorSeconds } from './levels.js';
+import { levelOrder } from '../common/level.js';
 import {
   byWalkMinutes,
   rank,
@@ -34,6 +36,8 @@ export interface RecommendInput {
   openNow?: boolean;
   radiusM?: number;
   weights?: { distance?: number; cleanliness?: number; freshness?: number };
+  /** The floor they're on ("B1", "level 3"); unknown prefers toilets near the ground. */
+  level?: string;
 }
 
 export interface RecommendItem {
@@ -45,6 +49,11 @@ export interface RecommendItem {
   route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null;
   /** A pending community toilet nobody has confirmed yet (calm mode only). */
   unconfirmed: boolean;
+}
+
+/** The floor reason goes right after the walk minutes: "4 min walk", "1 floor up", ... */
+function withFloor(why: string[], floor: string | null): string[] {
+  return floor ? [why[0]!, floor, ...why.slice(1)] : why;
 }
 
 @Injectable()
@@ -78,7 +87,8 @@ export class RecommendService {
     const pool = rows
       .map((row) => {
         const summary = this.presenter.toSummary(row, now, origin);
-        const candidate: RankCandidate & { summary: ToiletSummary } = {
+        const order = ToiletPresenter.levelOrderOf(row);
+        const candidate: RankCandidate & { summary: ToiletSummary; levelOrder: number | null } = {
           id: row.id,
           distanceM: haversineM(origin, { lat: row.latitude, lng: row.longitude }),
           scoreCleanliness: row.scoreCleanliness,
@@ -88,6 +98,8 @@ export class RecommendService {
           features: summary.features,
           // Unconfirmed anonymous closures never take a toilet out of routing.
           reports: countedReports(row.statusReports),
+          floorSeconds: floorSeconds(input.level, order),
+          levelOrder: order,
           summary,
         };
         return candidate;
@@ -119,11 +131,15 @@ export class RecommendService {
     const routes = await Promise.all(
       top.map(({ candidate: c }) => this.onemap.walk(origin, { lat: c.summary.lat, lng: c.summary.lng })),
     );
+    // Knowing their floor, the lift ride is part of the trip, so it shows in the minutes. The
+    // unknown-floor ground preference only steers the ranking.
+    const knowsFloor = levelOrder(input.level) !== null;
     const items: RecommendItem[] = top.map(({ candidate: c, score }, i) => {
       const route = routes[i];
-      const walkSeconds = route?.durationS ?? estimateWalkSeconds(c.distanceM);
+      const walkSeconds =
+        (route?.durationS ?? estimateWalkSeconds(c.distanceM)) + (knowsFloor ? (c.floorSeconds ?? 0) : 0);
       const unconfirmed = c.summary.status === 'PENDING';
-      const why = reasons(c, walkSeconds, required, now, preferred);
+      const why = withFloor(reasons(c, walkSeconds, required, now, preferred), floorReason(input.level, c.levelOrder));
       return {
         toilet: c.summary,
         score,
@@ -135,8 +151,9 @@ export class RecommendService {
       };
     });
 
+    const preference = new Map(top.map(({ candidate: c }) => [c.id, knowsFloor ? 0 : (c.floorSeconds ?? 0)]));
     return {
-      items: urgent ? byWalkMinutes(items) : items,
+      items: urgent ? byWalkMinutes(items, (it) => preference.get(it.toilet.id) ?? 0) : items,
       searchedRadiusM,
       skippedVenues: await this.skippedVenues(origin, searchedRadiusM),
     };

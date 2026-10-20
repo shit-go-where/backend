@@ -26,6 +26,8 @@ export const RecommendBodySchema = z.object({
   weights: z
     .object({ distance: weight.optional(), cleanliness: weight.optional(), freshness: weight.optional() })
     .optional(),
+  /** The floor they're on ("B1", "L3", "level 3"; normalised like toilet levels). Unknown: prefer near the ground. */
+  level: z.string().trim().min(1).max(20).optional(),
 });
 export class RecommendBodyDto extends createZodDto(RecommendBodySchema) {}
 

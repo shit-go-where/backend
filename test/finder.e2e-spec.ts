@@ -284,8 +284,27 @@ describe('Finder (e2e)', () => {
       await prisma.statusReport.delete({ where: { id: r.id } });
     });
 
+    it('level: the floors to the toilet count in the minutes and the reasons', async () => {
+      type Item = { toilet: { id: string }; walkSeconds: number; reasons: string[] };
+      const a1Of = (body: { items: Item[] }) => body.items.find((i) => i.toilet.id === fx.toilets.a1.id)!;
+      const plain = a1Of((await http().post('/routing/recommend').send(ORIGIN).expect(200)).body);
+      // A1 is on L1: one floor up from B1 (there is no level 0), two floors down from L3.
+      const fromB1 = a1Of((await http().post('/routing/recommend').send({ ...ORIGIN, level: 'basement 1' }).expect(200)).body);
+      expect(fromB1.walkSeconds).toBe(plain.walkSeconds + 40);
+      expect(fromB1.reasons[1]).toBe('1 floor up');
+      const fromL3 = a1Of((await http().post('/routing/recommend').send({ ...ORIGIN, level: 'L3' }).expect(200)).body);
+      expect(fromL3.walkSeconds).toBe(plain.walkSeconds + 80);
+      expect(fromL3.reasons[1]).toBe('2 floors down');
+      const fromL1 = a1Of((await http().post('/routing/recommend').send({ ...ORIGIN, level: 'ground' }).expect(200)).body);
+      expect(fromL1.walkSeconds).toBe(plain.walkSeconds);
+      expect(fromL1.reasons[1]).toBe('On your level');
+      // Without a level nothing is said about floors.
+      expect(plain.reasons.join(' ')).not.toMatch(/floor|level/);
+    });
+
     it('validates the body', async () => {
       await http().post('/routing/recommend').send({ lat: 'x' }).expect(400);
+      await http().post('/routing/recommend').send({ ...ORIGIN, level: '' }).expect(400);
       await http().post('/routing/recommend').send({ ...ORIGIN, require: ['NOPE'] }).expect(400);
       await http().post('/routing/recommend').send({ ...ORIGIN, purpose: 'NOPE' }).expect(400);
     });

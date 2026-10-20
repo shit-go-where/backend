@@ -41,7 +41,12 @@ export function inSingapore(p: LatLng): boolean {
   );
 }
 
+/** Walking speed, metres per second. */
+export const WALK_SPEED_MS = 1.25;
+/** Streets are not straight lines: walking distance ≈ straight line × this. */
+export const WALK_DETOUR = 1.3;
+
 /** Rough walking time at 1.25 m/s with a 1.3 detour factor on straight-line distance. */
 export function estimateWalkSeconds(straightLineM: number): number {
-  return Math.round((straightLineM * 1.3) / 1.25);
+  return Math.round((straightLineM * WALK_DETOUR) / WALK_SPEED_MS);
 }

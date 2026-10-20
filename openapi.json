@@ -4413,6 +4413,11 @@
                 "maximum": 1
               }
             }
+          },
+          "level": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
           }
         },
         "required": [

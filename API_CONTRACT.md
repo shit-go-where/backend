@@ -268,9 +268,14 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 ### Routing (owner: finder agent)
 - `POST /routing/started` `{ toiletId }` → 200 `{ ok: true }`. Someone started walking there: adds 1 to that toilet's count for the
   Singapore day (`ToiletRouteDaily`, counts only, no person). 404 unless ACTIVE. 100 per IP per day (429), throttled 20/min.
-- `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number } }`
+- `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number }, level?: string (1-20) }`
   → `{ items: { toilet: ToiletSummary; score: number; walkSeconds: number; walkDistanceM: number; reasons: string[]; route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null }[]; searchedRadiusM: number; skippedVenues: { name: string; toiletStatus: VenueToiletStatus; note: string | null; distanceM: number }[] }`
   `purpose` adds soft preferences (src/routing/purposes.ts): missing features add cost, nothing is filtered out.
+  `level` is the floor the person is on ("B1", "L3", "level 3": normalised like toilet levels; a body field, since this is a POST).
+  Floors (src/routing/levels.ts), only for toilets whose `levelOrder` is known: with `level`, each floor between them and the
+  toilet adds 40 s (B1 → L1 is one floor; M is half a floor above L1), counted like walking time in the ranking, added to
+  `walkSeconds`, and stated as the second reason (`"On your level"`, `"1 floor up"`, `"2 floors down"`). Without `level` (or one
+  that is not a floor), toilets 20 s per floor away from the ground (L1) rank lower; `walkSeconds` and reasons are unchanged.
   Each item also has `unconfirmed: boolean`: a PENDING community toilet nobody has confirmed yet. Calm (non-urgent) results may include
   them, ranked below active toilets of similar distance (+0.1 cost, about 330 m) and with the reason
   `"Unconfirmed: added by the community, not yet confirmed"` in place of `"Community verified"`. Urgent mode never includes them.

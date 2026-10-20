@@ -3,6 +3,7 @@
  * `score = round(100 * (1 - cost))`, so higher score = better.
  */
 import type { Feature, StatusKind, ToiletTier } from '../generated/prisma/enums.js';
+import { secondsAsStraightM } from './levels.js';
 
 export interface RankWeights {
   distance: number;
@@ -73,6 +74,8 @@ export interface RankCandidate {
   features: Feature[];
   /** Unexpired reports. */
   reports: RankReport[];
+  /** Lift / escalator time to the toilet's floor (routing/levels.ts), counted as walking. */
+  floorSeconds?: number;
 }
 
 /** Unexpired CLOSED_NOW or BROKEN with >= 1 confirmation, or 2+ reports of that kind. */
@@ -110,8 +113,9 @@ export const walkingMetres = (straightM: number) => Math.round(straightM * 1.3);
 export function cost(c: RankCandidate, radiusM: number, w: RankWeights, now: Date, needs?: RankNeeds): number {
   const needW = needs?.weight ?? 0;
   const total = w.distance + w.cleanliness + w.issues + w.tier + w.freshness + needW || 1;
-  // Normalised by the search radius (walking detour factor cancels out).
-  const dist = Math.min(1, c.distanceM / radiusM);
+  // Normalised by the search radius (walking detour factor cancels out). Floors count as the
+  // walk that takes as long, so B2 is further than B1 from someone on B1 at the same spot.
+  const dist = Math.min(1, (c.distanceM + secondsAsStraightM(c.floorSeconds ?? 0)) / radiusM);
   const clean = (10 - (c.scoreCleanliness ?? NEUTRAL_CLEANLINESS)) / 10;
   const issues = issuePenalty(c.reports, needs?.issues);
   const need = needs ? needPenalty(c.features, needs.prefer) : 0;
@@ -262,7 +266,11 @@ export function rank<C extends RankCandidate>(
  * toilet across a road can rank above one that is a shorter walk; urgent mode promises the nearest, so it sorts
  * by the walk minutes people will see, and keeps the ranking (cleaner, better trusted) within the same minute.
  */
-export function byWalkMinutes<T extends { walkSeconds: number; score: number }>(items: T[]): T[] {
-  const mins = (s: number) => Math.max(1, Math.round(s / 60));
-  return [...items].sort((a, b) => mins(a.walkSeconds) - mins(b.walkSeconds) || b.score - a.score);
+export function byWalkMinutes<T extends { walkSeconds: number; score: number }>(
+  items: T[],
+  /** Seconds the ranking adds that the shown walk time leaves out (the unknown-floor ground preference). */
+  extraSeconds: (item: T) => number = () => 0,
+): T[] {
+  const mins = (t: T) => Math.max(1, Math.round((t.walkSeconds + extraSeconds(t)) / 60));
+  return [...items].sort((a, b) => mins(a) - mins(b) || b.score - a.score);
 }
