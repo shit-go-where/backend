@@ -15,6 +15,27 @@
         ]
       }
     },
+    "/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
     "/auth/google": {
       "get": {
         "operationId": "AuthController_google",
@@ -2363,6 +2384,34 @@
       }
     },
     "schemas": {
+      "LivenessDto_Output": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "commit",
+          "time"
+        ],
+        "additionalProperties": false
+      },
       "DevLoginBody": {
         "type": "object",
         "properties": {

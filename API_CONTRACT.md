@@ -211,7 +211,9 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 ## Endpoints
 
 ### Health
-- `GET /health` → `{ ok: true, db: 'up', time }`
+- `GET /health` → `{ ok: true, db: 'up', time }` (readiness: runs `SELECT 1`; 503 `{ ok: false, db: 'down' }`)
+- `GET /health/live` → `{ ok: true, commit: string | null, time }` (liveness: never touches the database;
+  `commit` is `VERCEL_GIT_COMMIT_SHA`, null off Vercel; `Cache-Control: no-store`; not rate-limited)
 
 ### Toilets (owner: finder agent)
 - `GET /toilets/nearby?lat&lng&radius=1000&features=BIDET,ACCESSIBLE&openNow=true&areaType=UNPAID_AREA&tier=VERIFIED,COMMUNITY&limit=50`

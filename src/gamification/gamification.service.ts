@@ -65,17 +65,27 @@ export class GamificationService implements OnApplicationBootstrap {
     @Inject(AnalyticsService) private readonly analytics: AnalyticsService,
   ) {}
 
-  /** Badge rows must exist before any UserBadge insert. Cheap idempotent upserts. */
+  /**
+   * Badge rows must exist before any UserBadge insert. Cheap idempotent upserts. A database outage
+   * must not stop the API from booting (GET /health/live has to answer, and every earlier boot
+   * already wrote these rows), so a failure is logged and the next cold start tries again.
+   */
   async onApplicationBootstrap(): Promise<void> {
-    await this.prisma.$transaction(
-      BADGES.map((b) =>
-        this.prisma.badge.upsert({
-          where: { id: b.id },
-          create: { id: b.id, name: b.name, description: b.description, icon: b.icon, rule: b.rule },
-          update: { name: b.name, description: b.description, icon: b.icon, rule: b.rule },
-        }),
-      ),
-    );
+    try {
+      await this.prisma.$transaction(
+        BADGES.map((b) =>
+          this.prisma.badge.upsert({
+            where: { id: b.id },
+            create: { id: b.id, name: b.name, description: b.description, icon: b.icon, rule: b.rule },
+            update: { name: b.name, description: b.description, icon: b.icon, rule: b.rule },
+          }),
+        ),
+      );
+    } catch (err) {
+      const code = (err as { code?: unknown } | null)?.code;
+      const reason = typeof code === 'string' ? code : err instanceof Error ? err.name : 'unknown error';
+      this.log.warn(`Badge sync skipped, database unavailable (${reason}); retried on the next cold start`);
+    }
   }
 
   /* ─────────────── badges ─────────────── */
