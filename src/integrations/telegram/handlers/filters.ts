@@ -14,6 +14,13 @@ export async function onFilterToggle(ctx: BotContext, deps: BotDeps, key: Filter
   await ctx.editMessageText(text, { ...HTML, reply_markup: keyboard }).catch(() => undefined);
 }
 
+/** `f:*` callback: the /filters message as a new message, so the answer it was tapped on stays. */
+export async function onFiltersMenu(ctx: BotContext): Promise<void> {
+  const { text, keyboard } = filtersMessage(filterStateOf(chatRow(ctx)));
+  await ctx.answerCallbackQuery();
+  await ctx.reply(text, { ...HTML, reply_markup: keyboard });
+}
+
 export function registerFilters(bot: Bot<BotContext>): void {
   bot.command('filters', async (ctx) => {
     const { text, keyboard } = filtersMessage(filterStateOf(chatRow(ctx)));

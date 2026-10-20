@@ -8,7 +8,6 @@ import {
   isGroupChat,
   LOCATION_BUTTON,
   locationKeyboard,
-  PLACE_BUTTON,
   type BotContext,
   type BotDeps,
 } from './context.js';
@@ -100,10 +99,6 @@ export function registerText(bot: Bot<BotContext>, deps: BotDeps): void {
     }
     if (text.startsWith('/')) {
       await ctx.reply(COPY.unknownCommand, HTML);
-      return;
-    }
-    if (text === PLACE_BUTTON) {
-      await ctx.reply(COPY.typePlace, HTML);
       return;
     }
     if (text === LOCATION_BUTTON) {

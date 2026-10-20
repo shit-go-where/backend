@@ -58,6 +58,17 @@ export const STATUS_LABELS: Record<StatusKind, string> = {
   CLOSED_NOW: 'Closed now',
 };
 
+/** One icon per status for the picker buttons. The labels above stay plain: they are used in prose. */
+export const STATUS_ICONS: Record<StatusKind, string> = {
+  ALL_GOOD: '👍',
+  NO_PAPER: '🧻',
+  NO_SOAP: '🧼',
+  LONG_QUEUE: '⏳',
+  BEING_CLEANED: '🧹',
+  BROKEN: '🔧',
+  CLOSED_NOW: '🚫',
+};
+
 /** Report buttons, in the order the web shows them. */
 export const REPORT_KINDS: StatusKind[] = [
   'ALL_GOOD',
@@ -144,13 +155,32 @@ export function filtersMessage(s: FilterState): { text: string; keyboard: Inline
 
 // ───────────────────────────── callback data (BOT.md §6) ─────────────────────────────
 
+/**
+ * Wire formats (all within 64 bytes; coordinates at 4 dp; `<m>` is `u` urgent or `c` calm; `minute`
+ * is base36 and present only for the person's own fresh location in a private chat):
+ *   u:<lat>,<lng>                           Nearest only
+ *   p:<m>,<toiletId>,<lat>,<lng>[,<minute>] pick: the toilet's card
+ *   l:<m>,<lat>,<lng>[,<minute>]            (re)render the list: Back, See more
+ *   c:<toiletId>,<lat>,<lng>,<minute>       I'm here
+ *   r:<toiletId>[,<status>]                 Report / report with a status
+ *   f:<key> | f:*                           toggle a filter / open the filters message
+ */
 export const CALLBACK_MAX_BYTES = 64;
 /** A check-in button older than this asks for a fresh location. */
 export const CHECKIN_TTL_MS = 10 * 60_000;
 
 export type CallbackAction =
-  /** "Closest only": re-run urgent at these coordinates. */
+  /** "Nearest only": re-run urgent at these coordinates. */
   | { kind: 'urgent'; lat: number; lng: number }
+  /**
+   * Pick one toilet of a list: show its card. `urgent` is the list's mode (`u` or `c` on the wire),
+   * `lat`/`lng` the search origin, `minute` only for the person's own fresh location (private chat).
+   */
+  | { kind: 'pick'; urgent: boolean; toiletId: string; lat: number; lng: number; minute?: number }
+  /** (Re)render the list at this origin: "Back to list" and "See more" from an urgent card. */
+  | { kind: 'list'; urgent: boolean; lat: number; lng: number; minute?: number }
+  /** "Filters": send the /filters message (the answer it was tapped on stays). */
+  | { kind: 'filtersMenu' }
   /** "I'm here": check in with the coordinates the person shared, at `minute` (minutes since epoch). */
   | { kind: 'checkin'; toiletId: string; lat: number; lng: number; minute: number }
   /** "Report": without `status`, show the status buttons; with it, file the report. */
@@ -160,8 +190,19 @@ export type CallbackAction =
 const coord = (n: number) => n.toFixed(4);
 const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 const NUM_RE = /^-?\d{1,3}\.\d{1,6}$/;
+const MINUTE_RE = /^[0-9a-z]{1,10}$/;
 
 export const minuteOf = (d: Date) => Math.floor(d.getTime() / 60_000);
+
+const minutePart = (minute: number | undefined) => (minute === undefined ? '' : `,${minute.toString(36)}`);
+
+/** The optional trailing minute (base36) of a `p:`/`l:` payload; `null` when present but malformed. */
+function parseMinute(part: string | undefined): number | undefined | null {
+  if (part === undefined) return undefined;
+  if (!MINUTE_RE.test(part)) return null;
+  const minute = parseInt(part, 36);
+  return Number.isFinite(minute) ? minute : null;
+}
 
 /** Encoded data, or null when it would not fit Telegram's 64 bytes (or has bad parts). */
 export function encodeCallback(a: CallbackAction): string | null {
@@ -174,12 +215,22 @@ export function encodeCallback(a: CallbackAction): string | null {
       if (!ID_RE.test(a.toiletId)) return null;
       s = `c:${a.toiletId},${coord(a.lat)},${coord(a.lng)},${a.minute.toString(36)}`;
       break;
+    case 'pick':
+      if (!ID_RE.test(a.toiletId)) return null;
+      s = `p:${a.urgent ? 'u' : 'c'},${a.toiletId},${coord(a.lat)},${coord(a.lng)}${minutePart(a.minute)}`;
+      break;
+    case 'list':
+      s = `l:${a.urgent ? 'u' : 'c'},${coord(a.lat)},${coord(a.lng)}${minutePart(a.minute)}`;
+      break;
     case 'report':
       if (!ID_RE.test(a.toiletId)) return null;
       s = a.status ? `r:${a.toiletId},${a.status}` : `r:${a.toiletId}`;
       break;
     case 'filter':
       s = `f:${a.key}`;
+      break;
+    case 'filtersMenu':
+      s = 'f:*';
       break;
   }
   return Buffer.byteLength(s, 'utf8') <= CALLBACK_MAX_BYTES ? s : null;
@@ -204,10 +255,26 @@ export function decodeCallback(data: string | undefined): CallbackAction | null 
       return p ? { kind: 'urgent', ...p } : null;
     }
     case 'c': {
-      if (parts.length !== 4 || !ID_RE.test(parts[0]!) || !/^[0-9a-z]{1,10}$/.test(parts[3]!)) return null;
+      if (parts.length !== 4 || !ID_RE.test(parts[0]!) || !MINUTE_RE.test(parts[3]!)) return null;
       const p = latLng(parts[1], parts[2]);
       const minute = parseInt(parts[3]!, 36);
       return p && Number.isFinite(minute) ? { kind: 'checkin', toiletId: parts[0]!, ...p, minute } : null;
+    }
+    case 'p': {
+      if ((parts.length !== 4 && parts.length !== 5) || (parts[0] !== 'u' && parts[0] !== 'c') || !ID_RE.test(parts[1]!)) {
+        return null;
+      }
+      const p = latLng(parts[2], parts[3]);
+      const minute = parseMinute(parts[4]);
+      if (!p || minute === null) return null;
+      return { kind: 'pick', urgent: parts[0] === 'u', toiletId: parts[1]!, ...p, ...(minute !== undefined && { minute }) };
+    }
+    case 'l': {
+      if ((parts.length !== 3 && parts.length !== 4) || (parts[0] !== 'u' && parts[0] !== 'c')) return null;
+      const p = latLng(parts[1], parts[2]);
+      const minute = parseMinute(parts[3]);
+      if (!p || minute === null) return null;
+      return { kind: 'list', urgent: parts[0] === 'u', ...p, ...(minute !== undefined && { minute }) };
     }
     case 'r': {
       if (parts.length > 2 || !ID_RE.test(parts[0]!)) return null;
@@ -216,12 +283,29 @@ export function decodeCallback(data: string | undefined): CallbackAction | null 
       return REPORT_KINDS.includes(status) ? { kind: 'report', toiletId: parts[0]!, status } : null;
     }
     case 'f': {
+      if (parts.length === 1 && parts[0] === '*') return { kind: 'filtersMenu' };
       const key = parts[0] as FilterKey;
       return parts.length === 1 && FILTER_OPTIONS.some((o) => o.key === key) ? { kind: 'filter', key } : null;
     }
     default:
       return null;
   }
+}
+
+/**
+ * The minute a keyboard's own-location buttons carry (`p:`/`l:` payloads), or undefined when none
+ * does: the origin was a searched place, not where the person stands.
+ */
+export function minuteFromKeyboard(
+  inlineKeyboard: ReadonlyArray<ReadonlyArray<{ text: string; callback_data?: string }>> | undefined,
+): number | undefined {
+  for (const row of inlineKeyboard ?? []) {
+    for (const b of row) {
+      const a = decodeCallback(b.callback_data);
+      if ((a?.kind === 'pick' || a?.kind === 'list') && a.minute !== undefined) return a.minute;
+    }
+  }
+  return undefined;
 }
 
 /** A check-in button is good for 10 minutes after the location it carries was shared. */
@@ -247,11 +331,11 @@ export interface ResultsOptions {
   /** Station page for a station hit (GROWTH 1.2). */
   stationLink?: string;
   campaign: Campaign;
-  /** Groups get Details and Navigate only (nobody in a group is "here"). */
+  /** Groups get a Navigate link per toilet and Filters only (nobody in a group is "here"). */
   group: boolean;
   /**
-   * Minute the person's location was shared, to put "I'm here" buttons on. Only for the person's
-   * own location in a private chat: a searched place is not where they are.
+   * Minute the person's location was shared; the pick buttons carry it on to the card's "I'm here".
+   * Only for the person's own location in a private chat: a searched place is not where they are.
    */
   checkInMinute?: number;
   filters: FilterState;
@@ -301,10 +385,10 @@ function areaText(a: AreaType): string | null {
   return null;
 }
 
-/** One numbered entry, several lines. */
-export function formatItem(item: RecommendItem, n: number, now: Date): string {
+/** Everything under a toilet's title: walk, tier, score, live status, features. Shared by the list and the card. */
+function itemLines(item: RecommendItem, now: Date): string[] {
   const t = item.toilet;
-  const lines: string[] = [`<b>${n}. ${escapeHtml(toiletTitle(t))}</b>`];
+  const lines: string[] = [];
   const walk = [`${walkMinutes(item.walkSeconds)} min walk`, formatDistance(item.walkDistanceM)];
   const area = areaText(t.areaType);
   if (area) walk.push(area);
@@ -326,7 +410,29 @@ export function formatItem(item: RecommendItem, n: number, now: Date): string {
   }
   const features = FEATURE_ORDER.filter((f) => t.features.includes(f)).slice(0, MAX_FEATURES);
   if (features.length) lines.push(features.map((f) => FEATURE_LABELS[f]).join(', '));
-  return lines.join('\n');
+  return lines;
+}
+
+/** The escaped title, as a link to the details page when there is one. */
+const titleMarkup = (item: RecommendItem, detailsUrl?: string) =>
+  detailsUrl ? link(detailsUrl, toiletTitle(item.toilet)) : escapeHtml(toiletTitle(item.toilet));
+
+/** One numbered entry, several lines. With `detailsUrl` the title links to the toilet's page. */
+export function formatItem(item: RecommendItem, n: number, now: Date, detailsUrl?: string): string {
+  return [`<b>${n}. ${titleMarkup(item, detailsUrl)}</b>`, ...itemLines(item, now)].join('\n');
+}
+
+/** Button labels stay short enough to read on a phone. */
+const SHORT_TITLE_MAX = 28;
+
+function shortTitle(item: RecommendItem): string {
+  const title = toiletTitle(item.toilet);
+  return title.length > SHORT_TITLE_MAX ? `${title.slice(0, SHORT_TITLE_MAX - 1).trimEnd()}…` : title;
+}
+
+/** "1. Test Mall · L1 near lifts · 3 min": the title cut to 28 characters (with "…"), then the walk. */
+export function pickLabel(item: RecommendItem, n: number): string {
+  return `${n}. ${shortTitle(item)} · ${walkMinutes(item.walkSeconds)} min`;
 }
 
 function header(o: ResultsOptions, count: number): string {
@@ -335,9 +441,18 @@ function header(o: ResultsOptions, count: number): string {
   return `🚽 <b>${count === 1 ? 'Best one' : `Top ${count}`} near you</b>`;
 }
 
+export const MAX_RESULTS = 3;
+
+/**
+ * The list (BOT.md §6): up to 3 toilets with title links in the text and one pick button each.
+ * Groups get a Navigate link per toilet instead (nobody in a group is "here", so no card).
+ */
 export function formatResults(r: ResultsInput, o: ResultsOptions): { text: string; keyboard: InlineKeyboard } {
-  const items = r.items.slice(0, 3);
-  const blocks = [header(o, items.length), ...items.map((it, i) => formatItem(it, i + 1, o.now))];
+  const items = r.items.slice(0, MAX_RESULTS);
+  const blocks = [
+    header(o, items.length),
+    ...items.map((it, i) => formatItem(it, i + 1, o.now, toiletUrl(o.appBase, it.toilet.id, o.campaign))),
+  ];
 
   const skipped = r.skippedVenues.slice(0, 2);
   if (skipped.length) {
@@ -356,29 +471,84 @@ export function formatResults(r: ResultsInput, o: ResultsOptions): { text: strin
   items.forEach((it, i) => {
     const n = i + 1;
     const t = it.toilet;
-    kb.url(`${n}. Navigate`, googleMapsNavigateUrl({ lat: t.lat, lng: t.lng }));
-    kb.url(`${n}. Details`, toiletUrl(o.appBase, t.id, o.campaign));
+    const navigate = googleMapsNavigateUrl({ lat: t.lat, lng: t.lng });
     if (o.group) {
-      kb.row();
+      kb.url(`🧭 ${n}. ${shortTitle(it)} ↗`, navigate).row();
       return;
     }
-    const checkIn =
-      o.checkInMinute !== undefined
-        ? encodeCallback({ kind: 'checkin', toiletId: t.id, lat: o.origin.lat, lng: o.origin.lng, minute: o.checkInMinute })
-        : null;
-    const report = encodeCallback({ kind: 'report', toiletId: t.id });
-    if (checkIn) {
-      kb.row();
-      kb.text(`${n}. I'm here, check in`, checkIn);
-    }
-    if (report) kb.text(`${n}. Report`, report);
+    const pick = encodeCallback({
+      kind: 'pick',
+      urgent: o.urgent,
+      toiletId: t.id,
+      lat: o.origin.lat,
+      lng: o.origin.lng,
+      minute: o.checkInMinute,
+    });
+    // An id too long for the callback limit must not drop its row: send them to Maps instead.
+    if (pick) kb.text(pickLabel(it, n), pick);
+    else kb.url(`🧭 ${n}. Navigate ↗`, navigate);
     kb.row();
   });
   if (!o.group && !o.urgent) {
     const u = encodeCallback({ kind: 'urgent', lat: o.origin.lat, lng: o.origin.lng });
-    if (u) kb.text('🚨 Closest only', u).row();
+    if (u) kb.text('🚨 Nearest only', u);
   }
+  kb.text('🎛 Filters', encodeCallback({ kind: 'filtersMenu' })!);
   return { text: blocks.join('\n\n'), keyboard: kb };
+}
+
+export interface CardOptions {
+  appBase: string;
+  campaign: Campaign;
+  /** The list's mode: carried by Back and See more so the list comes back the way it was. */
+  urgent: boolean;
+  /** Search origin: carried by Back, See more and I'm here. */
+  origin: { lat: number; lng: number };
+  /** Set for place searches: "Near <placeName>" above the title. */
+  placeName?: string;
+  /** Minute the person's own location was shared: adds "I'm here". Never for a searched place. */
+  checkInMinute?: number;
+  /** The urgent first answer: no Back (there is no list yet), and "See N more" when `more` > 0. */
+  single?: boolean;
+  /** How many other results the list has. */
+  more?: number;
+  now: Date;
+}
+
+/** One toilet in full (private chats only): `formatItem` without the number, plus Navigate / Details / I'm here / Report. */
+export function formatCard(item: RecommendItem, o: CardOptions): { text: string; keyboard: InlineKeyboard } {
+  const t = item.toilet;
+  const details = toiletUrl(o.appBase, t.id, o.campaign);
+  const lines: string[] = [];
+  if (o.single && o.urgent) {
+    lines.push(o.placeName ? `🚨 <b>Closest near ${escapeHtml(o.placeName)}</b>` : '🚨 <b>Closest to you</b>');
+  } else if (o.placeName) {
+    lines.push(`🚽 Near ${escapeHtml(o.placeName)}`);
+  }
+  lines.push(`<b>${titleMarkup(item, details)}</b>`, ...itemLines(item, o.now));
+
+  const kb = new InlineKeyboard()
+    .url('🧭 Navigate ↗', googleMapsNavigateUrl({ lat: t.lat, lng: t.lng }))
+    .url('ℹ️ Details ↗', details)
+    .row();
+  const checkIn =
+    o.checkInMinute !== undefined
+      ? encodeCallback({ kind: 'checkin', toiletId: t.id, lat: o.origin.lat, lng: o.origin.lng, minute: o.checkInMinute })
+      : null;
+  const report = encodeCallback({ kind: 'report', toiletId: t.id });
+  if (checkIn) kb.text("✅ I'm here", checkIn);
+  if (report) kb.text('⚠️ Report', report);
+  const list = encodeCallback({
+    kind: 'list',
+    urgent: o.urgent,
+    lat: o.origin.lat,
+    lng: o.origin.lng,
+    minute: o.checkInMinute,
+  });
+  // Back to the list, or (urgent first answer: no list yet) a way to see the others.
+  const tail = o.single ? (o.more && o.more > 0 ? `📋 See ${o.more} more` : null) : '◀ Back to list';
+  if (list && tail) kb.row().text(tail, list);
+  return { text: lines.join('\n'), keyboard: kb };
 }
 
 /** Status buttons for a toilet (T7), two per row. */
@@ -386,7 +556,7 @@ export function statusKeyboard(toiletId: string): InlineKeyboard {
   const kb = new InlineKeyboard();
   REPORT_KINDS.forEach((kind, i) => {
     const data = encodeCallback({ kind: 'report', toiletId, status: kind });
-    if (data) kb.text(STATUS_LABELS[kind], data);
+    if (data) kb.text(`${STATUS_ICONS[kind]} ${STATUS_LABELS[kind]}`, data);
     if (i % 2 === 1) kb.row();
   });
   return kb;
@@ -473,6 +643,7 @@ export const COPY = {
   pendingNeedsAccount:
     'This toilet is new and needs a check-in from a linked account to confirm it. Link this chat first: on the website, open Me and tap Connect Telegram.',
   reportWhich: 'What\'s it like right now?',
+  pickGone: 'This toilet is no longer in the results. Send your location again.',
 } as const;
 
 export function emptyText(o: { radiusKm: number; filters: FilterState; mapLink: string }): string {

@@ -136,7 +136,9 @@ recommend, OneMap search, check-in and status services in-process; all links der
 - **What it does (v1):** `/start`, location → top 3 (calm) or closest (`/go`, urgent for 2 min),
   typed place → OneMap search → top 3, `/toilet <place>` (alias `/near`, works in groups),
   `/filters`, check-in and status report buttons (anonymous under `hashTelegramId(chatId)` until
-  linked), `/privacy`, `/stop` (deletes the chat row), `/unlink`. Account linking: `/me`
+  linked), `/privacy`, `/stop` (deletes the chat row), `/unlink`. Results are a list with one
+  button per toilet; tapping one opens a card with Navigate / Details / I'm here / Report, and
+  check-ins, reports and filters edit the message in place. Account linking: `/me`
   "Connect Telegram" → `POST /me/telegram/link-token` → `https://t.me/<bot>?start=link_<token>`.
 - **Stored:** one `TelegramChat` row per chat (chat id, type, pending urgent mode, saved filters,
   linked user id, timestamps). Never names, usernames, phone numbers, message text or coordinates.

@@ -1,6 +1,6 @@
 /** Types and small helpers shared by the bot's handlers. */
 import type { Logger } from '@nestjs/common';
-import { Keyboard, type Context } from 'grammy';
+import { GrammyError, Keyboard, type Context, type InlineKeyboard } from 'grammy';
 import type { TelegramChat } from '../../../generated/prisma/client.js';
 import type { PrismaService } from '../../../prisma/prisma.service.js';
 import type { RecommendService } from '../../../routing/recommend.service.js';
@@ -52,9 +52,32 @@ export const chatDeviceId = (ctx: Context, deps: Pick<BotDeps, 'analytics'>) => 
 export const HTML = { parse_mode: 'HTML', link_preview_options: { is_disabled: true } } as const;
 
 export const LOCATION_BUTTON = '📍 Send my location';
-export const PLACE_BUTTON = '🔎 Type a place';
 
-/** The one-tap keyboard (T1). "Type a place" is for desktop Telegram, which cannot share a location. */
+/**
+ * The one-tap keyboard (T1). Desktop Telegram cannot share a location, so the placeholder tells
+ * people they can just type a place instead.
+ */
 export function locationKeyboard(): Keyboard {
-  return new Keyboard().requestLocation(LOCATION_BUTTON).row().text(PLACE_BUTTON).resized().persistent();
+  return new Keyboard().requestLocation(LOCATION_BUTTON).resized().persistent().placeholder('or type a place, e.g. Bishan MRT');
+}
+
+/** Telegram refuses an edit that changes nothing (a double tap): harmless. */
+const isNotModified = (e: unknown) => e instanceof GrammyError && /message is not modified/i.test(e.description);
+
+/**
+ * Edits the message a button was tapped on into `text` (and `keyboard`; none removes the old one).
+ * With no message to edit (a very old one Telegram no longer returns), sends a new message instead.
+ */
+export async function editOrReply(ctx: Context, text: string, keyboard?: InlineKeyboard): Promise<void> {
+  const msg = ctx.callbackQuery?.message;
+  // An "inaccessible" message (date 0) cannot be edited either.
+  if (!msg || msg.date === 0) {
+    await ctx.reply(text, { ...HTML, reply_markup: keyboard });
+    return;
+  }
+  try {
+    await ctx.editMessageText(text, { ...HTML, reply_markup: keyboard });
+  } catch (e) {
+    if (!isNotModified(e)) throw e;
+  }
 }
