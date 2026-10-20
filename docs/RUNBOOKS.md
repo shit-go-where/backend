@@ -56,6 +56,9 @@ import, monthly imports. Telegram calls the API directly: <api>/integrations/tel
      feature, one user). Go to step 5.
    - `503 {"ok":false,"db":"down"}`: the API is up, the database is not reachable. Step 4.
    - A Vercel error page, 5xx without that JSON, or a timeout: step 2.
+   - `<site>/api/health/live` never touches the database: if it answers `{"ok":true,"commit":...}` the
+     function boots and `commit` tells you which SHA is live. Sentry (`sgw-backend`) shows the errors
+     behind any 5xx, tagged with that SHA as the release.
 2. **Frontend or API?** Open `<api>/health` directly. If this works but `<site>/api/health` does not,
    the frontend project or its `API_ORIGIN` is wrong (check Settings -> Environment Variables on the
    frontend project; the value must be the API's production URL, no trailing slash). If both fail,

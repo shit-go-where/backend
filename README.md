@@ -28,7 +28,7 @@ pnpm start:dev                 # http://localhost:4000
 ```
 
 - Swagger UI: <http://localhost:4000/docs>, raw spec: <http://localhost:4000/openapi.json>
-- Health: <http://localhost:4000/health>
+- Health: <http://localhost:4000/health> (database) and <http://localhost:4000/health/live> (no database)
 - Dev login without Google: `POST /auth/dev-login {"email":"you@example.com"}` while
   `DEV_LOGIN_ENABLED=true` (refused at boot when `NODE_ENV=production`).
 - `pnpm openapi` writes `openapi.json` without starting the server; the frontend's `pnpm gen:api`
@@ -126,7 +126,7 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | `CRON_SECRET` | for `/admin/jobs/*` | `change-me` | random; same value as the GitHub secret |
 | `API_PROXY_SECRET` | recommended | empty | `openssl rand -hex 32`; the **same value** in the frontend project. The Next `/api` rewrite sends it with each phone's IP (`x-sgw-client-ip`); without it Vercel's proxy hides the client IP and every visitor shares one rate-limit bucket |
 | `DEV_LOGIN_ENABLED` | no | `true` | **unset** (boot fails if `true` in production) |
-| `SENTRY_DSN` | no | empty | **accepted but not used anywhere yet**: no error tracking is wired (see Observability) |
+| `SENTRY_DSN` | recommended | empty (Sentry off) | `sgw-backend` project DSN (Sentry org `shit-go-where`, US region `ingest.us.sentry.io`), set for Production and Preview. Unset = SDK never initialised, nothing sent (see Observability) |
 | `POSTHOG_KEY` / `POSTHOG_HOST` | no | empty / `https://eu.i.posthog.com` | PostHog EU project key for server-side events (check-ins, reports, ...). Unset = nothing is sent |
 | `TELEGRAM_BOT_TOKEN` | for the bot | empty (bot off) | BotFather token; unset = no bot, no webhook route |
 | `TELEGRAM_WEBHOOK_SECRET` | for the webhook | empty | 32+ random chars (`openssl rand -hex 32`) |
@@ -363,13 +363,40 @@ you find out (a weekly `keepalive` job and Dependabot PRs make it unlikely).
 
 ### Observability
 
-What exists: Vercel runtime logs (about one hour on Hobby), `GET /health` (checks the database with
-`SELECT 1`), PostHog events from the API, the nightly workflow results. What does not: error tracking
-(`SENTRY_DSN` is read and ignored), an uptime monitor, alerts. Set up an external monitor (UptimeRobot,
-Better Stack, healthchecks.io) on `<site>/api/health` and `<site>/`, 1-5 minute interval, alert on two
-failures. Note `/health` queries the database, so a 1-minute probe keeps Neon's compute awake all day
-and uses the free allowance; use a 5-minute interval or accept the cost. `docs/probe-production.sh`
-records headers, redirects and latency spread of the live site.
+What exists: Vercel runtime logs (about one hour on Hobby; production logs only `error` and `warn`,
+not Nest's route table), Sentry error tracking, two health routes, PostHog events from the API, the
+nightly workflow results. What does not: an uptime monitor and alerts (set them up, below).
+
+**Health routes**
+
+- `GET /health/live`: liveness. Never touches the database and is not rate-limited; returns
+  `{ ok, commit, time }` where `commit` is the deployed `VERCEL_GIT_COMMIT_SHA` (answers "is this the
+  SHA I just deployed?"). Point the uptime monitor here: `<site>/api/health/live` and `<site>/`,
+  5-minute interval, alert on two consecutive failures. A cold start still runs one small badge upsert
+  against the database (`GamificationService`); it no longer fails the boot when the database is down.
+- `GET /health`: readiness, runs `SELECT 1`. 503 `{ ok: false, db: 'down' }` when Neon is unreachable.
+  Use it by hand or in a slow (15-30 minute) probe: every call wakes Neon's compute.
+
+**Sentry** (`@sentry/nestjs`, `src/instrument.ts`, `src/observability/`). Initialised only when
+`SENTRY_DSN` is set; local dev, tests, `pnpm openapi` and the CLI send nothing.
+
+- What is reported: unhandled errors and 5xx responses (including `/health`'s 503 when the database
+  is down). 4xx `HttpException`s (validation, 401/403/404, 429) are not.
+- Tagged with `environment = VERCEL_ENV` (`production` / `preview`) and `release = VERCEL_GIT_COMMIT_SHA`.
+- Privacy (PDPA): SDK `dataCollection` turns off user info, cookies, bodies, query parameters and
+  local variables, and `beforeSend` scrubs again: request cookies, body and query string removed, only
+  `user-agent`, `content-type`, `content-length`, `accept` and `x-vercel-id` headers kept (no
+  `authorization`, `cookie`, `x-sgw-*`, `x-forwarded-for`), `user.ip_address` pinned to null, and query
+  strings stripped from breadcrumb URLs (OneMap calls carry coordinates).
+- Quota: errors only. Tracing and profiling are off (`tracesSampleRate` unset, so no spans are even
+  created; `SENTRY_TRACES_SAMPLE_RATE` would opt in, so leave it unset). Outgoing calls get no
+  `sentry-trace`/`baggage` headers.
+- Serverless: the global filter calls `waitUntil(Sentry.flush())` after each report, so the event
+  leaves before Vercel freezes the function (the SDK also flushes after each response on Vercel).
+- In the Sentry project: create an alert rule (new issue, and regression) to an email or channel you
+  read, and enable *Settings > Security & Privacy > Prevent Storing of IP Addresses* as a backstop.
+
+`docs/probe-production.sh` records headers, redirects and latency spread of the live site.
 
 ## Accounts you must create
 
@@ -380,4 +407,4 @@ records headers, redirects and latency spread of the live site.
 - [ ] Google Cloud - OAuth consent screen + web client
 - [ ] OneMap - developer account
 - [ ] Telegram - bot via BotFather (plus a separate dev bot for local polling)
-- [ ] Sentry (optional) - one project per app
+- [ ] Sentry - org `shit-go-where`, one project per app (`sgw-backend` for this API, US region)
