@@ -1,4 +1,5 @@
 import { accessOf, chooseVenue, featuresFromTags, findDuplicate, levelOf, openingHoursOf, venueTypeFromTags } from './tags.js';
+import { levelFields } from '../../common/level.js';
 
 describe('featuresFromTags', () => {
   it('maps the documented tags', () => {
@@ -68,8 +69,21 @@ describe('access / hours / level / venue type', () => {
     expect(levelOf({ level: '0' })).toBe('L1');
     expect(levelOf({ level: '2' })).toBe('L3');
     expect(levelOf({ level: '-2' })).toBe('B2');
-    expect(levelOf({ level: '1;2' })).toBe('1;2');
     expect(levelOf({})).toBeNull();
+  });
+  it('OSM multi-level values convert every floor', () => {
+    expect(levelOf({ level: '0;1' })).toBe('L1; L2');
+    expect(levelOf({ level: '1;2' })).toBe('L2; L3');
+    expect(levelOf({ level: '1;2;3' })).toBe('L2; L3; L4');
+    expect(levelOf({ level: '-1;0;1' })).toBe('B1; L1; L2');
+    expect(levelOf({ level: ' -2 ; 0 ' })).toBe('B2; L1');
+    // Through the normaliser as the importer writes it: no floor lost, lowest first for ordering.
+    expect(levelFields(levelOf({ level: '0;1' }))).toEqual({ level: 'L1; L2', levelOrder: 1 });
+    expect(levelFields(levelOf({ level: '-1;0;1' }))).toEqual({ level: 'B1; L1; L2', levelOrder: -1 });
+  });
+  it('non-numeric OSM levels are left for the normaliser', () => {
+    expect(levelOf({ level: 'roof' })).toBe('roof');
+    expect(levelOf({ level: '0;roof' })).toBe('L1; roof');
   });
   it('venue type from tags', () => {
     expect(venueTypeFromTags({ shop: 'mall' })).toBe('MALL');

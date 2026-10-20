@@ -11,6 +11,15 @@ export const SECONDS_PER_FLOOR = 40;
 export const SECONDS_PER_FLOOR_FROM_GROUND = 20;
 /** levelOrder of the ground floor, L1. */
 const GROUND = 1;
+/** Deepest basement and highest floor a level can be; past them it is a typo ("999"), not a floor. */
+export const LOWEST_LEVEL = -10;
+export const HIGHEST_LEVEL = 50;
+
+/** The person's floor as a levelOrder, or null when it isn't one or is out of range. */
+export function userLevelOrder(userLevel: string | null | undefined): number | null {
+  const o = levelOrder(userLevel);
+  return o !== null && o >= LOWEST_LEVEL && o <= HIGHEST_LEVEL ? o : null;
+}
 
 /**
  * Extra seconds for a toilet's floor. `userLevel` is what they said ("B1", "level 3"), else null.
@@ -18,7 +27,7 @@ const GROUND = 1;
  */
 export function floorSeconds(userLevel: string | null | undefined, toiletLevelOrder: number | null): number {
   if (toiletLevelOrder === null) return 0;
-  const mine = levelOrder(userLevel);
+  const mine = userLevelOrder(userLevel);
   return mine !== null
     ? floorsBetween(mine, toiletLevelOrder) * SECONDS_PER_FLOOR
     : floorsBetween(GROUND, toiletLevelOrder) * SECONDS_PER_FLOOR_FROM_GROUND;
@@ -31,7 +40,7 @@ export function secondsAsStraightM(seconds: number): number {
 
 /** "On your level", "1 floor up", "2 floors down", from the person's level to the toilet's. */
 export function floorReason(userLevel: string | null | undefined, toiletLevelOrder: number | null): string | null {
-  const mine = levelOrder(userLevel);
+  const mine = userLevelOrder(userLevel);
   if (mine === null || toiletLevelOrder === null) return null;
   const n = floorsBetween(mine, toiletLevelOrder);
   if (n === 0) return 'On your level';

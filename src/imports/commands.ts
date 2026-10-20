@@ -101,11 +101,15 @@ export const COMMANDS: Record<string, Command> = {
     run: recompute,
   },
   'levels:backfill': {
-    description: 'Normalise every Toilet.level ("level 3" -> "L3") and fill levelOrder (once, after the level_order migration). --dry-run',
+    description:
+      'Normalise every non-OSM Toilet.level ("level 3" -> "L3") and fill levelOrder (once, after the level_order migration; run import:osm after it). --dry-run',
     run: async (args) => {
       const dryRun = flagBool(args.flags, 'dry-run');
       const r = await backfillLevels(getDb(), { dryRun });
       console.log(`  ${r.changed} of ${r.scanned} toilets ${dryRun ? 'would change' : 'updated'}`);
+      if (r.skippedOsm > 0) {
+        console.log(`  ${r.skippedOsm} OSM toilets skipped: their levels use OSM numbering; run \`pnpm cli import:osm\` to rewrite them`);
+      }
     },
   },
   all: {

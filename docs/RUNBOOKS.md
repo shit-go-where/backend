@@ -17,6 +17,7 @@ dashboard that can change, it says so. Placeholders: `<api>` is the API's produc
 | 8 | [Ban a user](#8-ban-a-user) | Abuse, spam, leaderboard cheating |
 | 9 | [Pause the bot](#9-pause-the-bot) | The Telegram bot misbehaves or is being abused |
 | 10 | [Routine secrets and expiring things](#10-routine-secrets-and-expiring-things) | Calendar reminders |
+| 11 | [One-off data steps after a deploy](#11-one-off-data-steps-after-a-deploy) | A release note says a backfill is due |
 
 ## How the pieces fit (read once)
 
@@ -455,3 +456,22 @@ messages).
 | Neon role password | if leaked | Neon console -> Roles -> reset password; update `DATABASE_URL`, `DIRECT_URL` (Vercel) and the GitHub secret `DIRECT_URL`; redeploy. |
 | Scheduled workflows | if the heartbeat email stops | Actions -> Scheduled -> *Enable workflow*, then Run workflow -> `nightly`. GitHub disables schedules after 60 days without repository activity. |
 | Restore drill | quarterly | Follow runbook 6B into a scratch database; fill in the drill log. |
+
+---
+
+## 11. One-off data steps after a deploy
+
+Run these from a laptop with `DIRECT_URL` pointing at production (`pnpm cli` reads it, falling
+back to `DATABASE_URL`), after the release that needs them is live. Each is safe to re-run.
+
+### Toilet levels (`level_order` migration)
+
+1. `pnpm cli levels:backfill --dry-run` and read the sample of changes ("level 3" -> "L3").
+2. `pnpm cli levels:backfill`. It prints `N of M toilets updated` and how many OSM toilets it skipped.
+3. `pnpm cli import:osm`, or Actions -> **Scheduled** -> Run workflow -> `weekly-osm` (it also
+   recomputes scores). OSM rows written by the old importer hold OSM's floor numbers (`0` is the
+   ground floor), which read one floor low; the import rewrites them. Until it runs, those toilets
+   have no floor order: the map does not stack them and routing treats their floor as unknown.
+4. Check: `select source, count(*) filter (where level is not null and "levelOrder" is null) from
+   "Toilet" group by 1;` should be near zero for every source (free-text levels like "Roof garden"
+   stay without an order).

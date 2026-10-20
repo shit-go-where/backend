@@ -85,7 +85,16 @@ Details, sources and licences: [`data/README.md`](data/README.md).
 | `import:datagov --dataset <name\|all>` | Import data.gov.sg datasets (hawker centres, CCs, parks ...) |
 | `import:wikidata` | Import MRT/LRT stations from Wikidata |
 | `recompute-scores` | Recompute toilet scores and rankings |
+| `levels:backfill [--dry-run]` | Normalise every non-OSM `Toilet.level` and fill `levelOrder` (once, see below) |
 | `all` | Run the whole first-cut pipeline in order |
+
+**After deploying the `level_order` migration**, once, against production (`DIRECT_URL`):
+
+1. `pnpm cli levels:backfill` normalises community, fieldwork and admin levels ("level 3" -> "L3")
+   and fills `levelOrder`. It skips OSM toilets and says how many.
+2. `pnpm cli import:osm` (or Actions -> **Scheduled** -> `weekly-osm`). The old importer stored
+   OSM's own floor numbers ("0" for the ground floor, "0;1"), which read one floor low; the import
+   rewrites those rows from their tags. Until it runs, OSM toilets show no floor order on the map.
 
 Scheduled runs (GitHub Actions, `.github/workflows/scheduled.yml`): weekly `import:osm` +
 `recompute-scores`; monthly `import:datagov --dataset all` + `import:wikidata`; nightly

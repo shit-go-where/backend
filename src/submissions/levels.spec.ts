@@ -1,7 +1,8 @@
 /**
  * Levels on new toilets: normalised before the duplicate guard compares them, and required when
- * someone adds a toilet to a place that already has one. Prisma is stubbed: everything here
- * happens before the write transaction (which the stub turns into a sentinel error).
+ * someone adds a toilet to a place that already has one. Prisma is stubbed: both checks run inside
+ * the write transaction under the submitter and venue locks, and the stub's first write throws a
+ * sentinel error.
  */
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import type { User } from '../generated/prisma/client.js';
@@ -19,7 +20,7 @@ interface Near {
 }
 
 function service(opts: { listedAtVenue?: number; near?: Near[] } = {}) {
-  const calls = { toiletCount: 0, created: false };
+  const calls = { toiletCount: 0, created: false, locks: [] as string[], checkedUnlocked: false };
   const prisma = {
     submission: { count: async () => 0 },
     venue: { findUnique: async () => ({ id: 'v1' }), findMany: async () => [] },
@@ -30,9 +31,33 @@ function service(opts: { listedAtVenue?: number; near?: Near[] } = {}) {
       },
       findMany: async () => opts.near ?? [],
     },
-    $transaction: async () => {
-      calls.created = true;
-      throw new Error('CREATED');
+    $transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+      const locked = (f: () => Promise<unknown>) => () => {
+        if (calls.locks.length < 2) calls.checkedUnlocked = true;
+        return f();
+      };
+      const tx = {
+        // advisoryLock's tagged template: the key is the first interpolated value.
+        $executeRaw: async (_sql: TemplateStringsArray, key: string) => {
+          calls.locks.push(key);
+          return 1;
+        },
+        submission: {
+          count: prisma.submission.count,
+          create: async () => {
+            calls.created = true;
+            throw new Error('CREATED');
+          },
+        },
+        venue: {
+          create: async () => {
+            calls.created = true;
+            throw new Error('CREATED');
+          },
+        },
+        toilet: { count: locked(prisma.toilet.count), findMany: locked(prisma.toilet.findMany) },
+      };
+      return fn(tx);
     },
   };
   const presenter = { findSummaries: async () => [], toSummary: () => ({}) };
@@ -89,6 +114,13 @@ describe('NEW_TOILET duplicate guard with normalised levels', () => {
     expect(calls.created).toBe(true);
   });
 
+  it('checks under the submitter and venue locks', async () => {
+    const { svc, calls } = service({ listedAtVenue: 1, near });
+    await expect(svc.create(me, newToilet({ level: 'L1' }))).rejects.toBeInstanceOf(ConflictException);
+    expect(calls.locks).toEqual(['submission:user:u1', 'submission:venue:v1']);
+    expect(calls.checkedUnlocked).toBe(false);
+  });
+
   it('the 409 lists the candidates', async () => {
     const { svc } = service({ listedAtVenue: 1, near });
     const err = await svc.create(me, newToilet({ level: 'L1' })).catch((e: unknown) => e);
@@ -104,6 +136,7 @@ describe('NEW_TOILET level required at a place that already has toilets', () => 
     expect(err).toBeInstanceOf(BadRequestException);
     expect((err as BadRequestException).message).toBe(LEVEL_NEEDED_MESSAGE);
     expect(calls.created).toBe(false);
+    expect(calls.checkedUnlocked).toBe(false);
   });
 
   it('force does not skip it', async () => {

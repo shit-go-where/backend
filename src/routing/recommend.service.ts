@@ -8,8 +8,7 @@ import { OneMapService } from './onemap.service.js';
 import { countedReports } from '../status/unconfirmed.js';
 import { rankUnconfirmedLower, unconfirmedReasons } from './unconfirmed.js';
 import { PURPOSE_NEEDS, type Purpose } from './purposes.js';
-import { floorReason, floorSeconds } from './levels.js';
-import { levelOrder } from '../common/level.js';
+import { floorReason, floorSeconds, userLevelOrder } from './levels.js';
 import {
   byWalkMinutes,
   rank,
@@ -133,7 +132,7 @@ export class RecommendService {
     );
     // Knowing their floor, the lift ride is part of the trip, so it shows in the minutes. The
     // unknown-floor ground preference only steers the ranking.
-    const knowsFloor = levelOrder(input.level) !== null;
+    const knowsFloor = userLevelOrder(input.level) !== null;
     const items: RecommendItem[] = top.map(({ candidate: c, score }, i) => {
       const route = routes[i];
       const walkSeconds =

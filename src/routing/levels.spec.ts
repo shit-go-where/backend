@@ -5,6 +5,7 @@ import {
   floorReason,
   floorSeconds,
   secondsAsStraightM,
+  userLevelOrder,
 } from './levels.js';
 import { estimateWalkSeconds } from '../common/geo.js';
 
@@ -47,6 +48,28 @@ describe('floorSeconds', () => {
   it('nothing when the toilet floor is unknown', () => {
     expect(floorSeconds('B1', null)).toBe(0);
     expect(floorSeconds(undefined, null)).toBe(0);
+  });
+});
+
+describe('userLevelOrder', () => {
+  it('parses with the level normaliser', () => {
+    expect(userLevelOrder('level 3')).toBe(3);
+    expect(userLevelOrder('basement 2')).toBe(-2);
+    expect(userLevelOrder('ground')).toBe(1);
+    expect(userLevelOrder('L50')).toBe(50);
+    expect(userLevelOrder('B10')).toBe(-10);
+  });
+  it('out of range or not a floor is unknown', () => {
+    expect(userLevelOrder('999')).toBeNull();
+    expect(userLevelOrder('L51')).toBeNull();
+    expect(userLevelOrder('B11')).toBeNull();
+    expect(userLevelOrder('Concourse')).toBeNull();
+    expect(userLevelOrder(undefined)).toBeNull();
+  });
+  it('"999" cannot add hours to the walk: it counts as an unknown floor', () => {
+    expect(floorSeconds('999', 1)).toBe(0);
+    expect(floorSeconds('999', 4)).toBe(floorSeconds(undefined, 4));
+    expect(floorReason('999', 4)).toBeNull();
   });
 });
 

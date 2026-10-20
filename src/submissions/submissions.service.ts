@@ -400,14 +400,6 @@ export class SubmissionsService {
       const venue = await this.prisma.venue.findUnique({ where: { id: p.venueId }, select: { id: true } });
       if (!venue) throw new BadRequestException('venueId does not exist');
       venueId = venue.id;
-      // Malls and stations have toilets on several floors at one spot: a second toilet at a place
-      // someone picked needs its level, or the map can't tell them apart (the 409 guard can't either).
-      if (!p.level) {
-        const listed = await this.prisma.toilet.count({
-          where: { venueId, status: { in: [ToiletStatus.ACTIVE, ToiletStatus.PENDING] } },
-        });
-        if (listed > 0) throw new BadRequestException(LEVEL_NEEDED_MESSAGE);
-      }
     } else if (!p.newVenue) {
       const bb = bboxAround(here, VENUE_SNAP_M);
       const candidates = await this.prisma.venue.findMany({
@@ -421,41 +413,23 @@ export class SubmissionsService {
       venueId = nearest?.id ?? null;
     }
 
-    if (venueId && !force) {
-      const bb = bboxAround(here, DUPLICATE_RADIUS_M);
-      const near = await this.prisma.toilet.findMany({
-        where: {
-          venueId,
-          status: { in: [ToiletStatus.ACTIVE, ToiletStatus.PENDING] },
-          latitude: { gte: bb.minLat, lte: bb.maxLat },
-          longitude: { gte: bb.minLng, lte: bb.maxLng },
-        },
-        select: { id: true, latitude: true, longitude: true, level: true },
-      });
-      const dupes = near.filter(
-        (t) => haversineM(here, { lat: t.latitude, lng: t.longitude }) <= DUPLICATE_RADIUS_M && sameLevel(t.level, p.level),
-      );
-      if (dupes.length > 0) {
-        const now0 = new Date();
-        throw new ConflictException({
-          statusCode: 409,
-          error: 'Conflict',
-          message: 'A toilet is already listed here. Resubmit with force: true if this is a different one.',
-          candidateIds: dupes.map((t) => t.id),
-          // Full summaries so the add wizard can show what is already listed here.
-          candidates: (await this.presenter.findSummaries({ id: { in: dupes.map((t) => t.id) } })).map((t) =>
-            this.presenter.toSummary(t, now0, here),
-          ),
-        });
-      }
-    }
-
     const now = new Date();
     // Trust model v2 (PLAN.md §12 E1): on site + photo goes live at once, within the guardrails.
     const onSite = at !== null && haversineM(at, here) <= NEAR_VOTE_M;
     const hasPhoto = photoIds.length > 0;
-    const { id, autoPublished } = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       await this.lockSubmitter(tx, me.id);
+      // Two people adding a toilet at one place at once would both pass the checks below.
+      if (venueId) await advisoryLock(tx, `submission:venue:${venueId}`);
+      // Malls and stations have toilets on several floors at one spot: a second toilet at a place
+      // someone picked needs its level, or the map can't tell them apart (the 409 guard can't either).
+      if (p.venueId && !p.level && (await this.listedAt(tx, p.venueId)) > 0) {
+        throw new BadRequestException(LEVEL_NEEDED_MESSAGE);
+      }
+      if (venueId && !force) {
+        const dupes = await this.duplicatesAt(tx, venueId, here, p.level);
+        if (dupes.length > 0) return { dupes };
+      }
       const autoPublished =
         onSite && hasPhoto && shouldAutoPublish({ onSite, hasPhoto, ...(await this.autoPublishHistory(tx, me.id, now)) });
       if (!venueId) {
@@ -520,7 +494,48 @@ export class SubmissionsService {
       await tx.submission.update({ where: { id: submission.id }, data: { toiletId: toilet.id } });
       return { id: submission.id, autoPublished };
     });
-    return { id, autoPublished };
+    if ('dupes' in result) {
+      // Built after the transaction: the summaries read through the pool, not the locked connection.
+      const ids = result.dupes;
+      throw new ConflictException({
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'A toilet is already listed here. Resubmit with force: true if this is a different one.',
+        candidateIds: ids,
+        // Full summaries so the add wizard can show what is already listed here.
+        candidates: (await this.presenter.findSummaries({ id: { in: ids } })).map((t) =>
+          this.presenter.toSummary(t, now, here),
+        ),
+      });
+    }
+    return result;
+  }
+
+  /** Active and pending toilets at a venue: pending ones count, or two people adding at once both skip the level. */
+  private listedAt(db: Prisma.TransactionClient, venueId: string): Promise<number> {
+    return db.toilet.count({ where: { venueId, status: { in: [ToiletStatus.ACTIVE, ToiletStatus.PENDING] } } });
+  }
+
+  /** Toilets at this venue within DUPLICATE_RADIUS_M on the same floor (an unknown level matches any). */
+  private async duplicatesAt(
+    db: Prisma.TransactionClient,
+    venueId: string,
+    here: LatLng,
+    level: string | undefined,
+  ): Promise<string[]> {
+    const bb = bboxAround(here, DUPLICATE_RADIUS_M);
+    const near = await db.toilet.findMany({
+      where: {
+        venueId,
+        status: { in: [ToiletStatus.ACTIVE, ToiletStatus.PENDING] },
+        latitude: { gte: bb.minLat, lte: bb.maxLat },
+        longitude: { gte: bb.minLng, lte: bb.maxLng },
+      },
+      select: { id: true, latitude: true, longitude: true, level: true },
+    });
+    return near
+      .filter((t) => haversineM(here, { lat: t.latitude, lng: t.longitude }) <= DUPLICATE_RADIUS_M && sameLevel(t.level, level))
+      .map((t) => t.id);
   }
 
   private async createForToilet(

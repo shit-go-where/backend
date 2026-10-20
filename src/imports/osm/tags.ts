@@ -92,17 +92,27 @@ export function openingHoursOf(tags: Tags): OpeningHours | null {
 
 /**
  * Prefer a human level reference ("L1", "B2") over the OSM numeric level. OSM counts the ground
- * floor as 0, Singapore as L1, so a bare `level=1` is L2 here and `level=-1` is B1.
+ * floor as 0, Singapore as L1, so a bare `level=1` is L2 here and `level=-1` is B1. A toilet on
+ * several floors is `level=0;1`: each part is converted ("L1; L2"); parts that aren't whole
+ * numbers ("0.5", "roof") are kept as they are for normalizeLevel.
  */
 export function levelOf(tags: Tags): string | null {
   const ref = tags['level:ref'] ?? tags['addr:floor'];
   if (ref) return ref;
   const lv = tags['level']?.trim();
-  if (lv && /^-?\d+$/.test(lv)) {
-    const n = Number(lv);
-    return n >= 0 ? `L${n + 1}` : `B${-n}`;
-  }
-  return lv || null;
+  if (!lv) return null;
+  const parts = lv
+    .split(';')
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (!parts.some((p) => /^-?\d+$/.test(p))) return lv;
+  return parts
+    .map((p) => {
+      if (!/^-?\d+$/.test(p)) return p;
+      const n = Number(p);
+      return n >= 0 ? `L${n + 1}` : `B${-n}`;
+    })
+    .join('; ');
 }
 
 export function venueTypeFromTags(tags: Tags): VenueTypeName {

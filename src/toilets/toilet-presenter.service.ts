@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../generated/prisma/client.js';
-import type { AreaType, Feature, ToiletTier } from '../generated/prisma/enums.js';
+import type { AreaType, DataSource, Feature, ToiletTier } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { estimateWalkSeconds, haversineM, type LatLng } from '../common/geo.js';
 import { isOpenAt, type OpeningHours } from '../common/opening-hours.js';
@@ -168,6 +168,7 @@ export class ToiletPresenter {
     longitude: number;
     level: string | null;
     levelOrder: number | null;
+    source: DataSource;
     tier: ToiletTier;
     status: ToiletPin['status'];
     scoreCleanliness: number | null;
@@ -189,21 +190,26 @@ export class ToiletPresenter {
     };
   }
 
-  /** The stored sort key, else derived from the text (rows from before the level_order backfill). */
-  static levelOrderOf(t: { level: string | null; levelOrder: number | null }): number | null {
-    return t.levelOrder ?? levelOrder(t.level);
+  /**
+   * The stored sort key, else derived from the text (rows from before the level_order backfill).
+   * Not for OSM rows: the old importer stored OSM's numbering ("0" is the ground floor), which reads
+   * one floor low, so they stay unknown until import:osm rewrites them (imports/levels.ts).
+   */
+  static levelOrderOf(t: { level: string | null; levelOrder: number | null; source: DataSource }): number | null {
+    if (t.levelOrder !== null) return t.levelOrder;
+    return t.source === 'OSM' ? null : levelOrder(t.level);
   }
 
   /** The other ACTIVE toilets at a venue, lowest level first, unknown levels last. */
   async siblings(t: { id: string; venueId: string }): Promise<ToiletDetail['siblings']> {
     const rows = await this.prisma.toilet.findMany({
       where: { venueId: t.venueId, id: { not: t.id }, status: 'ACTIVE' },
-      select: { id: true, label: true, level: true, levelOrder: true, status: true },
+      select: { id: true, label: true, level: true, levelOrder: true, status: true, source: true },
       // A mall has a handful; the cap only guards against a mis-snapped import.
       take: 50,
     });
     return rows
-      .map((r) => ({ ...r, levelOrder: ToiletPresenter.levelOrderOf(r) }))
+      .map(({ source, ...r }) => ({ ...r, levelOrder: ToiletPresenter.levelOrderOf({ ...r, source }) }))
       .sort(
         (a, b) =>
           (a.levelOrder ?? Infinity) - (b.levelOrder ?? Infinity) ||

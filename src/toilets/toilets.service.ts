@@ -71,6 +71,7 @@ export class ToiletsService {
         longitude: true,
         level: true,
         levelOrder: true,
+        source: true,
         tier: true,
         status: true,
         scoreCleanliness: true,

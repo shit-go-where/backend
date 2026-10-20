@@ -300,6 +300,10 @@ describe('Finder (e2e)', () => {
       expect(fromL1.reasons[1]).toBe('On your level');
       // Without a level nothing is said about floors.
       expect(plain.reasons.join(' ')).not.toMatch(/floor|level/);
+      // A floor past the tallest building is a typo: treated as unknown, not 998 floors of lift.
+      const from999 = a1Of((await http().post('/routing/recommend').send({ ...ORIGIN, level: '999' }).expect(200)).body);
+      expect(from999.walkSeconds).toBe(plain.walkSeconds);
+      expect(from999.reasons.join(' ')).not.toMatch(/floor|level/);
     });
 
     it('validates the body', async () => {
