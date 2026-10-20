@@ -39,8 +39,9 @@ env:
 
 jobs:
   create:
-    # Fork PRs get no secrets, so there is nothing to do (and a red check would only confuse).
-    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    # Fork PRs get no secrets, and a repo without NEON_PROJECT_ID is not set up for this, so there
+    # is nothing to do (and a red check would only confuse).
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository && vars.NEON_PROJECT_ID != ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -104,7 +105,8 @@ jobs:
             echo "VERCEL_TOKEN / VERCEL_PROJECT_ID not set; skipping (use Neon's Vercel integration or set the vars)."
             exit 0
           fi
-          for pair in "DATABASE_URL=$POOLED" "DIRECT_URL=$DIRECT"; do
+          # PREVIEW_DB=1 tells scripts/vercel-migrate.mjs that this preview may run migrations.
+          for pair in "DATABASE_URL=$POOLED" "DIRECT_URL=$DIRECT" "PREVIEW_DB=1"; do
             name="${pair%%=*}"; value="${pair#*=}"
             npx -y "$VERCEL_CLI" env add "$name" preview --git-branch "$GIT_BRANCH" \
               --value "$value" --sensitive --force --yes --token "$VERCEL_TOKEN"
@@ -142,6 +144,6 @@ jobs:
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
         run: |
           if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then exit 0; fi
-          for name in DATABASE_URL DIRECT_URL; do
+          for name in DATABASE_URL DIRECT_URL PREVIEW_DB; do
             npx -y "$VERCEL_CLI" env rm "$name" preview "$GIT_BRANCH" --yes --token "$VERCEL_TOKEN" || true
           done
