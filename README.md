@@ -49,10 +49,11 @@ use <http://localhost:3000>.
 | `pnpm db:up` | `docker compose up -d db` |
 | `pnpm db:migrate` | `prisma migrate dev` (create + apply a migration) |
 | `pnpm db:deploy` | `prisma migrate deploy` (apply committed migrations only) |
-| `pnpm db:seed` | `prisma db seed` (`tsx prisma/seed.ts`) |
+| `pnpm db:seed` | `prisma db seed` (`tsx prisma/seed.ts`; also syncs badges) |
+| `pnpm db:sync-badges` | Upsert the badge definitions (`src/gamification/badges.ts`) into `Badge`; idempotent |
 | `pnpm db:reset` | Drop, re-migrate and re-seed the local DB |
 | `pnpm cli <command>` | Data pipeline, see below |
-| `pnpm vercel-build` | Vercel build: `prisma generate && prisma migrate deploy && nest build` |
+| `pnpm vercel-build` | Vercel build: `prisma generate && prisma migrate deploy && nest build && node dist/sync-badges.js` |
 
 ## Migration rules
 
@@ -108,7 +109,7 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | Variable | Required | Local default | Production value |
 |---|---|---|---|
 | `DATABASE_URL` | yes | `postgresql://sgw:sgw@localhost:5433/sgw` | Neon **pooled** URL (`-pooler` host, `?sslmode=require`) |
-| `DIRECT_URL` | for migrations/seed/CLI | same as above | Neon **direct** URL (non-pooler host). Needed at **build** time too: `pnpm vercel-build` runs `prisma migrate deploy` with it |
+| `DIRECT_URL` | for migrations/seed/CLI | same as above | Neon **direct** URL (non-pooler host). Needed at **build** time too: `pnpm vercel-build` runs `prisma migrate deploy` and the badge sync with it |
 | `DATABASE_URL_UNPOOLED` | no | unset | What Neon's Vercel integration injects instead of `DIRECT_URL`; `prisma.config.ts` and the CLI fall back to it (order: `DIRECT_URL`, `DATABASE_URL_UNPOOLED`, `DATABASE_URL`). Not read by `env.ts` |
 | `SHADOW_DATABASE_URL` | local `db:migrate`, CI | unset | Scratch database for `prisma migrate diff` / `migrate dev`; never set on Vercel |
 | `PORT` | no | `4000` | not needed on Vercel |
@@ -194,7 +195,10 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
 
 - Import this repo; framework preset **NestJS**; root directory `/`.
 - `vercel.json` pins `regions: ["sin1"]`, `installCommand: pnpm install --frozen-lockfile` and
-  `buildCommand: pnpm vercel-build` (generate, migrate deploy, build).
+  `buildCommand: pnpm vercel-build` (generate, migrate deploy, build, badge sync).
+- Badge rows are synced at build time, not at boot: on Vercel (`VERCEL`/`VERCEL_ENV` set) a cold start
+  runs no database query, so an uptime probe on `/health/live` never wakes Neon. Locally, in CI and
+  in e2e the app still syncs badges when it starts.
 - Vercel's NestJS builder compiles `src/main.ts` itself and turns the whole app into one
   Fluid-compute function. The entry file must contain a literal `@nestjs/core` import for
   detection to work.
@@ -372,8 +376,9 @@ nightly workflow results. What does not: an uptime monitor and alerts (set them 
 - `GET /health/live`: liveness. Never touches the database and is not rate-limited; returns
   `{ ok, commit, time }` where `commit` is the deployed `VERCEL_GIT_COMMIT_SHA` (answers "is this the
   SHA I just deployed?"). Point the uptime monitor here: `<site>/api/health/live` and `<site>/`,
-  5-minute interval, alert on two consecutive failures. A cold start still runs one small badge upsert
-  against the database (`GamificationService`); it no longer fails the boot when the database is down.
+  5-minute interval, alert on two consecutive failures. On Vercel a cold start opens no database
+  connection at all (badges are synced by the build, the pg pool connects lazily), so this probe lets
+  Neon scale to zero.
 - `GET /health`: readiness, runs `SELECT 1`. 503 `{ ok: false, db: 'down' }` when Neon is unreachable.
   Use it by hand or in a slow (15-30 minute) probe: every call wakes Neon's compute.
 

@@ -124,7 +124,8 @@ build id (`curl -s <site>/sw.js | grep '^const BUILD'`, the deployment id) is th
   newer API with an older frontend is the supported direction).
 - Redeploying an old commit (instead of Instant Rollback) re-runs `pnpm vercel-build`, which runs
   `prisma migrate deploy`. Old commits contain only old migrations, so it is a no-op, but it needs
-  `DIRECT_URL` reachable.
+  `DIRECT_URL` reachable. Commits from this change on also re-sync badges at the end of the build
+  (upserts only: badges added later stay in the table, harmlessly).
 
 **CI gate bypass:** if `SGW_REQUIRE_CI=1` is set and `main` is red, production builds are cancelled.
 To ship a hotfix anyway, put `[skip-ci-gate]` in the commit message (see README, "Deploy gate").
@@ -133,7 +134,7 @@ To ship a hotfix anyway, put `[skip-ci-gate]` in the commit message (see README,
 
 ## 3. The migration ran but the deploy failed (forward-fix)
 
-`pnpm vercel-build` is `prisma generate && prisma migrate deploy && nest build`. The migration is
+`pnpm vercel-build` is `prisma generate && prisma migrate deploy && nest build && node dist/sync-badges.js`. The migration is
 applied to the database *before* the app compiles. If `nest build` (or anything later) fails, Vercel
 keeps serving the previous deployment, now against the **new schema**. Nothing is half-applied
 inside the migration itself (each migration runs in a transaction, except statements Postgres

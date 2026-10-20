@@ -18,6 +18,7 @@ import { BADGES, FOUNDING_BADGE_ID, MRT_LINES, earnedBadgeIds, type MrtLine } fr
 import { rankWithTies } from './ranking.js';
 import { sgtDayStart } from './sgt.js';
 import { advisoryLock } from '../common/locks.js';
+import { onVercel, syncBadges } from './badge-sync.js';
 import type { BadgeView, CheckInResult, Leaderboard } from './gamification.schemas.js';
 import { confirmByCheckIn, escalateIfFlagged } from '../submissions/resolution.js';
 import { AnalyticsService } from '../analytics/analytics.service.js';
@@ -66,25 +67,19 @@ export class GamificationService implements OnApplicationBootstrap {
   ) {}
 
   /**
-   * Badge rows must exist before any UserBadge insert. Cheap idempotent upserts. A database outage
-   * must not stop the API from booting (GET /health/live has to answer, and every earlier boot
-   * already wrote these rows), so a failure is logged and the next cold start tries again.
+   * Badge rows must exist before any UserBadge insert (see badge-sync.ts). On Vercel the build syncs
+   * them (`pnpm vercel-build`), so a cold start runs no query at all: an uptime probe on /health/live
+   * must not wake Neon. Locally, in CI and e2e it syncs here. A database outage must not stop the API
+   * from booting, so a failure is only logged.
    */
   async onApplicationBootstrap(): Promise<void> {
+    if (onVercel()) return;
     try {
-      await this.prisma.$transaction(
-        BADGES.map((b) =>
-          this.prisma.badge.upsert({
-            where: { id: b.id },
-            create: { id: b.id, name: b.name, description: b.description, icon: b.icon, rule: b.rule },
-            update: { name: b.name, description: b.description, icon: b.icon, rule: b.rule },
-          }),
-        ),
-      );
+      await syncBadges(this.prisma);
     } catch (err) {
       const code = (err as { code?: unknown } | null)?.code;
       const reason = typeof code === 'string' ? code : err instanceof Error ? err.name : 'unknown error';
-      this.log.warn(`Badge sync skipped, database unavailable (${reason}); retried on the next cold start`);
+      this.log.warn(`Badge sync skipped, database unavailable (${reason}); retried on the next start`);
     }
   }
 
