@@ -330,8 +330,10 @@ line in step 2 from your laptop.
 Photos are re-encoded server-side (EXIF and GPS stripped) and only become public when approved, so
 the takedown case is an *approved* photo (or one still waiting for approval) that must go now.
 
-1. **Find the photo id.** Public URLs look like `https://<S3_PUBLIC_URL>/photos/<id>.jpg` (thumbnail:
-   `thumbs/<id>.webp`); the id is the file name. Or, from the database:
+1. **Find the photo id.** Photo URLs on the site look like `<site>/api/media/photos/<id>` (thumbnail:
+   `.../<id>/thumb`). A link someone copied after the redirect is a presigned R2 URL,
+   `https://<account>.r2.cloudflarestorage.com/<bucket>/photos/<id>.jpg?X-Amz-...`; the id is the file
+   name. Or, from the database:
    ```sql
    select id, url, "toiletId", "uploadedById", approved from "Photo" where url like '%<part of the url>%';
    ```
@@ -345,14 +347,16 @@ the takedown case is an *approved* photo (or one still waiting for approval) tha
 3. **Verify it is really gone.** Object deletion is best effort (a failure is only logged, and the
    row is deleted regardless), so check the URL:
    ```bash
-   curl -I "<photo url>"            # must be 404
+   curl -I "<site>/api/media/photos/<id>"   # must be 404
    ```
    If it is still served, delete the object by hand: Cloudflare dashboard -> R2 -> photo bucket ->
    `photos/<id>.*` and `thumbs/<id>.webp`, or `aws s3 rm s3://<photo-bucket>/photos/<id>.jpg --endpoint-url $EP`.
-4. **Caches.** Photos are served with `Cache-Control: public, max-age=31536000, immutable`. Browsers
-   that already loaded it keep it until they clear it; nothing can force that. If the bucket is behind
-   a Cloudflare custom domain, purge the URL (Caching -> Configuration -> Purge by URL). The
-   `r2.dev` address is not CDN-cached. The service worker caches API JSON, not photo files.
+4. **Caches.** The bucket is private and reads go through short-lived presigned URLs, so once the
+   objects are deleted no new URL works and old ones 404 at R2. What can linger: the redirect for an
+   approved photo is cacheable by browsers and the Vercel CDN until the end of its one-hour signing
+   window, and a browser that already loaded the image keeps its copy (objects written before the
+   private-bucket change say `max-age=31536000`, newer ones `private, max-age=86400`). Nothing can
+   force a browser to forget it. The service worker never stores `/api/media/` responses or R2 URLs.
 5. **Follow up:** if the uploader is abusive, [ban them](#8-ban-a-user). If the photo came with a
    review, delete the review: `delete from "Review" where id = '<id>'` (photos of that review lose
    their link; they are not deleted by it).

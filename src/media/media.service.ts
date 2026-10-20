@@ -12,12 +12,23 @@ import {
 import sharp from 'sharp';
 import { env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { Photo } from '../generated/prisma/client.js';
+import type { Photo, User } from '../generated/prisma/client.js';
 import { ALLOWED_TYPES, MAX_UPLOAD_BYTES, type PhotoRef } from './media.dto.js';
+import {
+  PRIVATE_READ_WINDOW_S,
+  PUBLIC_READ_WINDOW_S,
+  canViewPhoto,
+  photoPath,
+  readWindow,
+  toPhotoRef,
+  type PhotoVariant,
+} from './photo-urls.js';
 import {
   EXT_BY_TYPE,
   LocalStorage,
   S3Storage,
+  contentTypeForKey,
+  isSafeKey,
   type ImageType,
   type Storage,
 } from './storage.js';
@@ -41,7 +52,6 @@ export function createStorageFromEnv(): Storage {
       secretAccessKey: env.S3_SECRET_ACCESS_KEY,
       endpoint: env.S3_ENDPOINT,
       region: env.S3_REGION,
-      publicUrl: env.S3_PUBLIC_URL,
     });
   }
   return new LocalStorage(resolve(process.cwd(), 'uploads'));
@@ -55,6 +65,14 @@ const SHARP_FORMAT: Record<ImageType, string> = {
 
 export const thumbKeyFor = (photoId: string) => `thumbs/${photoId}.webp`;
 
+/** What GET /media/photos/:id[/thumb] answers with, once access is checked. */
+export type PhotoRead =
+  | { kind: 'redirect'; url: string; cacheControl: string }
+  | { kind: 'file'; path: string; contentType: string; cacheControl: string };
+
+/** Unapproved photos are per person: never stored by the browser or any shared cache. */
+export const PRIVATE_CACHE_CONTROL = 'private, no-store';
+
 @Injectable()
 export class MediaService {
   private readonly log = new Logger(MediaService.name);
@@ -66,10 +84,6 @@ export class MediaService {
 
   get isLocal(): boolean {
     return this.storage.kind === 'local';
-  }
-
-  publicUrl(key: string): string {
-    return this.storage.publicUrl(key);
   }
 
   async deleteObject(key: string): Promise<void> {
@@ -198,12 +212,59 @@ export class MediaService {
       where: { id: photo.id },
       data: {
         key: finalKey,
-        url: this.storage.publicUrl(finalKey),
-        thumbUrl: this.storage.publicUrl(thumbKey),
+        // Stable API paths, not bucket URLs (the bucket is private). Readers derive these from the
+        // id anyway (toPhotoRef); thumbUrl being set is what says a thumbnail exists.
+        url: photoPath(photo.id),
+        thumbUrl: photoPath(photo.id, 'thumb'),
         confirmed: true,
       },
     });
     return toPhotoRef(updated);
+  }
+
+  /**
+   * Access check plus a read target for one photo. 404 (never 403) for anything the viewer may not
+   * see, so ids of unapproved photos are not confirmed to strangers.
+   *
+   * Approved photos: the redirect may be cached by browsers and the CDN until the signing window
+   * ends (public, the same for everyone). Unapproved: `private, no-store` and a shorter window.
+   */
+  async readPhoto(viewer: User | null, photoId: string, variant: PhotoVariant, now = Date.now()): Promise<PhotoRead> {
+    const photo = await this.prisma.photo.findUnique({
+      where: { id: photoId },
+      select: {
+        id: true,
+        key: true,
+        thumbUrl: true,
+        confirmed: true,
+        approved: true,
+        uploadedById: true,
+        submission: { select: { state: true, resolution: true } },
+      },
+    });
+    if (!photo || !canViewPhoto(photo, viewer)) throw new NotFoundException('Photo not found');
+    if (variant === 'thumb' && !photo.thumbUrl) throw new NotFoundException('Photo not found');
+    const key = variant === 'thumb' ? thumbKeyFor(photo.id) : photo.key;
+    // Only processed objects are ever readable; tmp/ (raw uploads) and foreign keys never are.
+    if (!isSafeKey(key) || !(key.startsWith('photos/') || key.startsWith('thumbs/'))) {
+      throw new NotFoundException('Photo not found');
+    }
+
+    const win = readWindow(now, photo.approved ? PUBLIC_READ_WINDOW_S : PRIVATE_READ_WINDOW_S);
+    const cacheControl = photo.approved
+      ? `public, max-age=${win.maxAgeS}, s-maxage=${win.maxAgeS}`
+      : PRIVATE_CACHE_CONTROL;
+
+    if (this.storage instanceof LocalStorage) {
+      return {
+        kind: 'file',
+        path: this.storage.path(key),
+        contentType: contentTypeForKey(key) ?? 'application/octet-stream',
+        cacheControl,
+      };
+    }
+    const url = await this.storage.presignGet(key, win.expiresInS, win.signedAt);
+    return { kind: 'redirect', url, cacheControl };
   }
 
   private async discardTmp(key: string) {
@@ -213,8 +274,4 @@ export class MediaService {
       this.log.warn(`Failed to delete ${key}: ${(e as Error).message}`);
     }
   }
-}
-
-export function toPhotoRef(p: Pick<Photo, 'id' | 'url' | 'thumbUrl'>): PhotoRef {
-  return { id: p.id, url: p.url, thumbUrl: p.thumbUrl };
 }

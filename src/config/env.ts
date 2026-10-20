@@ -25,8 +25,8 @@ const EnvSchema = z.object({
   ONEMAP_PASSWORD: optional,
   S3_ENDPOINT: optional,
   S3_REGION: z.string().default('auto'),
+  /** Private bucket: photos are read through presigned GETs from GET /media/photos/:id (no public URL). */
   S3_BUCKET: optional,
-  S3_PUBLIC_URL: optional,
   S3_ACCESS_KEY_ID: optional,
   S3_SECRET_ACCESS_KEY: optional,
   ADMIN_EMAILS: z

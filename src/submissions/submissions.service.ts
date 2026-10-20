@@ -47,6 +47,7 @@ import {
 } from './resolution.js';
 import { resolutionOf } from './resolution-codes.js';
 import { advisoryLock } from '../common/locks.js';
+import { toPhotoRef } from '../media/photo-urls.js';
 import {
   EditToiletPayloadSchema,
   SubmissionPayloadSchema,
@@ -90,7 +91,7 @@ function viewInclude() {
     },
     photos: {
       where: { confirmed: true },
-      select: { id: true, url: true, thumbUrl: true, approved: true },
+      select: { id: true, thumbUrl: true, approved: true },
       orderBy: { createdAt: 'asc' },
     },
   } satisfies Prisma.SubmissionInclude;
@@ -238,7 +239,7 @@ export class SubmissionsService {
       myVote,
       photos: row.photos
         .filter((p) => p.approved || seesUnapproved)
-        .map((p) => ({ id: p.id, url: p.url, thumbUrl: p.thumbUrl })),
+        .map(toPhotoRef),
       canVote: open && row.resolution !== 'escalated_flagged' && row.submittedById !== me.id && myVote === null,
     };
   }

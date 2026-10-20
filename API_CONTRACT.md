@@ -328,7 +328,9 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   The Photo row is created up front (`confirmed=false`, `approved=false`). Upload key `tmp/<userId>/<photoId>.<ext>`; presigned URL valid 10 min; send the returned `headers`.
 - `PUT /media/:id/upload` (auth, dev fallback only) raw body, `Content-Type` must equal the presigned type (415 otherwise), max 5 MB (413). 204. 404 when S3/R2 is configured.
 - `POST /media/:id/confirm` (auth, own photo else 404) → `PhotoRef`. Idempotent. Verifies the object exists (400 if not uploaded), size <= 5 MB (413), and that the bytes really are the declared image type (400). Re-encodes the image (auto-rotate, EXIF/GPS stripped) to `photos/<id>.<ext>`, writes a 400px-wide webp thumb to `thumbs/<id>.webp`, deletes the tmp object. Photos still need moderation (`approved=false`).
-- `GET /media/files/*` (dev fallback only) serves local `photos/` and `thumbs/`; URLs are returned as `/api/media/files/<key>`.
+- `GET /media/photos/:id` and `GET /media/photos/:id/thumb` (optional auth): photo reads. The bucket is private, so every `PhotoRef.url` / `thumbUrl` (and `photoThumb`) is one of these paths, `/api/media/photos/<id>[/thumb]` through the frontend rewrite, never a bucket URL; they are stable and safe to cache in JSON.
+  Approved photos: anyone. Not yet approved: the uploader, TRUSTED+, and any signed-in user while the photo's submission is open and not `escalated_flagged` (the same rule as `SubmissionView.photos`). Unconfirmed uploads (`tmp/`), unknown ids, or no thumbnail: 404 (never 403).
+  With R2/S3: `302` to a presigned GET on the S3 endpoint. Approved: signed for a fixed 1 h window (valid 2 h), `Cache-Control: public, max-age=<rest of the window>, s-maxage=<same>`. Unapproved: 5 min window (valid 10 min), `Cache-Control: private, no-store`. Local dev storage: `200` with the file, same access rules and `Cache-Control`. Throttle 600/min.
 
 ### Submissions (owner: contributions agent)
 - `POST /submissions` (auth) `{ kind, toiletId?, lat?, lng?, payload, force?: boolean }` → 201 `SubmissionView`. `lat/lng` = where the submitter stands.
