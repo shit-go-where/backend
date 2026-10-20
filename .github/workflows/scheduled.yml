@@ -50,6 +50,7 @@ on:
           - weekly-osm
           - monthly-imports
           - seed
+          - levels-backfill
 
 permissions:
   contents: read
@@ -281,6 +282,37 @@ jobs:
         run: pnpm prisma migrate deploy
       - name: Load the full dataset from committed files
         run: pnpm cli all --offline
+
+  levels-backfill:
+    # One-off after the level_order migration (README "Levels"): normalises non-OSM levels and
+    # fills Toilet.levelOrder. Idempotent. Run weekly-osm afterwards to rewrite OSM floor numbers.
+    if: inputs.job == 'levels-backfill'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: sgw-imports
+      cancel-in-progress: false
+    env: *cli-env
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Resolve pnpm version
+        id: pnpm-version
+        run: |
+          node -p "'version=' + (require('./package.json').packageManager ? '' : '12.14.0')" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+        with:
+          version: ${{ steps.pnpm-version.outputs.version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check the database secret
+        run: test -n "$DIRECT_URL" || { echo "::error::secrets.DIRECT_URL is not set"; exit 1; }
+      - name: Normalise levels and fill levelOrder
+        run: pnpm cli levels:backfill
 
   monthly-gate:
     if: github.event.schedule == '0 21 28-31 * *' || inputs.job == 'monthly-imports'
