@@ -17,6 +17,7 @@ import {
 } from '../generated/prisma/enums.js';
 import { hasRole } from '../common/auth/auth.guard.js';
 import { MediaService } from '../media/media.service.js';
+import { toPhotoRef } from '../media/photo-urls.js';
 import { recomputeAllScores } from '../toilets/scoring.js';
 import { MetricsService } from '../metrics/metrics.service.js';
 import type { JobName } from './admin.dto.js';
@@ -87,9 +88,7 @@ export class AdminService {
     });
     return {
       items: photos.map((p) => ({
-        id: p.id,
-        url: p.url,
-        thumbUrl: p.thumbUrl,
+        ...toPhotoRef(p),
         createdAt: p.createdAt.toISOString(),
         toiletId: p.toiletId,
         submissionId: p.submissionId,

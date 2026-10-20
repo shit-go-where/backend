@@ -7,6 +7,7 @@ import { isOpenAt, type OpeningHours } from '../common/opening-hours.js';
 import { countedReports } from '../status/unconfirmed.js';
 import type { Review, ToiletDetail, ToiletPin, ToiletSummary } from './toilet.schemas.js';
 import { nearText } from './near.js';
+import { photoThumbPath, toPhotoRef } from '../media/photo-urls.js';
 
 /** Prisma include needed to build a ToiletSummary. Depends on `now` for unexpired status reports. */
 export function summaryInclude(now: Date) {
@@ -26,7 +27,7 @@ export function summaryInclude(now: Date) {
       where: { approved: true },
       orderBy: { createdAt: 'desc' },
       take: 1,
-      select: { url: true, thumbUrl: true },
+      select: { id: true, thumbUrl: true },
     },
   } satisfies Prisma.ToiletInclude;
 }
@@ -37,7 +38,7 @@ export type ToiletWithSummary = Prisma.ToiletGetPayload<{
 
 const reviewInclude = {
   user: { select: { handle: true } },
-  photos: { select: { id: true, url: true, thumbUrl: true, approved: true } },
+  photos: { select: { id: true, thumbUrl: true, approved: true } },
 } satisfies Prisma.ReviewInclude;
 
 export type ReviewWithRelations = Prisma.ReviewGetPayload<{ include: typeof reviewInclude }>;
@@ -150,7 +151,7 @@ export class ToiletPresenter {
       lastVerifiedAt: t.lastVerifiedAt?.toISOString() ?? null,
       needsResurvey: t.needsResurvey,
       openNow: isOpenAt(ToiletPresenter.effectiveHours(t), now),
-      photoThumb: photo ? (photo.thumbUrl ?? photo.url) : null,
+      photoThumb: photo ? photoThumbPath(photo) : null,
     };
     if (origin) {
       const d = haversineM(origin, { lat: t.latitude, lng: t.longitude });
@@ -194,7 +195,7 @@ export class ToiletPresenter {
       user: { handle: r.user.handle, avatarUrl: null },
       photos: r.photos
         .filter((p) => includeUnapproved || p.approved)
-        .map((p) => ({ id: p.id, url: p.url, thumbUrl: p.thumbUrl })),
+        .map(toPhotoRef),
     };
   }
 
@@ -210,7 +211,7 @@ export class ToiletPresenter {
           where: { approved: true },
           orderBy: { createdAt: 'desc' },
           take: 50,
-          select: { id: true, url: true, thumbUrl: true },
+          select: { id: true, thumbUrl: true },
         },
         reviews: { orderBy: { createdAt: 'desc' }, take: 10, include: reviewInclude },
         _count: { select: { surveys: true } },
@@ -277,7 +278,7 @@ export class ToiletPresenter {
         : null,
       surveyCount: t._count.surveys,
       reviews: t.reviews.map((r) => this.toReview(r)),
-      photos: t.photos,
+      photos: t.photos.map(toPhotoRef),
       myReview: mine ? this.toReview(mine, true) : null,
       verifiedBy:
         t.lastVerifiedBy?.handle && t.lastVerifiedBy.verifierCredit && !t.lastVerifiedBy.deletedAt

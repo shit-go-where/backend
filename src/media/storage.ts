@@ -14,16 +14,23 @@ export interface ObjectHead {
   contentType: string | undefined;
 }
 
-/** Minimal object-store surface used by MediaService. Keys look like `photos/<id>.jpg`. */
+/**
+ * Minimal object-store surface used by MediaService. Keys look like `photos/<id>.jpg`.
+ * The bucket is private: nothing is readable without a presigned URL (see photo-urls.ts).
+ */
 export interface Storage {
   readonly kind: 's3' | 'local';
   /** `size`, when given, is signed into the URL: the upload must be exactly that many bytes. */
   presignPut(key: string, contentType: string, expiresInS: number, size?: number): Promise<string>;
+  /**
+   * Presigned GET. `signedAt` (default now) pins the signature's timestamp, so the same key,
+   * window and expiry always produce the same URL.
+   */
+  presignGet(key: string, expiresInS: number, signedAt?: Date): Promise<string>;
   head(key: string): Promise<ObjectHead | null>;
   get(key: string): Promise<Buffer>;
   put(key: string, body: Buffer, contentType: string): Promise<void>;
   delete(key: string): Promise<void>;
-  publicUrl(key: string): string;
 }
 
 export interface S3Config {
@@ -32,10 +39,14 @@ export interface S3Config {
   secretAccessKey: string;
   endpoint?: string;
   region: string;
-  publicUrl?: string;
 }
 
-const CACHE_IMMUTABLE = 'public, max-age=31536000, immutable';
+/**
+ * Sent back on presigned GETs. The bytes under a key never change, but each signed URL is only
+ * handed out for one read window (photo-urls.ts), so a day is plenty; `private` keeps shared
+ * caches from storing a photo that may not be approved yet.
+ */
+const CACHE_OBJECT = 'private, max-age=86400, immutable';
 
 export class S3Storage implements Storage {
   readonly kind = 's3' as const;
@@ -48,6 +59,9 @@ export class S3Storage implements Storage {
       endpoint: cfg.endpoint,
       forcePathStyle: Boolean(cfg.endpoint),
       credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
+      // Otherwise every presigned GET carries `x-amz-checksum-mode=ENABLED`; a browser <img> has no
+      // use for it. Uploads are unchanged (request checksums keep the SDK default).
+      responseChecksumValidation: 'WHEN_REQUIRED',
     });
   }
 
@@ -62,6 +76,13 @@ export class S3Storage implements Storage {
     return getSignedUrl(this.client, cmd, {
       expiresIn: expiresInS,
       signableHeaders: new Set(size !== undefined ? ['content-type', 'content-length'] : ['content-type']),
+    });
+  }
+
+  presignGet(key: string, expiresInS: number, signedAt?: Date): Promise<string> {
+    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.cfg.bucket, Key: key }), {
+      expiresIn: expiresInS,
+      ...(signedAt ? { signingDate: signedAt } : {}),
     });
   }
 
@@ -89,19 +110,13 @@ export class S3Storage implements Storage {
         Key: key,
         Body: body,
         ContentType: contentType,
-        CacheControl: CACHE_IMMUTABLE,
+        CacheControl: CACHE_OBJECT,
       }),
     );
   }
 
   async delete(key: string): Promise<void> {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.cfg.bucket, Key: key }));
-  }
-
-  publicUrl(key: string): string {
-    if (this.cfg.publicUrl) return `${this.cfg.publicUrl.replace(/\/$/, '')}/${key}`;
-    const ep = (this.cfg.endpoint ?? `https://s3.${this.cfg.region}.amazonaws.com`).replace(/\/$/, '');
-    return `${ep}/${this.cfg.bucket}/${key}`;
   }
 }
 
@@ -112,7 +127,7 @@ export function isSafeKey(key: string): boolean {
   return SAFE_KEY.test(key);
 }
 
-/** Dev fallback: files under backend/uploads, served by the API at /media/files/<key>. */
+/** Dev fallback: files under backend/uploads, streamed by the API's photo read route. */
 export class LocalStorage implements Storage {
   readonly kind = 'local' as const;
   readonly root: string;
@@ -129,6 +144,10 @@ export class LocalStorage implements Storage {
   }
 
   presignPut(key: string): Promise<string> {
+    throw new Error(`LocalStorage cannot presign ${key}`);
+  }
+
+  presignGet(key: string): Promise<string> {
     throw new Error(`LocalStorage cannot presign ${key}`);
   }
 
@@ -154,11 +173,6 @@ export class LocalStorage implements Storage {
 
   async delete(key: string): Promise<void> {
     await rm(this.path(key), { force: true });
-  }
-
-  publicUrl(key: string): string {
-    // Through the Next /api rewrite.
-    return `/api/media/files/${key}`;
   }
 }
 

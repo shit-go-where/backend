@@ -111,8 +111,7 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | `ONEMAP_EMAIL` / `ONEMAP_PASSWORD` | for routing + geocoding | empty | OneMap account |
 | `S3_ENDPOINT` | for photos | empty | `https://<account-id>.r2.cloudflarestorage.com` (omit for AWS S3) |
 | `S3_REGION` | no | `auto` | `auto` (R2) |
-| `S3_BUCKET` | for photos | empty | photo bucket name |
-| `S3_PUBLIC_URL` | for photos | empty | bucket public URL (`https://pub-<hash>.r2.dev`) or custom domain |
+| `S3_BUCKET` | for photos | empty | photo bucket name; **private** (photos are read through `GET /media/photos/:id`, which redirects to a presigned GET) |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | for photos | empty | R2 API token scoped to the photo bucket |
 | `ADMIN_EMAILS` | no | `you@example.com` | comma-separated; promoted to ADMIN at **every** login (removing an address does not demote; see RUNBOOKS 8) |
 | `CRON_SECRET` | for `/admin/jobs/*` | `change-me` | random; same value as the GitHub secret |
@@ -230,9 +229,18 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
 
 ### Cloudflare R2
 
-1. Photo bucket (e.g. `sgw-photos`, location hint APAC).
-   - Settings -> Public access -> enable the `r2.dev` subdomain (or connect a custom domain);
-     its URL is `S3_PUBLIC_URL`.
+1. Photo bucket (e.g. `sgw-photos`, location hint APAC), **private**: no `r2.dev` subdomain and no
+   custom domain under Settings -> Public access.
+   - Nothing in the bucket has a public URL. Every `PhotoRef.url`/`thumbUrl` is an API path,
+     `/api/media/photos/<id>` and `/api/media/photos/<id>/thumb`, through the frontend's `/api`
+     rewrite. That route checks who may see the photo (approved: anyone; not yet approved: the
+     uploader, TRUSTED+, and signed-in reviewers of an open submission; raw `tmp/` uploads: nobody)
+     and answers 302 to a presigned GET on the S3 endpoint (`<account>.r2.cloudflarestorage.com`).
+     Approved photos are signed for a fixed one-hour window (valid two hours) and the redirect is
+     `public, max-age=<rest of the window>`, so browsers and the CDN cache it; unapproved ones get a
+     5-minute window and `private, no-store`. See `src/media/photo-urls.ts`.
+   - Local dev without S3 (`LocalStorage`, files under `uploads/`) uses the same route and access
+     rules; it streams the file instead of redirecting.
    - Object lifecycle rule: prefix `tmp/`, delete objects 7 days after upload.
    - CORS policy (presigned PUT from the browser):
      ```json
@@ -248,9 +256,12 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
      ```
      The browser PUTs straight to R2 from the **site's origin**, so the production domain must be in
      `AllowedOrigins` (add `https://www.` too if it serves content instead of redirecting). Without
-     it, every photo upload fails in the browser while the API looks healthy. The `r2.dev` address is
-     rate limited and meant for development; for launch connect a custom domain (for example
-     `photos.shitgowhere.com`) and set `S3_PUBLIC_URL` to it.
+     it, every photo upload fails in the browser while the API looks healthy. Photo reads are plain
+     `<img>` loads that follow a redirect, which needs no CORS.
+   - Moving an existing public bucket to private: deploy this code first and check photos load (their
+     URLs are `/api/media/photos/...` now; existing rows need no migration, the URLs are derived from
+     the photo id). Only then turn off Public access (disable `r2.dev`, disconnect the custom domain),
+     purge that domain's Cloudflare cache, and remove `S3_PUBLIC_URL` from Vercel (it is ignored).
    - The `tmp/` lifecycle rule is the only cleanup of abandoned uploads (the app removes `tmp/`
      objects it confirms or rejects, nothing else). Rows in `Photo` with `confirmed = false` are not
      purged by any job.
