@@ -71,7 +71,8 @@ jobs:
           project_id: ${{ vars.NEON_PROJECT_ID }}
           api_key: ${{ secrets.NEON_API_KEY }}
           branch_name: ${{ env.BRANCH_NAME }}
-          database: sgw
+          # The Vercel-managed Neon project uses Neon's defaults, not the local docker names.
+          database: neondb
           role: neondb_owner
 
       - name: Install
