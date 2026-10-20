@@ -134,7 +134,9 @@ To ship a hotfix anyway, put `[skip-ci-gate]` in the commit message (see README,
 
 ## 3. The migration ran but the deploy failed (forward-fix)
 
-`pnpm vercel-build` is `prisma generate && prisma migrate deploy && nest build && node dist/sync-badges.js`. The migration is
+`pnpm vercel-build` is `prisma generate`, then `prisma migrate deploy`, `nest build` and
+`node dist/sync-badges.js` (the database steps run through `scripts/vercel-migrate.mjs`, which skips
+them on Preview deployments without `PREVIEW_DB=1`). The migration is
 applied to the database *before* the app compiles. If `nest build` (or anything later) fails, Vercel
 keeps serving the previous deployment, now against the **new schema**. Nothing is half-applied
 inside the migration itself (each migration runs in a transaction, except statements Postgres
@@ -160,12 +162,14 @@ cannot run in one), but the database is ahead of the code.
 4. **Two builds at once** (two pushes in a row): Prisma holds an advisory lock while migrating, and a
    second build that cannot get it within about 10 seconds fails with `P1002`. Redeploy it from the
    dashboard when the first one finishes.
-5. **Never point a Preview deployment at the production database.** A preview build also runs
-   `migrate deploy`; with production `DIRECT_URL` in the Preview scope, an unmerged PR would migrate
-   production. Preview `DATABASE_URL`/`DIRECT_URL` must be a Neon branch (Neon's Vercel integration, or
-   `preview-db.yml`). Check Vercel -> API -> Settings -> Environment Variables: no variable named
-   `DATABASE_URL`, `DIRECT_URL` or `DATABASE_URL_UNPOOLED` should be ticked for *Preview* with the
-   production value.
+5. **Never point a Preview deployment at the production database.** A preview build only runs
+   `migrate deploy` and the badge sync when `PREVIEW_DB=1` is set for its git branch
+   (`scripts/vercel-migrate.mjs`), so a shared production `DIRECT_URL` in the Preview scope no longer
+   migrates production, but the preview's runtime still reads and writes it. Preview
+   `DATABASE_URL`/`DIRECT_URL` should be a Neon branch (Neon's Vercel integration, or
+   `preview-db.yml` with `VERCEL_TOKEN`). Check Vercel -> API -> Settings -> Environment Variables:
+   no variable named `DATABASE_URL`, `DIRECT_URL` or `DATABASE_URL_UNPOOLED` should be ticked for
+   *Preview* with the production value.
 6. **Prevent it:** keep migrations additive (expand, deploy, then contract in a later release);
    CI already fails when `schema.prisma` and the migrations disagree.
 

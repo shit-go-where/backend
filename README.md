@@ -53,7 +53,7 @@ use <http://localhost:3000>.
 | `pnpm db:sync-badges` | Upsert the badge definitions (`src/gamification/badges.ts`) into `Badge`; idempotent |
 | `pnpm db:reset` | Drop, re-migrate and re-seed the local DB |
 | `pnpm cli <command>` | Data pipeline, see below |
-| `pnpm vercel-build` | Vercel build: `prisma generate && prisma migrate deploy && nest build && node dist/sync-badges.js` |
+| `pnpm vercel-build` | Vercel build: `prisma generate`, `prisma migrate deploy`, `nest build`, `node dist/sync-badges.js`. The two database steps go through `scripts/vercel-migrate.mjs`, which skips them on a Preview deployment unless `PREVIEW_DB=1` (set per git branch by `preview-db.yml`) |
 
 ## Migration rules
 
@@ -195,7 +195,8 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
 
 - Import this repo; framework preset **NestJS**; root directory `/`.
 - `vercel.json` pins `regions: ["sin1"]`, `installCommand: pnpm install --frozen-lockfile` and
-  `buildCommand: pnpm vercel-build` (generate, migrate deploy, build, badge sync).
+  `buildCommand: pnpm vercel-build` (generate, migrate deploy, build, badge sync; the database steps
+  are skipped on a Preview deployment without `PREVIEW_DB=1`, see `scripts/vercel-migrate.mjs`).
 - Badge rows are synced at build time, not at boot: on Vercel (`VERCEL`/`VERCEL_ENV` set) a cold start
   runs no database query, so an uptime probe on `/health/live` never wakes Neon. Locally, in CI and
   in e2e the app still syncs badges when it starts.
@@ -213,11 +214,14 @@ The API is its own Vercel project. Full ordered checklist: [`../DEPLOY.md`](../D
 - Env vars per environment:
   - **Production**: everything in the table above with production values; `DATABASE_URL` /
     `DIRECT_URL` from the Neon `main` branch.
-  - **Preview**: same, except the database. **A Preview scope must never hold the production
-    `DATABASE_URL` / `DIRECT_URL`**: preview builds also run `prisma migrate deploy`, so an unmerged PR
-    would migrate production. (Neon's Vercel integration injects a per-branch
-    `DATABASE_URL` + `DATABASE_URL_UNPOOLED`; without the integration, `preview-db.yml` writes
-    branch-scoped `DATABASE_URL` / `DIRECT_URL`), and `PUBLIC_APP_URL` / `FRONTEND_ORIGIN` set
+  - **Preview**: same, except the database. **A Preview scope should not hold the production
+    `DATABASE_URL` / `DIRECT_URL`**: an unmerged PR's preview would then read and write production.
+    Migrations and the badge sync are the one guarded part: `scripts/vercel-migrate.mjs` skips both
+    on a Preview deployment unless `PREVIEW_DB=1` is set for that git branch, which `preview-db.yml`
+    does after creating the PR's own Neon branch and writing branch-scoped `DATABASE_URL` /
+    `DIRECT_URL` (needs `VERCEL_TOKEN`). Neon's Vercel integration can do the same with a per-branch
+    `DATABASE_URL` + `DATABASE_URL_UNPOOLED`; set `PREVIEW_DB=1` project-wide in that case. Also set
+    `PUBLIC_APP_URL` / `FRONTEND_ORIGIN`
     to the frontend preview alias if you want them right. Google login only works on origins
     registered in the OAuth client, so use production for login testing.
 - Deployment protection: Hobby protects preview URLs with Vercel Authentication. The frontend's

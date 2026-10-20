@@ -29,7 +29,7 @@
     "db:sync-badges": "tsx src/sync-badges.ts",
     "db:reset": "prisma migrate reset --force",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "vercel-build": "prisma generate && prisma migrate deploy && nest build && node dist/sync-badges.js",
+    "vercel-build": "prisma generate && node scripts/vercel-migrate.mjs prisma migrate deploy && nest build && node scripts/vercel-migrate.mjs node dist/sync-badges.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
