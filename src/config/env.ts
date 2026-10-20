@@ -50,7 +50,7 @@ const EnvSchema = z.object({
   SENTRY_DSN: optional,
   /** PostHog project key (GROWTH.md 0.1). Unset = no server-side analytics. */
   POSTHOG_KEY: optional,
-  POSTHOG_HOST: z.string().default('https://eu.i.posthog.com'),
+  POSTHOG_HOST: z.string().default('https://us.i.posthog.com'),
   /** Telegram bot (BOT.md). Unset = no bot and no webhook route. From BotFather. */
   TELEGRAM_BOT_TOKEN: optional,
   /** Random 32+ chars; Telegram sends it in X-Telegram-Bot-Api-Secret-Token on every webhook call. */

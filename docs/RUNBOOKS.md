@@ -23,7 +23,7 @@ dashboard that can change, it says so. Placeholders: `<api>` is the API's produc
 
 ```
 phone ──https──> Vercel project "frontend" (Next.js, sin1)
-                    │  /api/*  rewrite (server side)        /ingest/* ──> PostHog EU
+                    │  /api/*  rewrite (server side)        /ingest/* ──> PostHog US
                     ▼
                  Vercel project "api" (NestJS, one Fluid function, sin1) ──> OneMap, Telegram API
                     │ DATABASE_URL (Neon pooler)                         ──> R2 (photos, presigned PUT from the browser)

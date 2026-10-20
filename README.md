@@ -128,7 +128,7 @@ Validated at boot by `src/config/env.ts`; the app refuses to start on invalid co
 | `API_PROXY_SECRET` | recommended | empty | `openssl rand -hex 32`; the **same value** in the frontend project. The Next `/api` rewrite sends it with each phone's IP (`x-sgw-client-ip`); without it Vercel's proxy hides the client IP and every visitor shares one rate-limit bucket |
 | `DEV_LOGIN_ENABLED` | no | `true` | **unset** (boot fails if `true` in production) |
 | `SENTRY_DSN` | recommended | empty (Sentry off) | `sgw-backend` project DSN (Sentry org `shit-go-where`, US region `ingest.us.sentry.io`), set for Production and Preview. Unset = SDK never initialised, nothing sent (see Observability) |
-| `POSTHOG_KEY` / `POSTHOG_HOST` | no | empty / `https://eu.i.posthog.com` | PostHog EU project key for server-side events (check-ins, reports, ...). Unset = nothing is sent |
+| `POSTHOG_KEY` / `POSTHOG_HOST` | no | empty / `https://us.i.posthog.com` | PostHog project key (US cloud) for server-side events (check-ins, reports, ...). Unset = nothing is sent |
 | `TELEGRAM_BOT_TOKEN` | for the bot | empty (bot off) | BotFather token; unset = no bot, no webhook route |
 | `TELEGRAM_WEBHOOK_SECRET` | for the webhook | empty | 32+ random chars (`openssl rand -hex 32`) |
 | `TELEGRAM_BOT_USERNAME` | for links | empty | bot username without `@`; needed for `/me` "Connect Telegram" and group deep links |

@@ -472,7 +472,7 @@ All MODERATOR+ unless noted.
   (same anonymous guardrails as `sgw_anon`), linked chats act as the user. Analytics context `{ surface: 'telegram', source: 'telegram' }`.
 
 ### Analytics (GROWTH.md 0.1)
-- Server-side PostHog events, a no-op unless `POSTHOG_KEY` is set (`POSTHOG_HOST` defaults to the EU cloud). Events never block a response.
+- Server-side PostHog events, a no-op unless `POSTHOG_KEY` is set (`POSTHOG_HOST` defaults to the US cloud, where the production project lives). Events never block a response.
 - Optional request headers from the web app: `x-sgw-source` (first-touch utm_source, `[a-z0-9-]{1,40}`) and `x-sgw-distinct-id`
   (the browser's PostHog id, `[A-Za-z0-9$:._-]{1,100}`). Malformed values are ignored.
 - Distinct id: the user id when signed in; `tg:<hash>` for unlinked Telegram chats; else the browser's id; else `anon:<deviceId>`.
