@@ -40,6 +40,13 @@ const EnvSchema = z.object({
     ),
   CRON_SECRET: optional,
   DEV_LOGIN_ENABLED: bool,
+  /**
+   * Shared with the frontend. Vercel overwrites X-Forwarded-For on requests that arrive through
+   * another proxy, and the Next /api rewrite is one, so the API would otherwise see one Vercel IP
+   * for every phone. The frontend's proxy.ts sends `x-sgw-proxy-secret` and `x-sgw-client-ip`; when
+   * the secret matches, that IP keys the rate limits (src/common/throttle.ts). Unset = headers ignored.
+   */
+  API_PROXY_SECRET: optional,
   SENTRY_DSN: optional,
   /** PostHog project key (GROWTH.md 0.1). Unset = no server-side analytics. */
   POSTHOG_KEY: optional,

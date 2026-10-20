@@ -1,7 +1,8 @@
 import { HttpException, type ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { createSessionToken } from './auth/session.js';
-import { SkipThrottle, Throttle, ThrottleGuard, trackerFor, DEFAULT_LIMIT } from './throttle.js';
+import { env } from '../config/env.js';
+import { SkipThrottle, Throttle, ThrottleGuard, trackerFor, DEFAULT_LIMIT, clientIp, PROXY_CLIENT_IP_HEADER, PROXY_SECRET_HEADER } from './throttle.js';
 
 class Ctl {
   @Throttle({ default: { limit: 2, ttl: 60_000 } })
@@ -74,5 +75,55 @@ describe('trackerFor', () => {
 
   it('ignores a forged session cookie', () => {
     expect(trackerFor({ cookies: { sgw_session: 'abc.def' }, headers: {}, ip: '9.9.9.9' } as never)).toBe('ip:9.9.9.9');
+  });
+});
+
+describe('trusted proxy headers', () => {
+  const asReq = (headers: Record<string, string>, extra: Record<string, unknown> = {}) =>
+    ({ headers, cookies: {}, ip: '9.9.9.9', ...extra }) as unknown as import('express').Request;
+  let saved: string | undefined;
+  beforeEach(() => {
+    saved = env.API_PROXY_SECRET;
+    env.API_PROXY_SECRET = 'proxy-secret-for-tests';
+  });
+  afterEach(() => {
+    env.API_PROXY_SECRET = saved;
+  });
+
+  it('uses the forwarded client IP when the secret matches', () => {
+    const req = asReq({ [PROXY_SECRET_HEADER]: 'proxy-secret-for-tests', [PROXY_CLIENT_IP_HEADER]: '203.0.113.7', 'x-forwarded-for': '76.76.21.21' });
+    expect(clientIp(req)).toBe('203.0.113.7');
+    expect(trackerFor(req)).toBe('ip:203.0.113.7');
+  });
+
+  it('ignores the forwarded IP without the right secret', () => {
+    const wrong = asReq({ [PROXY_SECRET_HEADER]: 'nope', [PROXY_CLIENT_IP_HEADER]: '203.0.113.7', 'x-forwarded-for': '76.76.21.21' });
+    expect(clientIp(wrong)).toBe('76.76.21.21');
+    const none = asReq({ [PROXY_CLIENT_IP_HEADER]: '203.0.113.7', 'x-forwarded-for': '76.76.21.21' });
+    expect(clientIp(none)).toBe('76.76.21.21');
+  });
+
+  it('ignores the forwarded IP when the secret is unset', () => {
+    env.API_PROXY_SECRET = undefined;
+    const req = asReq({ [PROXY_SECRET_HEADER]: 'proxy-secret-for-tests', [PROXY_CLIENT_IP_HEADER]: '203.0.113.7', 'x-forwarded-for': '76.76.21.21' });
+    expect(clientIp(req)).toBe('76.76.21.21');
+  });
+
+  it('falls back to the proxy IP when the forwarded value is not an IP', () => {
+    const req = asReq({ [PROXY_SECRET_HEADER]: 'proxy-secret-for-tests', [PROXY_CLIENT_IP_HEADER]: 'not-an-ip', 'x-forwarded-for': '76.76.21.21' });
+    expect(clientIp(req)).toBe('76.76.21.21');
+  });
+
+  it('does not throttle a verified server-side render (secret, no client IP)', () => {
+    const guard = new ThrottleGuard(new Reflector());
+    const headers = { [PROXY_SECRET_HEADER]: 'proxy-secret-for-tests' };
+    expect(trackerFor(asReq(headers))).toBeNull();
+    for (let i = 0; i < 5; i++) expect(guard.canActivate(ctx('tight', { headers }).c)).toBe(true);
+  });
+
+  it('a signed-in user is still tracked by user id behind the proxy', () => {
+    const headers = { [PROXY_SECRET_HEADER]: 'proxy-secret-for-tests', [PROXY_CLIENT_IP_HEADER]: '203.0.113.7' };
+    const req = asReq(headers, { cookies: { sgw_session: createSessionToken('user-1') } });
+    expect(trackerFor(req)).toBe('u:user-1');
   });
 });

@@ -18,7 +18,10 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { timingSafeEqual } from 'node:crypto';
+import { isIP } from 'node:net';
 import type { Request, Response } from 'express';
+import { env } from '../config/env.js';
 import { SESSION_COOKIE, verifySessionToken } from './auth/session.js';
 
 export interface ThrottleLimit {
@@ -43,8 +46,37 @@ interface Window {
   resetAt: number;
 }
 
-/** The client IP as seen through Vercel's proxy. */
+export const PROXY_SECRET_HEADER = 'x-sgw-proxy-secret';
+export const PROXY_CLIENT_IP_HEADER = 'x-sgw-client-ip';
+
+function header(req: Request, name: string): string | undefined {
+  const v = req.headers[name];
+  return typeof v === 'string' && v.length > 0 ? v : undefined;
+}
+
+/**
+ * True when the request carries the frontend's proxy secret (API_PROXY_SECRET). Only then are the
+ * forwarded client-IP headers trusted: anyone can call the API origin directly and set headers.
+ */
+export function fromTrustedProxy(req: Request): boolean {
+  const secret = env.API_PROXY_SECRET;
+  const given = header(req, PROXY_SECRET_HEADER);
+  if (!secret || !given) return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(secret);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/**
+ * The client IP. Through the Next rewrite on Vercel, X-Forwarded-For is the frontend proxy's own
+ * address (Vercel overwrites it), so the frontend forwards the phone's IP in `x-sgw-client-ip`,
+ * trusted only with the proxy secret. Direct callers fall back to the proxy headers Vercel sets.
+ */
 export function clientIp(req: Request): string {
+  if (fromTrustedProxy(req)) {
+    const forwarded = header(req, PROXY_CLIENT_IP_HEADER)?.trim();
+    if (forwarded && isIP(forwarded)) return forwarded;
+  }
   const realIp = req.headers['x-real-ip'];
   const fwd = req.headers['x-forwarded-for'];
   return (
@@ -55,11 +87,17 @@ export function clientIp(req: Request): string {
   );
 }
 
-/** Client identity: signed-in user id, else the client IP. */
-export function trackerFor(req: Request): string {
+/**
+ * Client identity: signed-in user id, else the client IP. Null for a verified request from the
+ * frontend's own server (proxy secret, no client IP: a server-side render on behalf of nobody in
+ * particular), which the guard lets through: those share one egress IP and would otherwise exhaust
+ * every anonymous limit on their own.
+ */
+export function trackerFor(req: Request): string | null {
   const token = (req.cookies as Record<string, string> | undefined)?.[SESSION_COOKIE];
   const session = verifySessionToken(token);
   if (session) return `u:${session.uid}`;
+  if (fromTrustedProxy(req) && !header(req, PROXY_CLIENT_IP_HEADER)) return null;
   return `ip:${clientIp(req)}`;
 }
 
@@ -102,8 +140,10 @@ export class ThrottleGuard implements CanActivate {
 
     const req = ctx.switchToHttp().getRequest<Request>();
     const res = ctx.switchToHttp().getResponse<Response>();
+    const tracker = trackerFor(req);
+    if (tracker === null) return true;
     const route = `${ctx.getClass().name}.${ctx.getHandler().name}`;
-    const key = `${trackerFor(req)}|${route}`;
+    const key = `${tracker}|${route}`;
     const now = Date.now();
 
     let w = this.windows.get(key);
