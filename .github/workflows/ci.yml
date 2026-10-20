@@ -68,6 +68,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       # pnpm 12.14.0 until package.json#packageManager exists; then the action reads that
       # (passing both makes pnpm/action-setup fail).
@@ -126,3 +128,22 @@ jobs:
           path: openapi.json
           if-no-files-found: error
           retention-days: 30
+
+  # Informational: reports known vulnerabilities in production dependencies without blocking
+  # merges (advisories appear on their own schedule, not when a PR changes code). Read the log;
+  # fix high/critical ones the same week.
+  audit:
+    name: dependency audit (informational)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high
