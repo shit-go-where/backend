@@ -4,6 +4,7 @@ import { analyticsFromRequest, baseProps } from '../analytics/analytics.js';
 import type { Request } from 'express';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
+import { Throttle } from '../common/throttle.js';
 import type { User } from '../generated/prisma/client.js';
 import { AuthGuard, CurrentUser } from '../common/auth/auth.guard.js';
 import { ReviewsService } from './reviews.service.js';
@@ -25,6 +26,7 @@ export class ReviewsController {
 
   @Post()
   @UseGuards(AuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiCookieAuth('sgw_session')
   @ZodResponse({ status: 201, type: ReviewDto })
   async create(@Param('id') id: string, @Body() body: CreateReviewDto, @CurrentUser() user: User, @Req() req: Request) {

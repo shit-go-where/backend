@@ -33,6 +33,28 @@ export const CHECK_INS_PER_CHAT = 5;
 export const REPORTS_PER_CHAT = 10;
 
 
+/**
+ * Update ids seen recently, so a Telegram retry (sent when our 200 was slow or lost) is not handled
+ * twice: no duplicate replies, check-ins or reports. Bounded FIFO, in memory per instance: a retry
+ * normally lands on the same warm instance, and the services' own cooldowns cover the rest.
+ */
+export class RecentUpdates {
+  private readonly seen = new Set<number>();
+
+  constructor(private readonly max = 2_000) {}
+
+  /** True the first time an id is offered, false for a repeat. */
+  first(updateId: number): boolean {
+    if (this.seen.has(updateId)) return false;
+    this.seen.add(updateId);
+    if (this.seen.size > this.max) {
+      const oldest = this.seen.values().next().value;
+      if (oldest !== undefined) this.seen.delete(oldest);
+    }
+    return true;
+  }
+}
+
 export type LimitResult = { ok: true } | { ok: false; reason: 'minute' | 'day'; notify: boolean };
 
 /**
@@ -99,6 +121,7 @@ export class TelegramService {
   readonly bot: Bot<BotContext>;
   private readonly privateLimiter = new ChatLimiter(CHAT_LIMITS.private.perMinute, CHAT_LIMITS.private.perDay);
   private readonly groupLimiter = new ChatLimiter(CHAT_LIMITS.group.perMinute, CHAT_LIMITS.group.perDay);
+  private readonly recentUpdates = new RecentUpdates();
 
   constructor(
     prisma: PrismaService,
@@ -181,6 +204,7 @@ export class TelegramService {
 
   /** One webhook update. Resolves when every reply has been sent (Vercel freezes after the response). */
   async handleUpdate(update: Update): Promise<void> {
+    if (!this.recentUpdates.first(update.update_id)) return;
     if (!this.bot.isInited()) await this.bot.init();
     await this.bot.handleUpdate(update);
   }

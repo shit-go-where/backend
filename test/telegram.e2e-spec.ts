@@ -174,6 +174,13 @@ describe('Telegram bot (e2e)', () => {
     expect(calls).toEqual([]);
   });
 
+  it('handles a retried update (same update_id) only once', async () => {
+    const update = text(700_000_006, '/start');
+    expect(messages(await send(update))).toHaveLength(1);
+    // Telegram resends the same update when our 200 was slow or lost: still 200, nothing sent twice.
+    expect(await send(update)).toEqual([]);
+  });
+
   it('is not in the public API spec', async () => {
     const spec = await http().get('/openapi.json').expect(200);
     expect(Object.keys(spec.body.paths)).not.toContain('/integrations/telegram');

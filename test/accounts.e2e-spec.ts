@@ -262,6 +262,37 @@ describe('DELETE /me', () => {
     await ctx.prisma.checkIn.create({ data: { userId: me.id, toiletId: toilet.id, distanceM: 5 } });
     await ctx.prisma.pointsLedger.create({ data: { userId: me.id, delta: 1, reason: 'CHECK_IN', refId: 'x' } });
     const review = await ctx.prisma.review.create({ data: { toiletId: toilet.id, userId: me.id, cleanliness: 4 } });
+    // Where they stood, what they wrote on votes and flags (PDPA: removed with the account).
+    const sub = await ctx.prisma.submission.create({
+      data: {
+        kind: 'CLOSE_TOILET',
+        toiletId: toilet.id,
+        venueId: toilet.venueId,
+        payload: { status: 'CLOSED', reason: 'gone' },
+        submittedById: me.id,
+        submittedLat: 1.3001,
+        submittedLng: 103.8001,
+        expiresAt: new Date(Date.now() + 86_400_000),
+      },
+    });
+    const other = await login(ctx.server, email('del-other'));
+    const theirs = await ctx.prisma.submission.create({
+      data: {
+        kind: 'CLOSE_TOILET',
+        toiletId: toilet.id,
+        venueId: toilet.venueId,
+        payload: { status: 'CLOSED', reason: 'gone' },
+        submittedById: other.me.id,
+        expiresAt: new Date(Date.now() + 86_400_000),
+      },
+    });
+    await ctx.prisma.submissionVote.create({
+      data: { submissionId: theirs.id, userId: me.id, value: 'APPROVE', comment: 'I was here with my kid' },
+    });
+    const openFlag = await ctx.prisma.flag.create({ data: { toiletId: toilet.id, userId: me.id, reason: 'still open flag' } });
+    const doneFlag = await ctx.prisma.flag.create({
+      data: { toiletId: toilet.id, userId: me.id, reason: 'call me on 9123 4567', resolved: true },
+    });
 
     const withBadge = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
     expect(withBadge.body.badges).toEqual([expect.objectContaining({ id: badgeId, awardedAt: expect.any(String) })]);
@@ -284,6 +315,16 @@ describe('DELETE /me', () => {
     expect(await ctx.prisma.userBadge.count({ where: { userId: me.id } })).toBe(0);
     expect(await ctx.prisma.review.findUnique({ where: { id: review.id } })).not.toBeNull();
     expect(u.deletedAt).toBeInstanceOf(Date);
+    expect(await ctx.prisma.submission.findUniqueOrThrow({ where: { id: sub.id } })).toMatchObject({
+      submittedLat: null,
+      submittedLng: null,
+    });
+    const vote = await ctx.prisma.submissionVote.findFirstOrThrow({ where: { submissionId: theirs.id, userId: me.id } });
+    expect(vote).toMatchObject({ value: 'APPROVE', comment: null });
+    expect((await ctx.prisma.flag.findUniqueOrThrow({ where: { id: openFlag.id } })).reason).toBe('still open flag');
+    expect((await ctx.prisma.flag.findUniqueOrThrow({ where: { id: doneFlag.id } })).reason).toBe(
+      'Removed: the reporter deleted their account',
+    );
 
     // A cookie issued before deletion (e.g. on another device) no longer signs in.
     await request(ctx.server).get('/me').set('Cookie', cookie).expect(401);

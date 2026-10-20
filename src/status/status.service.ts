@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PointsService } from '../gamification/points.service.js';
 import type { StatusReportView } from '../toilets/toilet.schemas.js';
 import { isUnconfirmed } from './unconfirmed.js';
+import { sgtDayStart } from '../gamification/sgt.js';
 import { AnalyticsService } from '../analytics/analytics.service.js';
 import { WEB, baseProps, distinctIdFor, type AnalyticsContext } from '../analytics/analytics.js';
 
@@ -20,6 +21,12 @@ export const ANON_STATUS_TTL_MS = HOUR;
 export const DEDUPE_WINDOW_MS = 30 * 60_000;
 export const CONFIRM_EXTEND_MS = HOUR;
 export const CONFIRM_CAP_MS = 6 * HOUR;
+/**
+ * STATUS_CONFIRMED counts toward trust, so one confirmer can earn a given reporter it at most this
+ * many times per Singapore day. Without a cap two accounts (one reporting, one confirming) reached
+ * TRUSTED in a few minutes.
+ */
+export const CONFIRM_POINTS_PER_PAIR_PER_DAY = 1;
 
 export const ttlFor = (kind: StatusKind, anonymous = false) =>
   anonymous ? ANON_STATUS_TTL_MS : kind === 'CLOSED_NOW' ? CLOSED_TTL_MS : STATUS_TTL_MS;
@@ -128,7 +135,19 @@ export class StatusService {
         data: { confirmations: { increment: 1 }, expiresAt: extendedExpiry(fresh) },
       });
       // Anonymous reporters earn nothing here (their reports are merged on sign-in, confirmations aren't).
-      if (r.userId) await this.points.award(r.userId, 'STATUS_CONFIRMED', `${r.id}:${userId}`, { tx });
+      if (r.userId) {
+        const paidToday = await tx.pointsLedger.count({
+          where: {
+            userId: r.userId,
+            reason: 'STATUS_CONFIRMED',
+            refId: { endsWith: `:${userId}` },
+            createdAt: { gte: sgtDayStart(now) },
+          },
+        });
+        if (paidToday < CONFIRM_POINTS_PER_PAIR_PER_DAY) {
+          await this.points.award(r.userId, 'STATUS_CONFIRMED', `${r.id}:${userId}`, { tx });
+        }
+      }
       return u;
     });
     const others = await this.unexpired(r.toiletId, now);

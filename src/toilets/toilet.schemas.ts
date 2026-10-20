@@ -148,6 +148,7 @@ export const ReviewSchema = z
     cleanliness: z.number().int(),
     comment: z.string().nullable(),
     createdAt: z.string(),
+    /** `avatarUrl` is always null (kept for contract compatibility; profile pictures are not public). */
     user: z.object({ handle: z.string().nullable(), avatarUrl: z.string().nullable() }),
     photos: z.array(PhotoRefSchema),
   })

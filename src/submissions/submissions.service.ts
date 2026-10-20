@@ -10,6 +10,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { hasRole } from '../common/auth/auth.guard.js';
 import { PointsService } from '../gamification/points.service.js';
 import { GamificationService } from '../gamification/gamification.service.js';
 import { ToiletPresenter } from '../toilets/toilet-presenter.service.js';
@@ -18,6 +19,7 @@ import {
   AreaType,
   DataSource,
   Feature,
+  Role,
   SubmissionKind,
   SubmissionState,
   ToiletStatus,
@@ -43,6 +45,7 @@ import {
   stillNeeded,
 } from './resolution.js';
 import { resolutionOf } from './resolution-codes.js';
+import { advisoryLock } from '../common/locks.js';
 import {
   EditToiletPayloadSchema,
   SubmissionPayloadSchema,
@@ -86,7 +89,7 @@ function viewInclude() {
     },
     photos: {
       where: { confirmed: true },
-      select: { id: true, url: true, thumbUrl: true },
+      select: { id: true, url: true, thumbUrl: true, approved: true },
       orderBy: { createdAt: 'asc' },
     },
   } satisfies Prisma.SubmissionInclude;
@@ -156,6 +159,13 @@ export class SubmissionsService {
     const nearby = nearApprovals(row.votes);
     const at = row.submittedLat !== null && row.submittedLng !== null ? { lat: row.submittedLat, lng: row.submittedLng } : null;
     const { code, text } = resolutionOf(row.resolution, row.state);
+    // Reviewers need a pending submission's photos before anyone approved them. Once it is decided,
+    // or while a flagged one waits for a moderator, unapproved photos are only for the submitter
+    // and moderators: the id travels in shared /review links.
+    const seesUnapproved =
+      row.submittedById === me.id ||
+      hasRole(me, Role.MODERATOR) ||
+      (open && row.resolution !== 'escalated_flagged');
     return {
       id: row.id,
       kind: row.kind,
@@ -200,7 +210,9 @@ export class SubmissionsService {
       resolutionNote: row.resolutionNote,
       ...(from && t ? { distanceM: Math.round(haversineM(from, { lat: t.latitude, lng: t.longitude })) } : {}),
       myVote,
-      photos: row.photos,
+      photos: row.photos
+        .filter((p) => p.approved || seesUnapproved)
+        .map((p) => ({ id: p.id, url: p.url, thumbUrl: p.thumbUrl })),
       canVote: open && row.resolution !== 'escalated_flagged' && row.submittedById !== me.id && myVote === null,
     };
   }
@@ -283,13 +295,8 @@ export class SubmissionsService {
   /* ─────────────── create ─────────────── */
 
   async create(me: User, body: CreateSubmissionBody): Promise<SubmissionView> {
-    const open = await this.prisma.submission.count({ where: openSubmissionsWhere(me.id) });
-    if (open >= MAX_OPEN_SUBMISSIONS) {
-      throw new HttpException(
-        `You have ${open} submissions from the last 14 days still waiting; wait for some to be reviewed (max ${MAX_OPEN_SUBMISSIONS})`,
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
+    // Fail fast before the photo and venue lookups; re-checked under the lock in the transaction.
+    await this.assertOpenCap(this.prisma, me.id);
     const at = body.lat !== undefined && body.lng !== undefined ? { lat: body.lat, lng: body.lng } : null;
     let id: string;
     if (body.kind === 'NEW_TOILET') {
@@ -301,13 +308,33 @@ export class SubmissionsService {
     return this.get(id, me);
   }
 
+  /** 429 when the user already has MAX_OPEN_SUBMISSIONS open submissions from the last 14 days. */
+  private async assertOpenCap(db: Prisma.TransactionClient, userId: string) {
+    const open = await db.submission.count({ where: openSubmissionsWhere(userId) });
+    if (open >= MAX_OPEN_SUBMISSIONS) {
+      throw new HttpException(
+        `You have ${open} submissions from the last 14 days still waiting; wait for some to be reviewed (max ${MAX_OPEN_SUBMISSIONS})`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  /**
+   * Inside a create transaction: one submission at a time per person, then the caps again. Parallel
+   * requests used to pass the open-submission cap and the 3-a-day auto-publish cap together.
+   */
+  private async lockSubmitter(tx: Prisma.TransactionClient, userId: string) {
+    await advisoryLock(tx, `submission:user:${userId}`);
+    await this.assertOpenCap(tx, userId);
+  }
+
   /** Inputs to the auto-publish guardrails: today's auto-publishes and any rejection in the last 30 days. */
-  private async autoPublishHistory(userId: string, now: Date) {
+  private async autoPublishHistory(db: Prisma.TransactionClient, userId: string, now: Date) {
     const [autoPublishedToday, rejected] = await Promise.all([
-      this.prisma.submission.count({
+      db.submission.count({
         where: { submittedById: userId, autoPublished: true, createdAt: { gte: sgtDayStart(now) } },
       }),
-      this.prisma.submission.count({
+      db.submission.count({
         where: {
           submittedById: userId,
           state: SubmissionState.REJECTED,
@@ -392,9 +419,10 @@ export class SubmissionsService {
     // Trust model v2 (PLAN.md §12 E1): on site + photo goes live at once, within the guardrails.
     const onSite = at !== null && haversineM(at, here) <= NEAR_VOTE_M;
     const hasPhoto = photoIds.length > 0;
-    const autoPublished =
-      onSite && hasPhoto && shouldAutoPublish({ onSite, hasPhoto, ...(await this.autoPublishHistory(me.id, now)) });
-    const id = await this.prisma.$transaction(async (tx) => {
+    const { id, autoPublished } = await this.prisma.$transaction(async (tx) => {
+      await this.lockSubmitter(tx, me.id);
+      const autoPublished =
+        onSite && hasPhoto && shouldAutoPublish({ onSite, hasPhoto, ...(await this.autoPublishHistory(tx, me.id, now)) });
       if (!venueId) {
         const venue = await tx.venue.create({
           data: {
@@ -455,7 +483,7 @@ export class SubmissionsService {
       }
       await tx.photo.updateMany({ where: { id: { in: photoIds } }, data: { submissionId: submission.id, toiletId: toilet.id } });
       await tx.submission.update({ where: { id: submission.id }, data: { toiletId: toilet.id } });
-      return submission.id;
+      return { id: submission.id, autoPublished };
     });
     return { id, autoPublished };
   }
@@ -486,6 +514,7 @@ export class SubmissionsService {
     const photoIds = 'changes' in payload ? await this.assertPhotos(me.id, payload.photoIds ?? []) : [];
     const onSite = at !== null && haversineM(at, { lat: toilet.latitude, lng: toilet.longitude }) <= NEAR_VOTE_M;
     return this.prisma.$transaction(async (tx) => {
+      await this.lockSubmitter(tx, me.id);
       const submission = await tx.submission.create({
         data: {
           kind,

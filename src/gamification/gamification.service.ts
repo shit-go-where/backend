@@ -17,6 +17,7 @@ import { haversineM } from '../common/geo.js';
 import { BADGES, FOUNDING_BADGE_ID, MRT_LINES, earnedBadgeIds, type MrtLine } from './badges.js';
 import { rankWithTies } from './ranking.js';
 import { sgtDayStart } from './sgt.js';
+import { advisoryLock } from '../common/locks.js';
 import type { BadgeView, CheckInResult, Leaderboard } from './gamification.schemas.js';
 import { confirmByCheckIn, escalateIfFlagged } from '../submissions/resolution.js';
 import { AnalyticsService } from '../analytics/analytics.service.js';
@@ -197,15 +198,17 @@ export class GamificationService implements OnApplicationBootstrap {
     }
 
     const now = new Date();
-    const recent = await this.prisma.checkIn.findFirst({
-      where: { userId: user.id, toiletId, createdAt: { gt: new Date(now.getTime() - CHECK_IN_COOLDOWN_MS) } },
-      select: { id: true },
-    });
-    if (recent) {
-      throw new HttpException('You already checked in here in the last 2 hours', HttpStatus.TOO_MANY_REQUESTS);
-    }
-
     const { id, pointsAwarded, confirmation } = await this.prisma.$transaction(async (tx) => {
+      // One check-in at a time per person: parallel requests used to pass the cooldown and the
+      // daily point cap together (read committed) and each earn points.
+      await advisoryLock(tx, `check-in:user:${user.id}`);
+      const recent = await tx.checkIn.findFirst({
+        where: { userId: user.id, toiletId, createdAt: { gt: new Date(now.getTime() - CHECK_IN_COOLDOWN_MS) } },
+        select: { id: true },
+      });
+      if (recent) {
+        throw new HttpException('You already checked in here in the last 2 hours', HttpStatus.TOO_MANY_REQUESTS);
+      }
       const before = await tx.checkIn.count({ where: { userId: user.id, toiletId } });
       const checkIn = await tx.checkIn.create({ data: { userId: user.id, toiletId, distanceM } });
       // Seen by: each person's first check-in here (the submitter is already counted).
@@ -276,23 +279,27 @@ export class GamificationService implements OnApplicationBootstrap {
     }
     if (toilet.status !== ToiletStatus.ACTIVE) throw new BadRequestException('This toilet is not active');
     const now = new Date();
-    const [recent, today, here] = await Promise.all([
-      this.prisma.checkIn.count({
-        where: { deviceId, toiletId, createdAt: { gt: new Date(now.getTime() - CHECK_IN_COOLDOWN_MS) } },
-      }),
-      this.prisma.checkIn.count({ where: { deviceId, userId: null, createdAt: { gte: sgtDayStart(now) } } }),
-      this.prisma.checkIn.count({ where: { deviceId, userId: null, toiletId } }),
-    ]);
-    if (recent > 0) {
-      throw new HttpException('You already checked in here in the last 2 hours', HttpStatus.TOO_MANY_REQUESTS);
-    }
-    if (today >= ANON_CHECK_INS_PER_DAY) {
-      throw new HttpException(
-        `You can check in ${ANON_CHECK_INS_PER_DAY} times a day without signing in. Sign in to keep going.`,
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-    const checkIn = await this.prisma.checkIn.create({ data: { deviceId, toiletId, distanceM } });
+    const { checkIn, here } = await this.prisma.$transaction(async (tx) => {
+      // Same serialisation as signed-in check-ins, so parallel requests cannot beat the device caps.
+      await advisoryLock(tx, `check-in:device:${deviceId}`);
+      const [recent, today, here] = await Promise.all([
+        tx.checkIn.count({
+          where: { deviceId, toiletId, createdAt: { gt: new Date(now.getTime() - CHECK_IN_COOLDOWN_MS) } },
+        }),
+        tx.checkIn.count({ where: { deviceId, userId: null, createdAt: { gte: sgtDayStart(now) } } }),
+        tx.checkIn.count({ where: { deviceId, userId: null, toiletId } }),
+      ]);
+      if (recent > 0) {
+        throw new HttpException('You already checked in here in the last 2 hours', HttpStatus.TOO_MANY_REQUESTS);
+      }
+      if (today >= ANON_CHECK_INS_PER_DAY) {
+        throw new HttpException(
+          `You can check in ${ANON_CHECK_INS_PER_DAY} times a day without signing in. Sign in to keep going.`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      return { checkIn: await tx.checkIn.create({ data: { deviceId, toiletId, distanceM } }), here };
+    });
     // The daily cap on CHECK_IN points (5) is never hit here: the device itself is capped at 5 a day.
     const bankedPoints = POINTS.CHECK_IN + (here === 0 ? POINTS.FIRST_CHECK_IN_AT_TOILET : 0);
     this.analytics.track('checkin', distinctIdFor({ deviceId }, analytics), {
@@ -427,13 +434,14 @@ export class GamificationService implements OnApplicationBootstrap {
     });
     const users = await this.prisma.user.findMany({
       where: { id: { in: groups.map((g) => g.userId) } },
-      select: { id: true, handle: true, avatarUrl: true },
+      select: { id: true, handle: true },
     });
     const byId = new Map(users.map((u) => [u.id, u]));
     const items = rankWithTies(
       groups.flatMap((g) => {
         const u = byId.get(g.userId);
-        return u?.handle ? [{ handle: u.handle, avatarUrl: u.avatarUrl, points: g._sum.delta ?? 0 }] : [];
+        // avatarUrl is always null: profile pictures are not public (the field stays for the contract).
+        return u?.handle ? [{ handle: u.handle, avatarUrl: null, points: g._sum.delta ?? 0 }] : [];
       }),
     ).map(({ rank, handle, avatarUrl, points }) => ({ rank, handle, avatarUrl, points }));
     this.lbCache.set(scope, { at: Date.now(), items });
