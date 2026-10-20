@@ -5,9 +5,10 @@ import cookieParser from 'cookie-parser';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module.js';
 import { env } from './config/env.js';
+import { logLevels } from './observability/log-levels.js';
 
 export async function createApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'] });
+  const app = await NestFactory.create(AppModule, { logger: logLevels(env.NODE_ENV, process.env.VERCEL_ENV) });
   app.use(cookieParser());
   // In production the browser reaches the API through the Next /api rewrite (same origin),
   // so CORS only matters for local tools and Swagger UI.
