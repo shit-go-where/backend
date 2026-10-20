@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ThrottleGuard } from './common/throttle.js';
@@ -22,9 +23,12 @@ import { AnalyticsModule } from './analytics/analytics.module.js';
 import { StationsModule } from './stations/stations.module.js';
 import { MetricsModule } from './metrics/metrics.module.js';
 import { TelegramModule } from './integrations/telegram/telegram.module.js';
+import { SentryExceptionFilter } from './observability/sentry-exception.filter.js';
 
 @Module({
   imports: [
+    // Names each error after its route (GET /toilets/:id). Inert when Sentry is not initialised.
+    SentryModule.forRoot(),
     PrismaModule,
     AnalyticsModule,
     PointsModule,
@@ -47,6 +51,8 @@ import { TelegramModule } from './integrations/telegram/telegram.module.js';
   ],
   controllers: [HealthController],
   providers: [
+    // Reports 5xx and unexpected errors to Sentry (when SENTRY_DSN is set), then responds as usual.
+    { provide: APP_FILTER, useClass: SentryExceptionFilter },
     { provide: APP_PIPE, useClass: ZodValidationPipe },
     { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
     { provide: APP_GUARD, useClass: ThrottleGuard },

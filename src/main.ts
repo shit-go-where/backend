@@ -1,3 +1,5 @@
+// Must stay the first import: Sentry is set up before anything else loads (no-op without SENTRY_DSN).
+import './instrument.js';
 // Vercel's NestJS builder detects the entrypoint by this import; keep it.
 import '@nestjs/core';
 import { createApp } from './app.factory.js';
