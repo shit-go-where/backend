@@ -424,7 +424,13 @@ export class SubmissionsService {
       // Malls and stations have toilets on several floors at one spot: a second toilet at a place
       // someone picked needs its level, or the map can't tell them apart (the 409 guard can't either).
       if (p.venueId && !p.level && (await this.listedAt(tx, p.venueId)) > 0) {
-        throw new BadRequestException(LEVEL_NEEDED_MESSAGE);
+        throw new BadRequestException({
+          statusCode: 400,
+          error: 'Bad Request',
+          message: LEVEL_NEEDED_MESSAGE,
+          // The add wizard goes back to its level step on this, rather than matching the wording.
+          code: 'level_needed',
+        });
       }
       if (venueId && !force) {
         const dupes = await this.duplicatesAt(tx, venueId, here, p.level);

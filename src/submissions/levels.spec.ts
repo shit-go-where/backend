@@ -135,6 +135,7 @@ describe('NEW_TOILET level required at a place that already has toilets', () => 
     const err = await svc.create(me, newToilet({})).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(BadRequestException);
     expect((err as BadRequestException).message).toBe(LEVEL_NEEDED_MESSAGE);
+    expect((err as BadRequestException).getResponse()).toMatchObject({ code: 'level_needed' });
     expect(calls.created).toBe(false);
     expect(calls.checkedUnlocked).toBe(false);
   });

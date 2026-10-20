@@ -338,8 +338,10 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   nearest venue within 60 m, else creates a COMMUNITY venue (type OTHER, named after `label`).
   `payload.level` is normalised before it is stored (see "Levels"; 400 "level must name a floor, e.g. B1 or L3" when nothing
   is left of it). Level required: with an explicit `venueId` whose venue already has an ACTIVE or PENDING toilet, a missing
-  `level` → 400 "This place already has a toilet listed. Add the level (for example B1 or L3) so people can tell them apart."
-  (also with `force: true`). Optional otherwise (new places, snapped venues).
+  `level` → 400 `{ statusCode, error, message, code: "level_needed" }`, message "This place already has a toilet listed.
+  Add the level (for example B1 or L3) so people can tell them apart." (also with `force: true`). Checked under the
+  submitter's and the venue's locks, so two people adding at one place at once can't both skip it. Optional otherwise
+  (new places, snapped venues). `GET /venues/:id` lists the toilets this counts (ACTIVE and PENDING among them).
   Duplicate guard: an ACTIVE/PENDING toilet within 15 m at the same venue and same level → 409
   `{ statusCode, message, candidateIds: string[], candidates: ToiletSummary[] }`; resend with `force: true` to override.
   Levels are compared normalised ("1", "L1" and "Level 1" match; "B1; L3" matches "L3"); an unknown level matches any.

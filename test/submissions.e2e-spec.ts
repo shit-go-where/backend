@@ -414,6 +414,7 @@ describe('Submissions (e2e)', () => {
 
     // A second toilet at a place someone picked needs its level, forced or not.
     const missing = await newToilet(400, lev, offset(spot, 3), { venueId: mall });
+    expect(missing.body).toMatchObject({ statusCode: 400, code: 'level_needed' });
     expect(missing.body.message).toMatch(/Add the level/);
     await newToilet(400, lev, offset(spot, 3), { venueId: mall }, { force: true });
 
