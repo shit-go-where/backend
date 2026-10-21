@@ -31,14 +31,17 @@ else
   cleanup() { docker rm -f "$name" >/dev/null 2>&1 || true; }
   trap cleanup EXIT
   docker run -d --name "$name" -e POSTGRES_PASSWORD=restore-test "$image" >/dev/null
+  # The official image first runs a temporary server for initdb, then stops it and starts the real
+  # one. The temporary server listens on the Unix socket only (listen_addresses=''), so a socket
+  # check can pass on it and then fail during the restart. Checking over TCP only passes once the
+  # real server is up. The loop tolerates failures; the final check fails the script if it never
+  # came up.
+  ready() { docker exec "$name" pg_isready -h 127.0.0.1 -U postgres -d postgres >/dev/null 2>&1; }
   for _ in $(seq 1 60); do
-    docker exec "$name" pg_isready -U postgres -d postgres >/dev/null 2>&1 && break
+    ready && break
     sleep 1
   done
-  docker exec "$name" pg_isready -U postgres -d postgres >/dev/null
-  # The official image restarts once while initialising; wait for the second start to be ready.
-  sleep 3
-  docker exec "$name" pg_isready -U postgres -d postgres >/dev/null
+  ready || { echo "::error::throwaway Postgres did not become ready within 60 s"; docker logs "$name" 2>&1 | tail -n 20; exit 1; }
   psql_run() { docker exec -i "$name" psql -U postgres -d postgres -v ON_ERROR_STOP=1 "$@"; }
 fi
 
