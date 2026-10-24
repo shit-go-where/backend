@@ -6,6 +6,7 @@ import { ToiletPresenter, summaryInclude } from '../toilets/toilet-presenter.ser
 import type { ToiletSummary } from '../toilets/toilet.schemas.js';
 import type { AreaDetail, AreaSummary, AreaVenue } from './areas.dto.js';
 import { areaSlug, regionOf } from './regions.js';
+import { sexWhere, type SexPreference } from '../toilets/sex.js';
 
 /** Below this many ACTIVE toilets an area page renders but is kept out of search engines. */
 export const MIN_INDEXABLE_TOILETS = 3;
@@ -52,7 +53,8 @@ export class AreasService {
       .sort((x, y) => x.name.localeCompare(y.name));
   }
 
-  async detail(slug: string, now = new Date()): Promise<AreaDetail> {
+  /** `sex` keeps only toilets usable by that sex, in the lists and the counts alike. */
+  async detail(slug: string, sex?: SexPreference, now = new Date()): Promise<AreaDetail> {
     const name = await this.resolve(slug);
     if (!name) throw new NotFoundException('Area not found');
     const inArea = { planningArea: { equals: name, mode: 'insensitive' as const } };
@@ -62,6 +64,7 @@ export class AreasService {
         where: {
           status: { in: ['ACTIVE', 'CLOSED', 'RENOVATION', 'PENDING'] },
           venue: { ...inArea, toiletStatus: { not: 'NONE' } },
+          ...(sex ? sexWhere(sex) : {}),
         },
         include: summaryInclude(now),
       }),

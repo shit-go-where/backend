@@ -709,6 +709,14 @@
             }
           },
           {
+            "name": "sex",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SexPreference"
+            }
+          },
+          {
             "name": "openNow",
             "required": false,
             "in": "query",
@@ -831,6 +839,14 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/AreaType"
+            }
+          },
+          {
+            "name": "sex",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SexPreference"
             }
           },
           {
@@ -2274,6 +2290,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sex",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SexPreference"
+            }
           }
         ],
         "responses": {
@@ -2324,6 +2348,14 @@
             "in": "path",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sex",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SexPreference"
             }
           }
         ],
@@ -3321,6 +3353,16 @@
               "$ref": "#/components/schemas/Feature_Output"
             }
           },
+          "sex": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sex_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "scoreCleanliness": {
             "type": [
               "number",
@@ -3394,6 +3436,7 @@
           "tier",
           "status",
           "features",
+          "sex",
           "scoreCleanliness",
           "surveyTotal",
           "rasStars",
@@ -3467,6 +3510,14 @@
           "MIRROR",
           "WATER_REFILL",
           "ABLUTION"
+        ]
+      },
+      "Sex_Output": {
+        "type": "string",
+        "enum": [
+          "MALE",
+          "FEMALE",
+          "UNISEX"
         ]
       },
       "ActiveStatus_Output": {
@@ -3641,6 +3692,16 @@
               "number",
               "null"
             ]
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sex_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3654,7 +3715,8 @@
           "venueType",
           "venueId",
           "level",
-          "levelOrder"
+          "levelOrder",
+          "sex"
         ],
         "additionalProperties": false
       },
@@ -3789,36 +3851,43 @@
           "surveyedAt": {
             "type": "string"
           },
-          "phase": {
-            "type": [
-              "string",
-              "null"
+          "rubric": {
+            "$ref": "#/components/schemas/SurveyRubric_Output"
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sex_Output"
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "cleanliness": {
             "type": "number"
           },
-          "scent": {
-            "type": "number"
-          },
-          "aesthetics": {
-            "type": "number"
-          },
-          "music": {
-            "type": "number"
-          },
-          "toiletries": {
-            "type": "number"
-          },
-          "facilities": {
-            "type": "number"
-          },
           "total": {
-            "type": "number"
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "totalMax": {
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "rasStars": {
             "type": [
               "number",
+              "null"
+            ]
+          },
+          "phase": {
+            "type": [
+              "string",
               "null"
             ]
           },
@@ -3827,21 +3896,123 @@
               "string",
               "null"
             ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/SurveyScaleItem_Output"
+                },
+                {
+                  "$ref": "#/components/schemas/SurveyChecklistItem_Output"
+                }
+              ]
+            }
           }
         },
         "required": [
           "id",
           "surveyedAt",
-          "phase",
+          "rubric",
+          "sex",
           "cleanliness",
-          "scent",
-          "aesthetics",
-          "music",
-          "toiletries",
-          "facilities",
           "total",
+          "totalMax",
           "rasStars",
-          "remarks"
+          "phase",
+          "remarks",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "SurveyRubric_Output": {
+        "type": "string",
+        "enum": [
+          "PILOT_50",
+          "EXPANDED_2024"
+        ]
+      },
+      "SurveyScaleItem_Output": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "scale"
+          },
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "min": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "kind",
+          "key",
+          "label",
+          "value",
+          "min",
+          "max"
+        ],
+        "additionalProperties": false
+      },
+      "SurveyChecklistItem_Output": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "checklist"
+          },
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "kind",
+          "key",
+          "label",
+          "checked",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "SurveyDate_Output": {
+        "type": "object",
+        "properties": {
+          "surveyedAt": {
+            "type": "string"
+          },
+          "rubric": {
+            "$ref": "#/components/schemas/SurveyRubric_Output"
+          }
+        },
+        "required": [
+          "surveyedAt",
+          "rubric"
         ],
         "additionalProperties": false
       },
@@ -3953,6 +4124,16 @@
           },
           "status": {
             "$ref": "#/components/schemas/ToiletStatus_Output"
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sex_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3960,7 +4141,8 @@
           "label",
           "level",
           "levelOrder",
-          "status"
+          "status",
+          "sex"
         ],
         "additionalProperties": false
       },
@@ -4070,6 +4252,16 @@
             "items": {
               "$ref": "#/components/schemas/Feature_Output"
             }
+          },
+          "sex": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Sex_Output"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "scoreCleanliness": {
             "anyOf": [
@@ -4248,6 +4440,12 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "surveys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SurveyDate_Output"
+            }
+          },
           "reviews": {
             "type": "array",
             "items": {
@@ -4320,6 +4518,7 @@
           "tier",
           "status",
           "features",
+          "sex",
           "scoreCleanliness",
           "surveyTotal",
           "rasStars",
@@ -4338,6 +4537,7 @@
           "featureDetails",
           "latestSurvey",
           "surveyCount",
+          "surveys",
           "reviews",
           "photos",
           "myReview",
@@ -4470,6 +4670,13 @@
           "UNKNOWN"
         ]
       },
+      "SexPreference": {
+        "type": "string",
+        "enum": [
+          "MALE",
+          "FEMALE"
+        ]
+      },
       "RecommendBodyDto": {
         "type": "object",
         "properties": {
@@ -4498,6 +4705,9 @@
           },
           "areaType": {
             "$ref": "#/components/schemas/AreaType"
+          },
+          "sex": {
+            "$ref": "#/components/schemas/SexPreference"
           },
           "openNow": {
             "type": "boolean"
@@ -8346,6 +8556,7 @@
                   "type": "string",
                   "enum": [
                     "FIELDWORK_2024",
+                    "FIELDWORK_2024_EXPANDED",
                     "OSM",
                     "ONEMAP",
                     "DATAGOV",

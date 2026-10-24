@@ -8,6 +8,7 @@ import { inSingapore, PointIndex } from '../lib/geo.js';
 import { politeFetch, type CacheMode } from '../lib/http.js';
 import { toJson, type RunCounts } from '../lib/importRun.js';
 import { levelFields } from '../../common/level.js';
+import { FIELDWORK_SOURCES, isFieldwork } from '../../common/sources.js';
 import { paths } from '../lib/paths.js';
 import { stableStringify, syncFeatures, tally, type FeatureWant } from '../seed/fieldwork.js';
 import {
@@ -102,16 +103,18 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
   const venues = await db.venue.findMany({ select: { id: true, name: true, latitude: true, longitude: true, toiletStatus: true, sourceKey: true, source: true } });
   const venueIndex = new PointIndex<V>();
   const venueById = new Map<string, V>();
+  const venueByKey = new Map<string, V>();
   for (const v of venues) {
     const c: V = { id: v.id, name: v.name, lat: v.latitude, lng: v.longitude, toiletStatus: v.toiletStatus, sourceKey: v.sourceKey, source: v.source };
     venueIndex.add(c);
     venueById.set(v.id, c);
+    venueByKey.set(v.sourceKey, c);
   }
   const toilets = await db.toilet.findMany({
     select: { id: true, sourceKey: true, venueId: true, source: true, latitude: true, longitude: true, status: true },
   });
   const humanToilets: ExistingToilet[] = toilets
-    .filter((t) => t.source === 'FIELDWORK_2024' || t.source === 'COMMUNITY')
+    .filter((t) => isFieldwork(t.source) || t.source === 'COMMUNITY')
     .map((t) => ({ id: t.id, sourceKey: t.sourceKey, venueId: t.venueId, source: t.source, lat: t.latitude, lng: t.longitude }));
   const osmToilets = new Map(
     (
@@ -143,15 +146,16 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
     const existing = osmToilets.get(sourceKey);
     const onFeature = isToiletsOnFeature(tags);
 
-    // 1. Venue: keep the existing link; else attach to a nearby venue; else create one.
+    // 1. Venue: keep the existing link; else its own venue from an earlier run (the toilet may have been
+    // superseded by a survey since: seed:fieldwork-2024b); else attach to a nearby venue; else create one.
     let venue: V | null = existing ? venueById.get(existing.venueId) ?? null : null;
     const ownVenueKey = `osm-venue:${e.type}/${e.id}`;
+    if (!venue) venue = venueByKey.get(ownVenueKey) ?? null;
     if (!venue) {
       const near = venueIndex.near(ll.lat, ll.lng, 60).filter((c) => c.item.sourceKey !== ownVenueKey);
       venue = chooseVenue(ll, tags['name'], near, 60, onFeature) as V | null;
     }
     if (!venue || venue.sourceKey === ownVenueKey) {
-      // Dedupe does not apply to a brand-new venue (it has no other toilets).
       const data = {
         name: venueNameFromTags(tags),
         type: onFeature ? venueTypeFromTags(tags) : 'OTHER' as const,
@@ -194,7 +198,10 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
         venueIndex.add(venue);
         venueById.set(id, venue);
       }
-    } else if (!existing) {
+    }
+    // Dedupe also on the toilet's own OSM venue: a survey may have reused it (survey2:match) and
+    // superseded this toilet (seed:fieldwork-2024b). A brand-new venue has no toilets, so no-op there.
+    if (!existing) {
       const dup = findDuplicate(ll, venue.id, humanToilets, 40);
       if (dup) {
         skipped.deduped.push({ osm: sourceKey, matched: dup.sourceKey, venue: venue.sourceKey });
@@ -253,7 +260,7 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
       return { feature: feature as FeatureName, present: present!, source: 'OSM', observedAt };
     });
     await db.$transaction(async (tx) =>
-      syncFeatures(tx, toiletId, existing?.features ?? [], wants, 'OSM', featT, ['FIELDWORK_2024', 'COMMUNITY', 'ADMIN']),
+      syncFeatures(tx, toiletId, existing?.features ?? [], wants, 'OSM', featT, [...FIELDWORK_SOURCES, 'COMMUNITY', 'ADMIN']),
     );
   }
 

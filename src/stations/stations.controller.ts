@@ -1,8 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { StationsService } from './stations.service.js';
 import { LineBoardDto, StationDetailDto, StationListDto } from './stations.dto.js';
+import { SexQueryDto } from '../toilets/toilets.dto.js';
 
 @ApiTags('stations')
 @Controller()
@@ -17,8 +18,8 @@ export class StationsController {
 
   @Get('stations/:slug')
   @ZodResponse({ status: 200, type: StationDetailDto })
-  detail(@Param('slug') slug: string) {
-    return this.stations.detail(slug);
+  detail(@Param('slug') slug: string, @Query() q: SexQueryDto) {
+    return this.stations.detail(slug, q.sex);
   }
 
   /** MRT and LRT lines ranked by their stations' toilets (GROWTH.md 2.3). */

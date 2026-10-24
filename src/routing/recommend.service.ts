@@ -3,6 +3,7 @@ import type { AreaType, Feature } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { bboxAround, estimateWalkSeconds, haversineM, type LatLng } from '../common/geo.js';
 import { ToiletPresenter } from '../toilets/toilet-presenter.service.js';
+import type { SexPreference } from '../toilets/sex.js';
 import type { ToiletSummary } from '../toilets/toilet.schemas.js';
 import { OneMapService } from './onemap.service.js';
 import { countedReports } from '../status/unconfirmed.js';
@@ -32,6 +33,8 @@ export interface RecommendInput {
   purpose?: Purpose;
   require?: Feature[];
   areaType?: AreaType;
+  /** Only toilets usable by this sex. */
+  sex?: SexPreference;
   openNow?: boolean;
   radiusM?: number;
   weights?: { distance?: number; cleanliness?: number; freshness?: number };
@@ -77,6 +80,7 @@ export class RecommendService {
       ToiletPresenter.where({
         features: required,
         areaType: input.areaType,
+        sex: input.sex,
         bbox: bboxAround(origin, maxRadius),
         // Calm results may offer unconfirmed (PENDING) toilets, labelled; urgent mode never does.
         includePending: !urgent,

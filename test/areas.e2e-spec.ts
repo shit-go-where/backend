@@ -74,6 +74,12 @@ describe('Areas (e2e)', () => {
     expect(ids).not.toContain(fx.toilets.c1.id);
   });
 
+  it('GET /areas/:slug?sex=MALE leaves out toilets only for women', async () => {
+    const res = await http().get('/areas/bishan?sex=MALE').expect(200);
+    expect(res.body.toiletCount).toBe(2);
+    expect(res.body.venues[0].toilets.map((t: { id: string }) => t.id)).toEqual([fx.toilets.a1.id, fx.toilets.closed.id]);
+  });
+
   it('GET /areas/:slug resolves multi-word slugs and 404s unknown ones', async () => {
     const res = await http().get('/areas/toa-payoh').expect(200);
     expect(res.body.venues[0].toilets[0].id).toBe(fx.toilets.e1.id);

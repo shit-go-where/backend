@@ -31,6 +31,9 @@ type ToiletStatus = 'ACTIVE' | 'CLOSED' | 'RENOVATION' | 'PENDING' | 'REJECTED';
 type AreaType = 'PAID_AREA' | 'UNPAID_AREA' | 'NOT_APPLICABLE' | 'UNKNOWN';
 type StatusKind = 'ALL_GOOD' | 'NO_PAPER' | 'NO_SOAP' | 'LONG_QUEUE' | 'BEING_CLEANED' | 'BROKEN' | 'CLOSED_NOW';
 type Role = 'USER' | 'TRUSTED' | 'MODERATOR' | 'ADMIN';
+type Sex = 'MALE' | 'FEMALE' | 'UNISEX';
+type SexPreference = 'MALE' | 'FEMALE';   // `sex` on list endpoints: "usable by" (see Toilets)
+type SurveyRubric = 'PILOT_50' | 'EXPANDED_2024';
 
 // Stored in Venue.openingHours / Toilet.openingHours (Json). Toilet null => use venue's.
 type OpeningHours =
@@ -58,8 +61,9 @@ interface ToiletSummary {
   tier: ToiletTier;
   status: ToiletStatus;
   features: Feature[];              // features with present=true
+  sex: Sex | null;                  // from features: UNISEX present → UNISEX; MALE and not FEMALE → MALE; FEMALE and not MALE → FEMALE; else null
   scoreCleanliness: number | null;  // 0-10 blended
-  surveyTotal: number | null;       // latest survey total, 0-50
+  surveyTotal: number | null;       // latest survey total, 0-50 (PILOT_50 only; null for other rubrics)
   rasStars: number | null;
   reviewCount: number;
   seenBy: number;                   // distinct signed-in people who have been there: the submitter + first check-ins within 150 m (min 1)
@@ -78,6 +82,7 @@ interface ToiletPin {                // minimal, for map rendering
   venueId: string;                   // groups a building's toilets (map stacks, same-building clusters, floor picker)
   level: string | null;              // as ToiletSummary.level
   levelOrder: number | null;         // sort key (see "Levels"); null when the level is unknown or unreadable
+  sex: Sex | null;                   // as ToiletSummary.sex
 }
 
 // Levels (src/common/level.ts; frontend/lib/level.ts mirrors it). Every write of a toilet's level is
@@ -86,12 +91,23 @@ interface ToiletPin {                // minimal, for map rendering
 // "mezzanine", "m" → "M"; lists split on ; , / & " and " are normalised part by part and joined with "; ".
 // Anything unreadable is kept as typed (trimmed). levelOrder: B<n> → -n, L<n> → n, M → 1.5, a list → its lowest.
 
+// Display-ready and rubric-agnostic (src/toilets/survey-items.ts): render `items` in order.
 interface Survey {
-  id: string; surveyedAt: string; phase: string | null;
-  cleanliness: number; scent: number; aesthetics: number; music: number;
-  toiletries: number; facilities: number; total: number; rasStars: number | null;
-  remarks: string | null;
+  id: string; surveyedAt: string;
+  rubric: SurveyRubric;
+  sex: Sex | null;                   // the toilet the surveyor looked at
+  cleanliness: number;               // 0-10 for every rubric (feeds scoreCleanliness)
+  total: number | null;              // PILOT_50: /50; null when the rubric has no total
+  totalMax: number | null;           // 50 for PILOT_50, else null
+  rasStars: number | null; phase: string | null; remarks: string | null;
+  items: SurveyItem[];
 }
+type SurveyItem =
+  | { kind: 'scale'; key: string; label: string; value: number; min: number; max: number }    // "Cleanliness -2 of -3..+3"
+  | { kind: 'checklist'; key: string; label: string; checked: string[]; total: number };      // "Toiletries: 3 of 5"; checked = display labels
+// PILOT_50 items (all scale, min 0): cleanliness /10, scent /5, aesthetics /5, music /5, toiletries /5, facilities /20.
+// EXPANDED_2024 items: cleanliness -3..3 and scent -2..2 (scale); "Why this rating" (key reasons, 6), Toiletries (5),
+// Facilities (15) (checklist). An EXPANDED_2024 row without a valid breakdown has no items.
 
 interface Review {
   id: string; cleanliness: number /*1-5*/; comment: string | null; createdAt: string;
@@ -110,12 +126,14 @@ interface ToiletDetail extends Omit<ToiletSummary, 'venue'> {
   featureDetails: { feature: Feature; present: boolean; source: string; observedAt: string }[];
   latestSurvey: Survey | null;
   surveyCount: number;
+  surveys: { surveyedAt: string; rubric: SurveyRubric }[]; // every survey, newest first (the first is latestSurvey)
   reviews: Review[];                   // latest 10
   photos: PhotoRef[];                  // approved only
   myReview: Review | null;             // when signed in
   source: string;                      // DataSource
   attribution: string | null;          // e.g. "© OpenStreetMap contributors" for OSM
-  siblings: { id: string; label: string | null; level: string | null; levelOrder: number | null; status: ToiletStatus }[];
+  siblings: { id: string; label: string | null; level: string | null; levelOrder: number | null; status: ToiletStatus;
+              sex: Sex | null }[];   // sex as on ToiletSummary
                                        // the other ACTIVE toilets at the same venue, lowest levelOrder first, unknown levels last (max 50)
 }
 
@@ -221,7 +239,9 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   → `{ items: ToiletSummary[] }` sorted by distance. radius max 5000, limit max 200. Only ACTIVE (and PENDING when `includePending=true`).
   Toilets at venues with `toiletStatus=NONE` are never returned (here, in-bounds, recommend). `features` = all must be present.
   `openNow=true` drops only toilets that are definitely closed; unknown hours (`openNow: null`) stay.
-- `GET /toilets/in-bounds?minLat&maxLat&minLng&maxLng&features=...&includePending=true` → `{ items: ToiletPin[] }` (cap 3000).
+  `sex=MALE|FEMALE` keeps toilets usable by that sex: MALE → `sex` in (MALE, UNISEX, null); FEMALE → (FEMALE, UNISEX, null). Omitted = all.
+  The same `sex` filter is accepted by in-bounds, `GET /stations/:slug`, `GET /areas/:slug` and `POST /routing/recommend` (body field).
+- `GET /toilets/in-bounds?minLat&maxLat&minLng&maxLng&features=...&sex=MALE&includePending=true` → `{ items: ToiletPin[] }` (cap 3000).
 - `GET /toilets/sitemap` → `{ items: { id: string; updatedAt: string }[] }`: every ACTIVE / CLOSED / RENOVATION toilet not at a NONE venue, for the frontend's sitemap.xml.
 - `GET /toilets/:id` → `ToiletDetail` (optional auth for `myReview`).
 - `GET /toilets/:id/reviews?cursor&limit=20` (limit max 50) → `{ items: Review[], nextCursor }` newest first; `nextCursor` is the last item's id. Public review photos are approved ones only.
@@ -253,7 +273,8 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   `slug` is the kebab-cased `Venue.planningArea` ("Downtown Core" → `downtown-core`). Counts are ACTIVE toilets not at NONE venues.
   `indexable` = `toiletCount >= 3`; thinner area pages render but are `noindex` and left out of the sitemap.
 - `GET /areas` → `{ items: AreaSummary[] }` A to Z, areas with at least one ACTIVE toilet.
-- `GET /areas/:slug` → `AreaSummary & { pendingCount, center: { lat, lng } | null, venues: AreaVenue[], noToiletVenues: VenueLite[] }`, 404 for an unknown slug.
+- `GET /areas/:slug?sex=MALE|FEMALE` → `AreaSummary & { pendingCount, center: { lat, lng } | null, venues: AreaVenue[], noToiletVenues: VenueLite[] }`, 404 for an unknown slug.
+  `sex` (optional, "usable by" as on /toilets/nearby) filters the toilets before anything is counted, so counts and places follow it.
   `AreaVenue` = `VenueLite & { address, near: { name, type, distanceM } | null, toilets: ToiletSummary[] }`: places with ACTIVE / CLOSED / RENOVATION
   toilets (never PENDING), best toilet first (open, then tier, then cleanliness), places ranked by their best toilet. `near` is the closest
   non-OTHER place within 1.5 km (in any area), set only when the place has no address. `center` is the area's namesake MRT station, else the
@@ -264,7 +285,8 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   for every `MRT_STATION` venue (MRT and LRT). Counts are ACTIVE toilets; toilets at NONE stations are never counted. `slug` = kebab-cased name.
   `indexable` = has toilets, a definite NONE / USES_NEARBY answer, or an ACTIVE toilet elsewhere within 400 m.
 - `GET /stations` → `{ items: StationSummary[] }` A to Z.
-- `GET /stations/:slug` → `StationSummary & { note: string | null, area: { slug, name } | null, toilets: ToiletSummary[], nearby: { toilet: ToiletSummary, distanceM }[] }`;
+- `GET /stations/:slug?sex=MALE|FEMALE` → `StationSummary & { note: string | null, area: { slug, name } | null, toilets: ToiletSummary[], nearby: { toilet: ToiletSummary, distanceM }[] }`;
+  `sex` (optional, "usable by") filters `toilets`, `nearby` and the counts alike;
   404 unknown. `toilets`: in the station, ACTIVE / CLOSED / RENOVATION (never PENDING), best first. `nearby`: ACTIVE toilets at other places
   within 400 m, nearest first, max 5. `indexable` follows the same rule as the list.
 - `GET /leaderboard/lines` → `{ items: { rank, code, name, stations, stationsWithToilets, scoredStations, avgScore: number | null, freshPct: number | null, checkInsWeek }[] }`.
@@ -274,7 +296,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 ### Routing (owner: finder agent)
 - `POST /routing/started` `{ toiletId }` → 200 `{ ok: true }`. Someone started walking there: adds 1 to that toilet's count for the
   Singapore day (`ToiletRouteDaily`, counts only, no person). 404 unless ACTIVE. 100 per IP per day (429), throttled 20/min.
-- `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number }, level?: string (1-20) }`
+- `POST /routing/recommend` `{ lat, lng, urgent?: boolean, purpose?: Purpose, require?: Feature[], areaType?: AreaType, sex?: SexPreference, openNow?: boolean, radiusM?: number (default 1500, urgent 800 then widen), weights?: { distance?: number; cleanliness?: number; freshness?: number }, level?: string (1-20) }`
   → `{ items: { toilet: ToiletSummary; score: number; walkSeconds: number; walkDistanceM: number; reasons: string[]; route: { polyline: [number, number][]; source: 'onemap' | 'estimate' } | null }[]; searchedRadiusM: number; skippedVenues: { name: string; toiletStatus: VenueToiletStatus; note: string | null; distanceM: number }[] }`
   `purpose` adds soft preferences (src/routing/purposes.ts): missing features add cost, nothing is filtered out.
   `level` is the floor the person is on ("B1", "L3", "level 3": normalised like toilet levels; a body field, since this is a POST).
@@ -286,10 +308,10 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   them, ranked below active toilets of similar distance (+0.1 cost, about 330 m) and with the reason
   `"Unconfirmed: added by the community, not yet confirmed"` in place of `"Community verified"`. Urgent mode never includes them.
   Top 3. Toilets that are definitely closed now (openNow === false) are never recommended; unknown hours stay eligible. Route only computed for the top 3 via OneMap when configured; else `route: null` and `walkSeconds` / `walkDistanceM` are estimates (straight line × 1.3).
-  `score` is 0-100, higher = better. Hard filters (also in urgent mode): `require`, `areaType`, `openNow` (definitely-closed only), ACTIVE only
+  `score` is 0-100, higher = better. Hard filters (also in urgent mode): `require`, `areaType`, `sex` ("usable by"), `openNow` (definitely-closed only), ACTIVE only
   (plus PENDING in calm mode, flagged `unconfirmed`), no unexpired CLOSED_NOW/BROKEN report that is confirmed or reported twice
   (unconfirmed anonymous reports are ignored). Urgent: radius 800 → 1500 → 3000 until ≥1 result, `radiusM`/`weights` ignored.
-  Reasons look like `"4 min walk"`, `"Bidet"`, `"Clean 8.2/10"`, `"Reported: no paper 40 min ago"`, `"Verified 2024 survey"`. `skippedVenues` max 10, nearest first.
+  Reasons look like `"4 min walk"`, `"Bidet"`, `"Clean 8.2/10"`, `"Reported: no paper 40 min ago"`, `"Verified 2024 survey"` (either 2024 fieldwork source). `skippedVenues` max 10, nearest first.
 - `GET /routing/walk?fromLat&fromLng&toLat&toLng` → `{ distanceM, durationS, polyline: [lat,lng][], source }`. Without OneMap (or on failure/timeout 4 s) `source: 'estimate'` with a 2-point straight polyline. Never 5xx.
 - `GET /geo/search?q` → `{ items: { name: string; address: string; lat: number; lng: number }[] }` (OneMap search proxy, no token needed). Max 10; `[]` when OneMap fails.
 

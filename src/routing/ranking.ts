@@ -4,6 +4,7 @@
  */
 import type { Feature, StatusKind, ToiletTier } from '../generated/prisma/enums.js';
 import { secondsAsStraightM } from './levels.js';
+import { isFieldwork } from '../common/sources.js';
 
 export interface RankWeights {
   distance: number;
@@ -199,7 +200,7 @@ export function minutesText(walkSeconds: number): string {
 
 function tierText(c: Pick<RankCandidate, 'tier' | 'source' | 'lastVerifiedAt'>): string | null {
   if (c.tier === 'VERIFIED') {
-    if (c.source === 'FIELDWORK_2024') return 'Verified 2024 survey';
+    if (isFieldwork(c.source)) return 'Verified 2024 survey';
     return c.lastVerifiedAt ? `Verified ${c.lastVerifiedAt.getUTCFullYear()}` : 'Verified';
   }
   if (c.tier === 'COMMUNITY') return 'Community verified';

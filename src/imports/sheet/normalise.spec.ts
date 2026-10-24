@@ -101,7 +101,27 @@ describe('normaliseSheet (committed raw CSVs)', () => {
   });
 
   it('turns the handicapped-only remark into features', () => {
-    const f = Object.fromEntries(fieldwork.toilets.find((x) => x.sourceKey === 'sheet:tiong-bahru-ewl')!.features.map((x) => [x.feature, x.present]));
+    const t = fieldwork.toilets.find((x) => x.sourceKey === 'sheet:tiong-bahru-ewl')!;
+    const f = Object.fromEntries(t.features.map((x) => [x.feature, x.present]));
     expect(f).toMatchObject({ MALE: false, FEMALE: false, ACCESSIBLE: true, UNISEX: true, FREE: true, SITTING: true });
+    expect(t.surveys.map((s) => s.sex)).toEqual(['UNISEX']);
+  });
+
+  it("tags the surveyed men's toilets MALE; renovation placeholders stay unknown", () => {
+    const sexOf = (t: (typeof fieldwork.toilets)[number]) => {
+      const f = Object.fromEntries(t.features.map((x) => [x.feature, x.present]));
+      return f['UNISEX'] ? 'UNISEX' : f['MALE'] ? 'MALE' : null;
+    };
+    const counts: Record<string, number> = {};
+    for (const t of surveyed) counts[String(sexOf(t))] = (counts[String(sexOf(t))] ?? 0) + 1;
+    expect(counts).toEqual({ MALE: 157, UNISEX: 3 });
+    expect(sexOf(fieldwork.toilets.find((x) => x.sourceKey === 'sheet:bukit-batok')!)).toBeNull();
+  });
+
+  it('writes every survey as PILOT_50 with no breakdown', () => {
+    const all = fieldwork.toilets.flatMap((t) => t.surveys);
+    expect(all).toHaveLength(166);
+    expect(all.every((s) => s.rubric === 'PILOT_50' && s.breakdown === null && s.total !== null)).toBe(true);
+    expect(all.filter((s) => s.sex === 'MALE')).toHaveLength(163);
   });
 });

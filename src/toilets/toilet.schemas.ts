@@ -4,6 +4,8 @@ import {
   AreaType,
   Feature,
   StatusKind,
+  SurveyRubric,
+  SurveySex,
   ToiletStatus,
   ToiletTier,
   VenueToiletStatus,
@@ -17,6 +19,11 @@ export const ToiletTierSchema = z.enum(ToiletTier).meta({ id: 'ToiletTier' });
 export const ToiletStatusSchema = z.enum(ToiletStatus).meta({ id: 'ToiletStatus' });
 export const AreaTypeSchema = z.enum(AreaType).meta({ id: 'AreaType' });
 export const StatusKindSchema = z.enum(StatusKind).meta({ id: 'StatusKind' });
+export const SurveyRubricSchema = z.enum(SurveyRubric).meta({ id: 'SurveyRubric' });
+/** Who a toilet (or the toilet a survey looked at) is for. */
+export const SexSchema = z.enum(SurveySex).meta({ id: 'Sex' });
+/** `sex=MALE|FEMALE` on list endpoints: toilets usable by that sex (its own, unisex or unknown). */
+export const SexPreferenceSchema = z.enum(['MALE', 'FEMALE']).meta({ id: 'SexPreference' });
 
 // ───────────────────────────── query helpers ─────────────────────────────
 
@@ -93,6 +100,8 @@ const toiletSummaryShape = {
   tier: ToiletTierSchema,
   status: ToiletStatusSchema,
   features: z.array(FeatureSchema),
+  /** From the MALE / FEMALE / UNISEX features: UNISEX if present, else MALE or FEMALE when only one is; else null. */
+  sex: SexSchema.nullable(),
   scoreCleanliness: z.number().nullable(),
   surveyTotal: z.number().nullable(),
   rasStars: z.number().nullable(),
@@ -126,26 +135,55 @@ export const ToiletPinSchema = z
     level: z.string().nullable(),
     /** Sort key for level: B2 = -2, L1 = 1, M = 1.5, a list = its lowest; null when unknown. */
     levelOrder: z.number().nullable(),
+    /** As on ToiletSummary. */
+    sex: SexSchema.nullable(),
   })
   .meta({ id: 'ToiletPin' });
 export type ToiletPin = z.infer<typeof ToiletPinSchema>;
 
+export const SurveyScaleItemSchema = z
+  .object({
+    kind: z.literal('scale'),
+    key: z.string(),
+    label: z.string(),
+    value: z.number(),
+    min: z.number(),
+    max: z.number(),
+  })
+  .meta({ id: 'SurveyScaleItem' });
+
+export const SurveyChecklistItemSchema = z
+  .object({
+    kind: z.literal('checklist'),
+    key: z.string(),
+    label: z.string(),
+    /** Display labels of the ticked items, in checklist order. */
+    checked: z.array(z.string()),
+    /** Items on the checklist. */
+    total: z.number().int(),
+  })
+  .meta({ id: 'SurveyChecklistItem' });
+
+/** Display-ready, so clients never need to know the rubric (built in survey-items.ts). */
 export const SurveySchema = z
   .object({
     id: z.string(),
     surveyedAt: z.string(),
-    phase: z.string().nullable(),
+    rubric: SurveyRubricSchema,
+    /** The toilet the surveyor looked at; null when not recorded. */
+    sex: SexSchema.nullable(),
+    /** 0-10 for every rubric (this is what feeds scoreCleanliness). */
     cleanliness: z.number(),
-    scent: z.number(),
-    aesthetics: z.number(),
-    music: z.number(),
-    toiletries: z.number(),
-    facilities: z.number(),
-    total: z.number(),
+    total: z.number().nullable(),
+    /** 50 for PILOT_50; null when the rubric has no total. */
+    totalMax: z.number().nullable(),
     rasStars: z.number().nullable(),
+    phase: z.string().nullable(),
     remarks: z.string().nullable(),
+    items: z.array(z.discriminatedUnion('kind', [SurveyScaleItemSchema, SurveyChecklistItemSchema])),
   })
   .meta({ id: 'Survey' });
+export type Survey = z.infer<typeof SurveySchema>;
 
 export const ReviewSchema = z
   .object({
@@ -168,8 +206,18 @@ export const ToiletSiblingSchema = z
     level: z.string().nullable(),
     levelOrder: z.number().nullable(),
     status: ToiletStatusSchema,
+    /** As on ToiletSummary. */
+    sex: SexSchema.nullable(),
   })
   .meta({ id: 'ToiletSibling' });
+
+/** One survey on record, for "2 surveys on record (Mar and Oct 2024)". */
+export const SurveyDateSchema = z
+  .object({
+    surveyedAt: z.string(),
+    rubric: SurveyRubricSchema,
+  })
+  .meta({ id: 'SurveyDate' });
 
 export const ToiletDetailSchema = z
   .object({
@@ -195,6 +243,8 @@ export const ToiletDetailSchema = z
     ),
     latestSurvey: SurveySchema.nullable(),
     surveyCount: z.number().int(),
+    /** Every survey of this toilet, newest first (latestSurvey is the first). */
+    surveys: z.array(SurveyDateSchema),
     reviews: z.array(ReviewSchema),
     photos: z.array(PhotoRefSchema),
     myReview: ReviewSchema.nullable(),

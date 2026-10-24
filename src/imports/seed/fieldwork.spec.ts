@@ -1,6 +1,6 @@
 import { lineCodeFromStationCode, lineCodeFromWikidata, processBindings, stationName } from '../wikidata/stations.js';
 import { expandParkName, isMinorParkSpace, sameish } from '../datagov/import.js';
-import { planFeature, stableStringify } from './fieldwork.js';
+import { PILOT_PROTECTED, planFeature, stableStringify } from './fieldwork.js';
 
 const at = new Date('2024-03-15T00:00:00+08:00');
 
@@ -15,6 +15,11 @@ describe('planFeature (provenance rules)', () => {
   it('never overwrites COMMUNITY or ADMIN rows from an import', () => {
     expect(planFeature({ feature: 'HAND_SOAP', present: false, source: 'COMMUNITY', observedAt: at }, want)).toBe('protected');
     expect(planFeature({ feature: 'HAND_SOAP', present: false, source: 'ADMIN', observedAt: at }, want)).toBe('protected');
+  });
+  it('the pilot seed never overwrites the newer expanded survey', () => {
+    const later = new Date('2024-09-01T00:00:00+08:00');
+    expect(planFeature({ feature: 'HAND_SOAP', present: false, source: 'FIELDWORK_2024_EXPANDED', observedAt: later }, want, PILOT_PROTECTED)).toBe('protected');
+    expect(planFeature({ feature: 'HAND_SOAP', present: false, source: 'OSM', observedAt: at }, want, PILOT_PROTECTED)).toBe('update');
   });
   it('OSM also protects FIELDWORK rows when asked', () => {
     const osm = { ...want, source: 'OSM' as const };

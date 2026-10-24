@@ -54,6 +54,7 @@ function item(over: Partial<RecommendItem['toilet']> = {}, extra: Partial<Recomm
       tier: 'VERIFIED',
       status: 'ACTIVE',
       features: ['TOILET_PAPER', 'BIDET', 'ACCESSIBLE', 'MIRROR'],
+      sex: null,
       scoreCleanliness: 8.2,
       surveyTotal: 40,
       rasStars: null,
@@ -268,6 +269,23 @@ describe('result entries', () => {
     const t = { label: null, level: 'B1', venue: { name: 'Bishan', type: 'MRT_STATION' } };
     expect(toiletTitle(t)).toBe('Bishan MRT · B1');
     expect(toiletTitle({ ...t, label: 'B1 concourse' })).toBe('Bishan MRT · B1 concourse');
+  });
+
+  it("says whose toilet it is unless the label already does", () => {
+    const t = { label: 'EWL side', level: null, venue: { name: 'Outram Park', type: 'MRT_STATION' } };
+    expect(toiletTitle({ ...t, sex: 'MALE' })).toBe("Outram Park MRT · EWL side · Men's");
+    expect(toiletTitle({ ...t, label: "Women's, NEL side", sex: 'FEMALE' })).toBe("Outram Park MRT · Women's, NEL side");
+    expect(toiletTitle({ ...t, label: 'Accessible / unisex', sex: 'UNISEX' })).toBe('Outram Park MRT · Accessible / unisex');
+    expect(toiletTitle({ ...t, label: null, sex: 'UNISEX' })).toBe('Outram Park MRT · Unisex');
+    expect(toiletTitle({ ...t, sex: null })).toBe('Outram Park MRT · EWL side');
+    // "Women's" contains "men's": a men's toilet whose label says Women's still gets its own word.
+    expect(toiletTitle({ ...t, label: "next to Women's", sex: 'MALE' })).toBe("Outram Park MRT · next to Women's · Men's");
+  });
+
+  it('shows the sex in the result card title', () => {
+    const text = formatItem(item({ sex: 'UNISEX', label: null, level: null, features: ['UNISEX', 'BIDET'] }), 1, NOW);
+    expect(text.split('\n')[0]).toContain('Test Mall · Unisex');
+    expect(text.split('\n').at(-1)).toBe('Bidet');
   });
 
   it('says how long ago at day resolution', () => {

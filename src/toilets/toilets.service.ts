@@ -5,12 +5,14 @@ import { bboxAround, haversineM, type LatLng } from '../common/geo.js';
 import { isOpenAt } from '../common/opening-hours.js';
 import { ToiletPresenter } from './toilet-presenter.service.js';
 import type { ToiletDetail, ToiletPin, ToiletSummary } from './toilet.schemas.js';
+import type { SexPreference } from './sex.js';
 
 export interface NearbyOptions {
   radius: number;
   features?: Feature[];
   tier?: ToiletTier[];
   areaType?: AreaType;
+  sex?: SexPreference;
   openNow?: boolean;
   includePending?: boolean;
   limit: number;
@@ -32,6 +34,7 @@ export class ToiletsService {
       features: o.features,
       tier: o.tier,
       areaType: o.areaType,
+      sex: o.sex,
       includePending: o.includePending,
       bbox: bboxAround(origin, o.radius),
     });
@@ -51,6 +54,7 @@ export class ToiletsService {
       features?: Feature[];
       tier?: ToiletTier[];
       areaType?: AreaType;
+      sex?: SexPreference;
       openNow?: boolean;
       includePending?: boolean;
     },
@@ -61,6 +65,7 @@ export class ToiletsService {
         features: o.features,
         tier: o.tier,
         areaType: o.areaType,
+        sex: o.sex,
         includePending: o.includePending,
         bbox: bounds,
       }),
@@ -76,6 +81,7 @@ export class ToiletsService {
         status: true,
         scoreCleanliness: true,
         openingHours: true,
+        features: ToiletPresenter.pinSexFeatures,
         venue: { select: { type: true, openingHours: true } },
         statusReports: {
           where: { expiresAt: { gt: now } },

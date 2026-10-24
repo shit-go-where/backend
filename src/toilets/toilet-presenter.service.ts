@@ -9,6 +9,8 @@ import type { Review, ToiletDetail, ToiletPin, ToiletSummary } from './toilet.sc
 import { nearText } from './near.js';
 import { levelOrder } from '../common/level.js';
 import { photoThumbPath, toPhotoRef } from '../media/photo-urls.js';
+import { SEX_FEATURES, sexOf, sexWhere, type SexPreference } from './sex.js';
+import { toSurveyView } from './survey-items.js';
 
 /** Prisma include needed to build a ToiletSummary. Depends on `now` for unexpired status reports. */
 export function summaryInclude(now: Date) {
@@ -48,6 +50,8 @@ export interface ToiletFilter {
   features?: Feature[];
   tier?: ToiletTier[];
   areaType?: AreaType;
+  /** Usable by: drop toilets only for the other sex. */
+  sex?: SexPreference;
   includePending?: boolean;
   bbox?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
 }
@@ -67,7 +71,7 @@ export class ToiletPresenter {
 
   /**
    * Prisma where for finder queries: ACTIVE (+PENDING), venue not NONE, all required features
-   * present, optional tier/areaType/bbox.
+   * present, optional tier/areaType/sex/bbox.
    */
   static where(f: ToiletFilter): Prisma.ToiletWhereInput {
     const and: Prisma.ToiletWhereInput[] = (f.features ?? []).map((feature) => ({
@@ -78,6 +82,7 @@ export class ToiletPresenter {
       venue: { toiletStatus: { not: 'NONE' } },
       ...(f.tier?.length ? { tier: { in: f.tier } } : {}),
       ...(f.areaType ? { areaType: f.areaType } : {}),
+      ...(f.sex ? sexWhere(f.sex) : {}),
       ...(f.bbox
         ? {
             latitude: { gte: f.bbox.minLat, lte: f.bbox.maxLat },
@@ -143,6 +148,7 @@ export class ToiletPresenter {
       tier: t.tier,
       status: t.status,
       features: t.features.map((f) => f.feature).sort(),
+      sex: sexOf(t.features.map((f) => f.feature)),
       scoreCleanliness: t.scoreCleanliness,
       surveyTotal: survey?.total ?? null,
       rasStars: survey?.rasStars ?? null,
@@ -175,6 +181,8 @@ export class ToiletPresenter {
     scoreCleanliness: number | null;
     venue: { type: ToiletPin['venueType'] };
     statusReports: ToiletWithSummary['statusReports'];
+    /** Present features; only MALE / FEMALE / UNISEX are needed (pinSexFeatures). */
+    features: { feature: Feature }[];
   }): ToiletPin {
     return {
       id: t.id,
@@ -188,8 +196,15 @@ export class ToiletPresenter {
       venueId: t.venueId,
       level: t.level,
       levelOrder: ToiletPresenter.levelOrderOf(t),
+      sex: sexOf(t.features.map((f) => f.feature)),
     };
   }
+
+  /** Prisma select for the features `toPin` needs. */
+  static readonly pinSexFeatures = {
+    where: { present: true, feature: { in: [...SEX_FEATURES] } },
+    select: { feature: true },
+  } satisfies Prisma.Toilet$featuresArgs;
 
   /**
    * The stored sort key, else derived from the text (rows from before the level_order backfill).
@@ -205,12 +220,24 @@ export class ToiletPresenter {
   async siblings(t: { id: string; venueId: string }): Promise<ToiletDetail['siblings']> {
     const rows = await this.prisma.toilet.findMany({
       where: { venueId: t.venueId, id: { not: t.id }, status: 'ACTIVE' },
-      select: { id: true, label: true, level: true, levelOrder: true, status: true, source: true },
+      select: {
+        id: true,
+        label: true,
+        level: true,
+        levelOrder: true,
+        status: true,
+        source: true,
+        features: ToiletPresenter.pinSexFeatures,
+      },
       // A mall has a handful; the cap only guards against a mis-snapped import.
       take: 50,
     });
     return rows
-      .map(({ source, ...r }) => ({ ...r, levelOrder: ToiletPresenter.levelOrderOf({ ...r, source }) }))
+      .map(({ source, features, ...r }) => ({
+        ...r,
+        levelOrder: ToiletPresenter.levelOrderOf({ ...r, source }),
+        sex: sexOf(features.map((f) => f.feature)),
+      }))
       .sort(
         (a, b) =>
           (a.levelOrder ?? Infinity) - (b.levelOrder ?? Infinity) ||
@@ -263,6 +290,14 @@ export class ToiletPresenter {
       : null;
 
     const survey = t.surveys[0] ?? null;
+    // Dates only (the latest one is in full above); a toilet has a handful at most.
+    const surveyDates = t._count.surveys
+      ? await this.prisma.survey.findMany({
+          where: { toiletId: t.id },
+          orderBy: [{ surveyedAt: 'desc' }, { id: 'asc' }],
+          select: { surveyedAt: true, rubric: true },
+        })
+      : [];
     const summary = this.toSummary(
       {
         ...t,
@@ -296,23 +331,9 @@ export class ToiletPresenter {
         source: f.source,
         observedAt: f.observedAt.toISOString(),
       })),
-      latestSurvey: survey
-        ? {
-            id: survey.id,
-            surveyedAt: survey.surveyedAt.toISOString(),
-            phase: survey.phase,
-            cleanliness: survey.cleanliness,
-            scent: survey.scent,
-            aesthetics: survey.aesthetics,
-            music: survey.music,
-            toiletries: survey.toiletries,
-            facilities: survey.facilities,
-            total: survey.total,
-            rasStars: survey.rasStars,
-            remarks: survey.remarks,
-          }
-        : null,
+      latestSurvey: survey ? toSurveyView(survey) : null,
       surveyCount: t._count.surveys,
+      surveys: surveyDates.map((d) => ({ surveyedAt: d.surveyedAt.toISOString(), rubric: d.rubric })),
       reviews: t.reviews.map((r) => this.toReview(r)),
       photos: t.photos.map(toPhotoRef),
       myReview: mine ? this.toReview(mine, true) : null,

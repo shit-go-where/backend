@@ -8,6 +8,7 @@ import { areaSlug } from '../areas/regions.js';
 import { FRESH_WINDOW_MS } from '../metrics/metrics.service.js';
 import { buildLineBoard, lineName, type LineRow } from './lines.js';
 import type { StationDetail, StationSummary } from './stations.dto.js';
+import { sexWhere, type SexPreference } from '../toilets/sex.js';
 
 /** "Toilets near X MRT" means a short walk out of the station. */
 export const NEARBY_RADIUS_M = 400;
@@ -114,19 +115,22 @@ export class StationsService {
     });
   }
 
-  async detail(slug: string, now = new Date()): Promise<StationDetail> {
+  /** `sex` keeps only toilets usable by that sex, in the lists and the counts alike. */
+  async detail(slug: string, sex?: SexPreference, now = new Date()): Promise<StationDetail> {
     const venues = await this.prisma.venue.findMany({ where: stationWhere, select: stationSelect });
     const v = venues.find((x) => areaSlug(x.name) === slug);
     if (!v) throw new NotFoundException('Station not found');
 
     const origin = { lat: v.latitude, lng: v.longitude };
     const box = bboxAround(origin, NEARBY_RADIUS_M);
+    const usable = sex ? sexWhere(sex) : {};
     const [own, around] = await Promise.all([
       this.prisma.toilet.findMany({
         where: {
           venueId: v.id,
           venue: { toiletStatus: { not: VenueToiletStatus.NONE } },
           status: { in: [ToiletStatus.ACTIVE, ToiletStatus.CLOSED, ToiletStatus.RENOVATION] },
+          ...usable,
         },
         include: summaryInclude(now),
       }),
@@ -137,6 +141,7 @@ export class StationsService {
           venue: { toiletStatus: { not: VenueToiletStatus.NONE } },
           latitude: { gte: box.minLat, lte: box.maxLat },
           longitude: { gte: box.minLng, lte: box.maxLng },
+          ...usable,
         },
         include: summaryInclude(now),
       }),

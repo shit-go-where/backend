@@ -227,6 +227,9 @@ function surveyFromRecord(
   return {
     key: `${toiletKey}#${phase ?? 'general'}#${surveyedAt}`,
     surveyedAt,
+    rubric: 'PILOT_50',
+    // Men's toilets; the handicapped-only ones become UNISEX once the Miscellaneous tab is read (step 4).
+    sex: 'MALE',
     phase,
     ...s,
     toiletries,
@@ -234,6 +237,7 @@ function surveyFromRecord(
     total,
     rasStars: null,
     remarks,
+    breakdown: null,
     raw: { _tab: tab, _row: rec.rowIndex, ...rec.cells },
   };
 }
@@ -443,6 +447,15 @@ export function normaliseSheet(): NormaliseResult {
     if (!matches.length)
       review.push({ kind: 'misc-unmatched', key, message: `Miscellaneous "handicapped only" station ${p.original} has no toilet row`, resolution: 'auto: ignored' });
     for (const t of matches) applyHandicappedOnly(t.features);
+  }
+
+  // The pilot surveyed men's toilets: tag them MALE, except where only the handicapped toilet exists
+  // (applyHandicappedOnly: UNISEX). Renovation placeholders were never looked at and stay unknown.
+  for (const t of toilets.values()) {
+    if (!t.surveys.length) continue;
+    const unisex = t.features.get('UNISEX') === true;
+    if (!unisex) t.features.set('MALE', true);
+    for (const s of t.surveys) s.sex = unisex ? 'UNISEX' : 'MALE';
   }
 
   // 5. Assemble curated output.

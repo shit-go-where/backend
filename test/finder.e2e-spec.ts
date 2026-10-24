@@ -86,6 +86,16 @@ describe('Finder (e2e)', () => {
       expect(small.body.items.map((t: { id: string }) => t.id)).toEqual([fx.toilets.a1.id, fx.toilets.a2.id]);
     });
 
+    it('sex=MALE|FEMALE keeps toilets usable by that sex (own, unisex or unknown)', async () => {
+      const all = await http().get(`/toilets/nearby?${near}`).expect(200);
+      expect(all.body.items.map((t: { sex: string | null }) => t.sex)).toEqual([null, 'FEMALE', null]);
+      const men = await http().get(`/toilets/nearby?${near}&sex=MALE`).expect(200);
+      expect(men.body.items.map((t: { id: string }) => t.id)).toEqual([fx.toilets.a1.id, fx.toilets.b1.id]);
+      const women = await http().get(`/toilets/nearby?${near}&sex=FEMALE`).expect(200);
+      expect(women.body.items.map((t: { id: string }) => t.id)).toEqual([fx.toilets.a1.id, fx.toilets.a2.id, fx.toilets.b1.id]);
+      await http().get(`/toilets/nearby?${near}&sex=UNISEX`).expect(400);
+    });
+
     it('openNow=true drops definitely-closed toilets only', async () => {
       const res = await http().get(`/toilets/nearby?${near}&openNow=true`).expect(200);
       expect(res.body.items.map((t: { id: string }) => t.id)).toEqual([fx.toilets.a1.id, fx.toilets.b1.id]);
@@ -124,6 +134,14 @@ describe('Finder (e2e)', () => {
     expect(paid.body.items.map((p: { id: string }) => p.id)).toEqual([fx.toilets.a2.id]);
   });
 
+  it('GET /toilets/in-bounds labels pins with sex and applies sex like nearby', async () => {
+    const box = 'minLat=1.34&maxLat=1.36&minLng=103.84&maxLng=103.86';
+    const all = await http().get(`/toilets/in-bounds?${box}`).expect(200);
+    expect(all.body.items.find((p: { id: string }) => p.id === fx.toilets.a2.id)).toMatchObject({ sex: 'FEMALE' });
+    const men = await http().get(`/toilets/in-bounds?${box}&sex=MALE`).expect(200);
+    expect(men.body.items.map((p: { id: string }) => p.id).sort()).toEqual([fx.toilets.a1.id, fx.toilets.b1.id].sort());
+  });
+
   describe('GET /toilets/:id', () => {
     it('returns detail with survey, features, attribution', async () => {
       const res = await http().get(`/toilets/${fx.toilets.a1.id}`).expect(200);
@@ -132,7 +150,15 @@ describe('Finder (e2e)', () => {
         source: 'FIELDWORK_2024',
         attribution: null,
         surveyCount: 1,
-        latestSurvey: { total: 40, cleanliness: 8 },
+        surveys: [{ surveyedAt: '2024-03-15T00:00:00.000Z', rubric: 'PILOT_50' }],
+        latestSurvey: {
+          rubric: 'PILOT_50',
+          sex: 'MALE',
+          total: 40,
+          totalMax: 50,
+          cleanliness: 8,
+          items: expect.arrayContaining([{ kind: 'scale', key: 'facilities', label: 'Facilities', value: 17, min: 0, max: 20 }]),
+        },
         openingHours: { type: 'always' },
         venue: { address: '1 Test Road', planningArea: 'BISHAN' },
         myReview: null,
@@ -150,7 +176,7 @@ describe('Finder (e2e)', () => {
       expect(res.body.features).not.toContain('SQUAT');
       // The other ACTIVE toilet in the mall; pending and renovating ones are left out.
       expect(res.body.siblings).toEqual([
-        { id: fx.toilets.a2.id, label: 'B1 food court', level: 'B1', levelOrder: -1, status: 'ACTIVE' },
+        { id: fx.toilets.a2.id, label: 'B1 food court', level: 'B1', levelOrder: -1, status: 'ACTIVE', sex: 'FEMALE' },
       ]);
     });
 
@@ -243,6 +269,12 @@ describe('Finder (e2e)', () => {
         .expect(200);
       expect(res.body.items.map((i: { toilet: { id: string } }) => i.toilet.id)).toEqual([fx.toilets.a1.id]);
       expect(res.body.items[0].reasons).toContain('Toilet paper');
+    });
+
+    it('sex filters candidates', async () => {
+      const res = await http().post('/routing/recommend').send({ ...FAR_ORIGIN, urgent: true, sex: 'MALE' }).expect(200);
+      expect(res.body.items.map((i: { toilet: { id: string } }) => i.toilet.id)).toEqual([fx.toilets.e1.id]);
+      await http().post('/routing/recommend').send({ ...ORIGIN, sex: 'UNISEX' }).expect(400);
     });
 
     it('a purpose adds soft preferences without filtering', async () => {

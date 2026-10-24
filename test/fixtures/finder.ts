@@ -108,11 +108,11 @@ export async function seedFinder(prisma: PrismaService) {
   await features(prisma, a1.id, ['BIDET', 'ACCESSIBLE', 'TOILET_PAPER'], ['SQUAT']);
   await prisma.survey.create({
     data: {
-      toiletId: a1.id, surveyedAt: new Date('2024-03-15'), cleanliness: 8, scent: 4, aesthetics: 4,
+      toiletId: a1.id, surveyedAt: new Date('2024-03-15'), rubric: 'PILOT_50', sex: 'MALE', cleanliness: 8, scent: 4, aesthetics: 4,
       music: 2, toiletries: 5, facilities: 17, total: 40, rasStars: 4, raw: {},
     },
   });
-  // A2: community toilet in the same mall, closed by its own hours (weekly with no periods).
+  // A2: community women's toilet in the same mall, closed by its own hours (weekly with no periods).
   const a2 = await prisma.toilet.create({
     data: {
       venueId: mall.id, label: 'B1 food court', ...pos(offset(120)), level: 'B1', areaType: 'PAID_AREA',
@@ -120,7 +120,7 @@ export async function seedFinder(prisma: PrismaService) {
       openingHours: { type: 'weekly', periods: [] },
     },
   });
-  await features(prisma, a2.id, ['TOILET_PAPER']);
+  await features(prisma, a2.id, ['TOILET_PAPER', 'FEMALE']);
   // B1: imported from OSM, no score, 24/7.
   const b1 = await prisma.toilet.create({
     data: {

@@ -1,8 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { AreasService } from './areas.service.js';
 import { AreaDetailDto, AreaListDto } from './areas.dto.js';
+import { SexQueryDto } from '../toilets/toilets.dto.js';
 
 @ApiTags('areas')
 @Controller('areas')
@@ -17,7 +18,7 @@ export class AreasController {
 
   @Get(':slug')
   @ZodResponse({ status: 200, type: AreaDetailDto })
-  detail(@Param('slug') slug: string) {
-    return this.areas.detail(slug);
+  detail(@Param('slug') slug: string, @Query() q: SexQueryDto) {
+    return this.areas.detail(slug, q.sex);
   }
 }

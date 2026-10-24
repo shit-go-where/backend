@@ -1,6 +1,7 @@
 import type { FeatureName, OpeningHours } from '../curated/schema.js';
 import { haversineM } from '../lib/geo.js';
 import { nameKey } from '../lib/slug.js';
+import { isFieldwork } from '../../common/sources.js';
 
 export type Tags = Record<string, string>;
 export type VenueTypeName =
@@ -187,7 +188,7 @@ export interface ExistingToilet {
 }
 
 /**
- * Dedupe rule: skip an OSM toilet when a FIELDWORK_2024 or COMMUNITY toilet at the same venue is
+ * Dedupe rule: skip an OSM toilet when a fieldwork (either 2024 survey) or COMMUNITY toilet at the same venue is
  * within `radiusM` metres (the human-verified record wins). Returns the matching toilet.
  */
 export function findDuplicate(
@@ -199,7 +200,7 @@ export function findDuplicate(
   let best: ExistingToilet | null = null;
   let bestD = Infinity;
   for (const t of toilets) {
-    if (t.venueId !== venueId || (t.source !== 'FIELDWORK_2024' && t.source !== 'COMMUNITY')) continue;
+    if (t.venueId !== venueId || (!isFieldwork(t.source) && t.source !== 'COMMUNITY')) continue;
     const d = haversineM(point.lat, point.lng, t.lat, t.lng);
     if (d <= radiusM && d < bestD) {
       best = t;

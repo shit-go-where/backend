@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Feature, ToiletTier } from '../generated/prisma/enums.js';
 import {
   AreaTypeSchema,
+  SexPreferenceSchema,
   ToiletDetailSchema,
   ToiletPinSchema,
   ToiletSummarySchema,
@@ -19,6 +20,8 @@ export const NearbyQuerySchema = z.object({
   features: commaList(Feature).optional(),
   tier: commaList(ToiletTier).optional(),
   areaType: AreaTypeSchema.optional(),
+  /** Toilets usable by this sex: MALE = men's, unisex or unknown. Omitted = all. */
+  sex: SexPreferenceSchema.optional(),
   openNow: queryBool.optional(),
   includePending: queryBool.optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
@@ -34,6 +37,8 @@ export const InBoundsQuerySchema = z
     features: commaList(Feature).optional(),
     tier: commaList(ToiletTier).optional(),
     areaType: AreaTypeSchema.optional(),
+    /** As on /toilets/nearby. */
+    sex: SexPreferenceSchema.optional(),
     openNow: queryBool.optional(),
     includePending: queryBool.optional(),
   })
@@ -41,6 +46,13 @@ export const InBoundsQuerySchema = z
     message: 'min must be <= max',
   });
 export class InBoundsQueryDto extends createZodDto(InBoundsQuerySchema) {}
+
+/** `?sex=` alone, for pages that list toilets (stations, areas). */
+export const SexQuerySchema = z.object({
+  /** Toilets usable by this sex: MALE = men's, unisex or unknown. Omitted = all. */
+  sex: SexPreferenceSchema.optional(),
+});
+export class SexQueryDto extends createZodDto(SexQuerySchema) {}
 
 export const LeaderboardQuerySchema = z.object({ area: z.string().trim().min(1).max(100).optional() });
 export class LeaderboardQueryDto extends createZodDto(LeaderboardQuerySchema) {}

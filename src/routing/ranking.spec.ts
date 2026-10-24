@@ -200,6 +200,12 @@ describe('reasons', () => {
       'Verified 2024 survey',
     ]);
   });
+  it('labels both 2024 fieldwork surveys the same', () => {
+    expect(reasons(cand({ scoreCleanliness: null, source: 'FIELDWORK_2024_EXPANDED' }), 60, [], now)).toEqual([
+      '1 min walk',
+      'Verified 2024 survey',
+    ]);
+  });
   it('handles unknown cleanliness and other tiers', () => {
     expect(reasons(cand({ scoreCleanliness: null, tier: 'IMPORTED', source: 'OSM' }), 20, [], now)).toEqual([
       '1 min walk',

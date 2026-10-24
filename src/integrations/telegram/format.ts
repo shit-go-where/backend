@@ -10,6 +10,7 @@
 import { InlineKeyboard } from 'grammy';
 import type { AreaType, Feature, StatusKind, ToiletTier } from '../../generated/prisma/enums.js';
 import type { RecommendItem } from '../../routing/recommend.service.js';
+import type { ToiletSex } from '../../toilets/sex.js';
 import { googleMapsNavigateUrl, toiletUrl, type Campaign } from './links.js';
 
 // ───────────────────────────── basics ─────────────────────────────
@@ -367,15 +368,26 @@ export function verdictWord(score: number | null): string | null {
 
 const scoreNumber = (n: number) => n.toFixed(1).replace(/\.0$/, '');
 
-/** "Test Mall · L1 near lifts": venue, then the toilet's label or level. */
+/** Who a toilet is for, as the title says it. */
+export const SEX_LABELS: Record<ToiletSex, string> = { MALE: "Men's", FEMALE: "Women's", UNISEX: 'Unisex' };
+/** A label that already says it ("Women's, NEL side", "Accessible / unisex") gets no second mention. */
+const SEX_IN_LABEL: Record<ToiletSex, RegExp> = {
+  MALE: /\bmen'?s\b|\bmale\b|\bgents?\b/i,
+  FEMALE: /\bwomen'?s\b|\bfemale\b|\bladies\b/i,
+  UNISEX: /\bunisex\b/i,
+};
+
+/** "Test Mall · L1 near lifts · Women's": venue, then the toilet's label or level, then who it is for. */
 export function toiletTitle(t: {
   label: string | null;
   level: string | null;
   venue: { name: string; type: string };
+  sex?: ToiletSex | null;
 }): string {
   const parts = [placeName(t.venue)];
   if (t.label) parts.push(t.label);
   if (t.level && !(t.label ?? '').toLowerCase().includes(t.level.toLowerCase())) parts.push(t.level);
+  if (t.sex && !SEX_IN_LABEL[t.sex].test(t.label ?? '')) parts.push(SEX_LABELS[t.sex]);
   return parts.join(' · ');
 }
 
@@ -408,7 +420,8 @@ function itemLines(item: RecommendItem, now: Date): string[] {
     const bad = t.activeStatus.some((s) => s.kind !== 'ALL_GOOD');
     lines.push(`${bad ? '⚠️' : '✅'} Now: ${live}`);
   }
-  const features = FEATURE_ORDER.filter((f) => t.features.includes(f)).slice(0, MAX_FEATURES);
+  // "Unisex" is already in the title once the toilet's sex is known.
+  const features = FEATURE_ORDER.filter((f) => t.features.includes(f) && !(f === 'UNISEX' && t.sex)).slice(0, MAX_FEATURES);
   if (features.length) lines.push(features.map((f) => FEATURE_LABELS[f]).join(', '));
   return lines;
 }

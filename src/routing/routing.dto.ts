@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   AreaTypeSchema,
   FeatureSchema,
+  SexPreferenceSchema,
   ToiletSummarySchema,
   VenueToiletStatusSchema,
   lat,
@@ -21,6 +22,8 @@ export const RecommendBodySchema = z.object({
   purpose: PurposeSchema.optional(),
   require: z.array(FeatureSchema).max(40).optional(),
   areaType: AreaTypeSchema.optional(),
+  /** Only toilets usable by this sex (its own, unisex or unknown). Omitted = all. */
+  sex: SexPreferenceSchema.optional(),
   openNow: z.boolean().optional(),
   radiusM: z.number().positive().max(5000).optional(),
   weights: z

@@ -35,13 +35,27 @@ enum VenueToiletStatus {
 }
 
 enum DataSource {
-  FIELDWORK_2024
+  FIELDWORK_2024 // March 2024 pilot (men's toilets, 50-point rubric)
+  FIELDWORK_2024_EXPANDED // Aug-Oct 2024 expanded survey (men's, women's, unisex; -3..+3 rubric)
   OSM
   ONEMAP
   DATAGOV
   WIKIDATA
   COMMUNITY
   ADMIN
+}
+
+/// Which score sheet a Survey row was filled in on (data/README.md).
+enum SurveyRubric {
+  PILOT_50 // cleanliness 0-10, scent/aesthetics/music/toiletries 0-5, facilities 0-20, total /50
+  EXPANDED_2024 // cleanliness -3..+3, scent -2..+2, checklists; native values in Survey.breakdown
+}
+
+/// Which toilet a survey looked at: men's, women's or unisex (incl. handicapped).
+enum SurveySex {
+  MALE
+  FEMALE
+  UNISEX
 }
 
 enum ToiletTier {
@@ -242,15 +256,21 @@ model Survey {
   surveyedAt   DateTime
   surveyedById String?
   surveyedBy   User?    @relation(fields: [surveyedById], references: [id])
+  rubric       SurveyRubric
+  sex          SurveySex?
   phase        String?
-  cleanliness  Int
-  scent        Int
-  aesthetics   Int
-  music        Int
-  toiletries   Int
-  facilities   Int
-  total        Int
+  /// Normalised 0-10 for every rubric (feeds blendCleanliness); the native value is in `breakdown`.
+  cleanliness  Float
+  // PILOT_50 columns; null for other rubrics.
+  scent        Int?
+  aesthetics   Int?
+  music        Int?
+  toiletries   Int?
+  facilities   Int?
+  total        Int?
   rasStars     Int?
+  /// Rubric-native values (EXPANDED_2024: see src/toilets/survey-items.ts). Null for PILOT_50.
+  breakdown    Json?
   remarks      String?
   raw          Json
   createdAt    DateTime @default(now())

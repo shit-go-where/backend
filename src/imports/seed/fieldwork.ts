@@ -1,4 +1,4 @@
-import type { DataSource, Prisma, PrismaClient } from '../../generated/prisma/client.js';
+import { Prisma, type DataSource, type PrismaClient } from '../../generated/prisma/client.js';
 import {
   loadFieldwork,
   loadGeocoded,
@@ -15,6 +15,8 @@ import { levelFields } from '../../common/level.js';
 const SOURCE: DataSource = 'FIELDWORK_2024';
 /** Feature sources that an import must never overwrite. */
 export const PROTECTED_SOURCES: DataSource[] = ['COMMUNITY', 'ADMIN'];
+/** The expanded survey (Aug-Oct 2024) saw these toilets after the pilot (March): the newer observation wins. */
+export const PILOT_PROTECTED: DataSource[] = [...PROTECTED_SOURCES, 'FIELDWORK_2024_EXPANDED'];
 
 type Tx = Prisma.TransactionClient;
 
@@ -30,8 +32,10 @@ export function stableStringify(v: unknown): string {
       .join(',')}}`;
   return JSON.stringify(v ?? null);
 }
-const same = (a: unknown, b: unknown) => stableStringify(a) === stableStringify(b);
-const date = (iso: string) => new Date(`${iso}T00:00:00+08:00`);
+export const same = (a: unknown, b: unknown) => stableStringify(a) === stableStringify(b);
+/** "2024-03-15" (Singapore midnight) or a full "2024-08-24T09:15:35+08:00" timestamp. */
+export const sgDate = (iso: string) => new Date(iso.includes('T') ? iso : `${iso}T00:00:00+08:00`);
+const date = sgDate;
 
 export interface Tally {
   inserted: number;
@@ -56,14 +60,19 @@ interface FeatureRow {
 /**
  * Decide what to do with one feature. Fieldwork never overwrites COMMUNITY/ADMIN rows; ADMIN
  * (enrichment) overwrites anything but keeps its observedAt when the value did not change.
+ * `newerWins` lists other sources whose row is kept when it was observed later than `want`
+ * (the two 2024 surveys: whichever looked at the toilet last wins).
  */
 export function planFeature(
   existing: FeatureRow | undefined,
   want: FeatureWant,
   protectedSources: DataSource[] = PROTECTED_SOURCES,
+  newerWins: DataSource[] = [],
 ): 'create' | 'update' | 'keep' | 'protected' {
   if (!existing) return 'create';
   if (want.source !== 'ADMIN' && existing.source !== want.source && protectedSources.includes(existing.source)) return 'protected';
+  if (existing.source !== want.source && newerWins.includes(existing.source) && existing.observedAt.getTime() > want.observedAt.getTime())
+    return 'protected';
   if (want.source === 'ADMIN' && existing.source === 'ADMIN' && existing.present === want.present) return 'keep';
   if (existing.present === want.present && existing.source === want.source && existing.observedAt.getTime() === want.observedAt.getTime())
     return 'keep';
@@ -79,10 +88,11 @@ export async function syncFeatures(
   ownSource: DataSource,
   t: Tally & { protected: number; deleted: number },
   protectedSources: DataSource[] = PROTECTED_SOURCES,
+  newerWins: DataSource[] = [],
 ): Promise<void> {
   const byFeature = new Map(existing.map((f) => [f.feature, f]));
   for (const w of wants) {
-    const plan = planFeature(byFeature.get(w.feature), w, protectedSources);
+    const plan = planFeature(byFeature.get(w.feature), w, protectedSources, newerWins);
     if (plan === 'protected') t.protected++;
     else if (plan === 'keep') t.unchanged++;
     else {
@@ -104,9 +114,11 @@ export async function syncFeatures(
     }
 }
 
-function surveyData(s: CuratedSurvey) {
+export function surveyData(s: CuratedSurvey, source: DataSource = SOURCE) {
   return {
     surveyedAt: date(s.surveyedAt),
+    rubric: s.rubric,
+    sex: s.sex,
     phase: s.phase,
     cleanliness: s.cleanliness,
     scent: s.scent,
@@ -117,8 +129,15 @@ function surveyData(s: CuratedSurvey) {
     total: s.total,
     rasStars: s.rasStars,
     remarks: s.remarks,
-    raw: toJson({ ...s.raw, _key: s.key, _source: SOURCE }),
+    // Compared as-is with the stored row (null = no breakdown); writeSurvey turns null into DbNull.
+    breakdown: s.breakdown === null ? null : toJson(s.breakdown),
+    raw: toJson({ ...s.raw, _key: s.key, _source: source }),
   };
+}
+
+/** A nullable Json column is cleared with DbNull, not null. */
+function writeSurvey(data: ReturnType<typeof surveyData>) {
+  return { ...data, breakdown: data.breakdown ?? Prisma.DbNull };
 }
 
 export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log: Record<string, unknown> }> {
@@ -274,7 +293,7 @@ export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log
           toiletT.updated++;
         }
       }
-      await syncFeatures(tx, toiletId, ex?.features ?? [], featureWants(t, e, observedAt), SOURCE, featT);
+      await syncFeatures(tx, toiletId, ex?.features ?? [], featureWants(t, e, observedAt), SOURCE, featT, PILOT_PROTECTED);
       await syncSurveys(tx, toiletId, ex?.surveys ?? [], t.surveys, surveyT);
     });
   }
@@ -326,20 +345,22 @@ export function featureWants(t: CuratedToilet, e: Enrichment | undefined, observ
   return [...out.values()];
 }
 
-async function syncSurveys(
+/** Make the toilet's `source` surveys (raw._source) exactly `wanted`, matched by raw._key. */
+export async function syncSurveys(
   tx: Tx,
   toiletId: string,
   existing: { id: string; raw: unknown; surveyedById: string | null; [k: string]: unknown }[],
   wanted: CuratedSurvey[],
   t: Tally & { deleted: number },
+  source: DataSource = SOURCE,
 ): Promise<void> {
-  const mine = existing.filter((s) => !s.surveyedById && (s.raw as Record<string, unknown> | null)?.['_source'] === SOURCE);
+  const mine = existing.filter((s) => !s.surveyedById && (s.raw as Record<string, unknown> | null)?.['_source'] === source);
   const byKey = new Map(mine.map((s) => [(s.raw as Record<string, unknown>)['_key'] as string, s]));
   for (const s of wanted) {
-    const data = surveyData(s);
+    const data = surveyData(s, source);
     const ex = byKey.get(s.key);
     if (!ex) {
-      await tx.survey.create({ data: { ...data, toiletId } });
+      await tx.survey.create({ data: { ...writeSurvey(data), toiletId } });
       t.inserted++;
       continue;
     }
@@ -347,7 +368,7 @@ async function syncSurveys(
     const cur = Object.fromEntries(Object.keys(data).map((k) => [k, ex[k]]));
     if (same(cur, data)) t.unchanged++;
     else {
-      await tx.survey.update({ where: { id: ex.id }, data });
+      await tx.survey.update({ where: { id: ex.id }, data: writeSurvey(data) });
       t.updated++;
     }
   }
