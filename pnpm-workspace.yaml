@@ -7,3 +7,9 @@ allowBuilds:
   sharp: true
 patchedDependencies:
   nestjs-zod@5.5.0: patches/nestjs-zod@5.5.0.patch
+# Security floors for transitive deps (pnpm audit, 2026-10-24); drop once upstream ranges catch up.
+overrides:
+  body-parser: '^2.4.0'
+  multer: '^2.5.0'
+  fast-uri: '^3.1.9'
+  '@vercel/cli-config>zod': '^4.6.6'
