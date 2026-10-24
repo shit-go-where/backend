@@ -91,19 +91,20 @@ export const COMMANDS: Record<string, Command> = {
     },
   },
   'seed:fieldwork': {
-    description: 'Upsert curated fieldwork venues/toilets/features/surveys into the DB, then recompute scores',
-    run: async () => {
+    description: 'Upsert curated fieldwork venues/toilets/features/surveys into the DB, then recompute scores (--no-recompute skips that)',
+    run: async (args) => {
       const db = getDb();
       await withImportRun(db, 'FIELDWORK_2024', 'seed:fieldwork', () => seedFieldwork(db));
-      await recompute();
+      if (args.flags['recompute'] !== false) await recompute();
     },
   },
   'seed:fieldwork-2024b': {
-    description: 'Upsert the expanded 2024 survey (fieldwork-2024b.json + survey2-venue-matches.json), then recompute scores. Run after seed:fieldwork',
-    run: async () => {
+    description:
+      'Upsert the expanded 2024 survey (fieldwork-2024b.json + survey2-venue-matches.json), then recompute scores (--no-recompute skips that). Run after seed:fieldwork',
+    run: async (args) => {
       const db = getDb();
       await withImportRun(db, 'FIELDWORK_2024_EXPANDED', 'seed:fieldwork-2024b', () => seedFieldwork2024b(db));
-      await recompute();
+      if (args.flags['recompute'] !== false) await recompute();
     },
   },
   'import:osm': {
@@ -161,9 +162,10 @@ export const COMMANDS: Record<string, Command> = {
         ['survey2:normalise', args],
         ['geocode', { ...args, flags: { ...args.flags, refresh: false } }],
         ['enrich', args],
-        ['seed:fieldwork', args],
+        // Scores are recomputed once, at the end: against Neon every toilet costs a few round trips.
+        ['seed:fieldwork', { ...args, flags: { ...args.flags, recompute: false } }],
         // The reviewed survey2-venue-matches.json is used as committed (survey2:match is not re-run here).
-        ['seed:fieldwork-2024b', args],
+        ['seed:fieldwork-2024b', { ...args, flags: { ...args.flags, recompute: false } }],
         ['import:osm', args],
         // Wikidata before data.gov so newly added stations also receive their LTA exits in one pass.
         ['import:wikidata', args],

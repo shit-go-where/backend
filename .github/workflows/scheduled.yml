@@ -255,7 +255,8 @@ jobs:
   seed:
     if: inputs.job == 'seed'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The full load is ~20k single-row writes to Neon from the runner; the 2024-10-24 run was cut off at 60.
+    timeout-minutes: 180
     concurrency:
       group: sgw-imports
       cancel-in-progress: false
