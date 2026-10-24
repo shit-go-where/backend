@@ -13,6 +13,7 @@ import { paths } from '../lib/paths.js';
 import { stableStringify, syncFeatures, tally, type FeatureWant } from '../seed/fieldwork.js';
 import {
   accessOf,
+  canReopen,
   chooseVenue,
   elementLatLng,
   featuresFromTags,
@@ -154,7 +155,14 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
   const overrides = loadOsmOverrides();
   const osmToilets = new Map(
     (
-      await db.toilet.findMany({ where: { source: 'OSM' }, include: { features: true } })
+      await db.toilet.findMany({
+        where: { source: 'OSM' },
+        include: {
+          features: true,
+          // Anything people added: a closed toilet with any of it stays closed (canReopen).
+          _count: { select: { reviews: true, statusReports: true, photos: true, checkIns: true, flags: true, submissions: true } },
+        },
+      })
     ).map((t) => [t.sourceKey, t]),
   );
 
@@ -292,7 +300,7 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
         tier: existing.tier,
         source: existing.source,
       };
-      const reopen = existing.status === 'CLOSED' && (existing.features.every((f) => f.source === 'OSM'));
+      const reopen = canReopen(existing);
       if (stableStringify(cur) !== stableStringify(data) || reopen) {
         await db.toilet.update({ where: { id: existing.id }, data: { ...data, ...(reopen ? { status: 'ACTIVE' as const } : {}) } });
         toiletT.updated++;

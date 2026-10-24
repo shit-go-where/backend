@@ -1,5 +1,6 @@
 import {
   accessOf,
+  canReopen,
   chooseVenue,
   featuresFromTags,
   findDuplicate,
@@ -208,5 +209,27 @@ describe('findNearSurveyed (dedupe across venues)', () => {
   });
   it('ignores other sources', () => {
     expect(findNearSurveyed(at(1.3), true, [s('sheet:x', 1.3, { source: 'FIELDWORK_2024' })])).toBeNull();
+  });
+});
+
+describe('canReopen', () => {
+  const none = { reviews: 0, statusReports: 0, photos: 0, checkIns: 0, flags: 0, submissions: 0 };
+  const osm = (over: Partial<{ status: string; features: { source: string }[]; _count: Record<string, number> }> = {}) => ({
+    status: 'CLOSED',
+    features: [{ source: 'OSM' }],
+    _count: none,
+    ...over,
+  });
+  it('reopens a toilet the import closed and nobody touched', () => {
+    expect(canReopen(osm())).toBe(true);
+    expect(canReopen(osm({ features: [] }))).toBe(true);
+  });
+  it('never reopens one people interacted with (an admin closure looks like this)', () => {
+    expect(canReopen(osm({ _count: { ...none, statusReports: 1 } }))).toBe(false);
+    expect(canReopen(osm({ _count: { ...none, checkIns: 1 } }))).toBe(false);
+    expect(canReopen(osm({ features: [{ source: 'OSM' }, { source: 'COMMUNITY' }] }))).toBe(false);
+  });
+  it('does nothing to an open toilet', () => {
+    expect(canReopen(osm({ status: 'ACTIVE' }))).toBe(false);
   });
 });

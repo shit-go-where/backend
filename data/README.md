@@ -228,6 +228,8 @@ Slugs: lowercase ASCII, `&`→and, `@`→at, everything else non-alphanumeric �
   A survey2 toilet that is not on its venue's point (merged, or moved by hand) keeps its position on later runs while
   its venue stays the same; otherwise it follows the venue's point. So a second run changes nothing. OSM toilets that vanish → CLOSED unless
   they have COMMUNITY/ADMIN features or submissions (and only if the new snapshot has ≥ 50 % of the old count).
+  A CLOSED OSM toilet that is back in the snapshot reopens only if nobody has touched it (no reviews, check-ins, status
+  reports, photos, flags, submissions or COMMUNITY/ADMIN features): an admin's closure is never undone by the import.
 - **data.gov.sg**: a dataset point links to an existing venue of the same type within 60 m (or 300 m with a
   similar name), or to a generic OSM toilet venue there (which then takes the dataset's name/type — e.g. a
   "Public toilet" node at a hawker centre becomes that hawker centre); hawker centres also link through any

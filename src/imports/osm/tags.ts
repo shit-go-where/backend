@@ -283,3 +283,18 @@ function sameRoomCandidate(o: { level: string | null; sexes: ToiletSex[] }, t: S
   if (t.placed && o.level && t.level && o.level !== t.level) return false;
   return true;
 }
+
+/**
+ * Whether the import may reopen a CLOSED OSM toilet that is back in the snapshot. Only one it closed
+ * itself: nobody has touched it (no reviews, check-ins, status reports, photos, flags, submissions or
+ * COMMUNITY/ADMIN features). A toilet an admin closed, or that people reported, stays closed.
+ */
+export function canReopen(t: {
+  status: string;
+  features: { source: string }[];
+  _count: Record<string, number>;
+}): boolean {
+  if (t.status !== 'CLOSED') return false;
+  if (t.features.some((f) => f.source !== 'OSM')) return false;
+  return Object.values(t._count).every((n) => n === 0);
+}
