@@ -3,6 +3,7 @@
  * resource, role guards, the anonymous device cookie, trust escalation and the races that used to
  * slip past cooldowns and caps. Runs against the full app (createApp), throttle guard included.
  */
+import { brotliCompressSync, deflateSync, gzipSync } from 'node:zlib';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/app.factory.js';
@@ -352,6 +353,27 @@ describe('Security: authorisation, IDOR and abuse rules (e2e)', () => {
       const admin = await makeUser(prisma, `sec-admin-${id}`, { role: 'ADMIN' });
       await http().post('/admin/jobs/archive-status').set('Cookie', admin.cookie).expect(401);
       await http().post('/admin/jobs/archive-status').set('x-cron-secret', 'wrong').expect(401);
+    });
+  });
+
+  // ───────────── request bodies ─────────────
+
+  describe('request bodies', () => {
+    it('compressed bodies are refused (415) before anything inflates them', async () => {
+      const json = Buffer.from(JSON.stringify({ kind: 'NEW_TOILET', payload: {} }));
+      for (const [encoding, body] of [
+        ['br', brotliCompressSync(json)],
+        ['gzip', gzipSync(json)],
+        ['deflate', deflateSync(json)],
+      ] as const) {
+        await http()
+          .post('/submissions')
+          .set('Cookie', alice.cookie)
+          .set('Content-Type', 'application/json')
+          .set('Content-Encoding', encoding)
+          .send(body)
+          .expect(415);
+      }
     });
   });
 });

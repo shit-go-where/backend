@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
@@ -8,7 +9,15 @@ import { env } from './config/env.js';
 import { logLevels } from './observability/log-levels.js';
 
 export async function createApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule, { logger: logLevels(env.NODE_ENV, process.env.VERCEL_ENV) });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
+    logger: logLevels(env.NODE_ENV, process.env.VERCEL_ENV),
+  });
+  // No client sends compressed bodies, so refuse them (415) rather than inflate attacker-supplied
+  // gzip/Brotli: that path carried the Node Brotli RCE (CVE-2026-111497) and the body-parser
+  // trailing-bytes DoS (GHSA-27r3-jxmh-p828).
+  app.useBodyParser('json', { inflate: false });
+  app.useBodyParser('urlencoded', { extended: true, inflate: false });
   app.use(cookieParser());
   // In production the browser reaches the API through the Next /api rewrite (same origin),
   // so CORS only matters for local tools and Swagger UI.
