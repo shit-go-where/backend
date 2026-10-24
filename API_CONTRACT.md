@@ -130,7 +130,7 @@ interface Badge { id: string; name: string; description: string; icon: string; a
 
 interface Me {
   id: string; email: string; handle: string | null; displayName: string; avatarUrl: string | null;
-  role: Role; trustScore: number; leaderboardOptIn: boolean; points: number;
+  role: Role; trustScore: number; leaderboardOptIn: boolean; points: number;   // leaderboardOptIn: true unless turned off
   badges: Badge[]; needsHandle: boolean;
   handleChangeableAt: string | null;   // when the handle can next be changed (once per 30 days); null = now
   trust: { score: number; threshold: 50; isTrusted: boolean };   // isTrusted = role TRUSTED or above
@@ -431,8 +431,9 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 - `GET /me/passport` (auth) → `{ stamped: number; total: number; stations: { venueId, name, lines: string[], stampedAt: string | null }[] }`
   All MRT_STATION venues with toiletStatus HAS_TOILETS, by name. `stampedAt` = the user's earliest check-in at that station.
 - `GET /leaderboard/users?scope=week|all` (default `week` = last 7 days, optional auth) → `{ items: { rank, handle, avatarUrl, points }[]; me: { rank: number | null; points: number } | null }` (`avatarUrl` always null)
-  Opt-in users with a handle and > 0 points, top 100. Ties share a rank (1, 2, 2, 4). `items` cached 5 min per scope.
-  `me` is null when signed out; `me.rank` is null when the user is not opted in.
+  Users with a handle and > 0 points who haven't turned the leaderboard off (`leaderboardOptIn`, on by default), top 100.
+  Ties share a rank (1, 2, 2, 4). `items` cached 5 min per scope.
+  `me` is null when signed out; `me.rank` is null when the user has turned it off or has no handle.
 - `GET /leaderboard/toilets?area=` → `{ items: { rank: number; toilet: ToiletSummary; score: number }[]; areas: string[] }`
   (not implemented by the contributions agent: needs the finder agent's ToiletSummary builder)
 - `GET /badges` (optional auth) → `{ items: Badge[] }` every badge; `awardedAt` set on the signed-in user's earned ones.

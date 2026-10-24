@@ -269,7 +269,8 @@ model User {
   avatarUrl          String?
   role               Role                 @default(USER)
   trustScore         Int                  @default(0)
-  leaderboardOptIn   Boolean              @default(false)
+  // Listed on the leaderboard (handle and points) once they have a handle. Opt-out.
+  leaderboardOptIn   Boolean              @default(true)
   handleChangedAt    DateTime?
   lastSeenActivityAt DateTime?
   // Show "Last checked by @handle" on toilets this person verified (GROWTH.md 1.7). Opt-out.

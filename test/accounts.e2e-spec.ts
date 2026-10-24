@@ -35,7 +35,8 @@ describe('dev-login and /me', () => {
       role: 'USER',
       points: 0,
       badges: [],
-      leaderboardOptIn: false,
+      // On by default; it shows once they pick a handle.
+      leaderboardOptIn: true,
     });
     const res = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
     expect(res.body.id).toBe(me.id);
