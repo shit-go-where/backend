@@ -209,3 +209,77 @@ export function findDuplicate(
   }
   return best;
 }
+
+export type ToiletSex = 'MALE' | 'FEMALE' | 'UNISEX';
+const SEXES: ToiletSex[] = ['MALE', 'FEMALE', 'UNISEX'];
+
+/** The sexes an OSM toilet is tagged for (male / female / unisex = yes); empty when it says nothing. */
+export function osmSexes(features: Partial<Record<FeatureName, boolean>>): ToiletSex[] {
+  return SEXES.filter((s) => features[s] === true);
+}
+
+/** `survey2:M11/female/b1` -> FEMALE. Every survey2 toilet key carries its sex. */
+export function survey2SexOf(sourceKey: string): ToiletSex | null {
+  const m = /^survey2:[^/]+\/(male|female|unisex)(?:\/|$)/.exec(sourceKey);
+  return m ? (m[1]!.toUpperCase() as ToiletSex) : null;
+}
+
+/** Names that make an OSM venue a place of its own even when it is typed OTHER. */
+const PLACE_NAME = /\b(?:library|community (?:club|centre|center)|station|interchange|mrt|lrt)\b/i;
+
+/**
+ * Is this the venue of a generic OSM toilet rather than a real place? An OSM venue (`osmKind` toilet =
+ * an amenity=toilets block, feature = toilets=yes on something) of type OTHER or MALL that data.gov.sg
+ * has not claimed and that is not named like a library / community club / station: "Public toilet", or
+ * a toilet node that inherited a shop's name ("Don Don Donki", "Gourmet Express").
+ */
+export function isGenericToiletVenue(v: { source: string; type: string; name: string; externalIds: unknown }): boolean {
+  if (v.source !== 'OSM') return false;
+  const ext = (v.externalIds as Record<string, unknown> | null) ?? {};
+  if (ext['osmKind'] !== 'toilet' && ext['osmKind'] !== 'feature') return false;
+  if (ext['datagov']) return false;
+  if (v.type !== 'OTHER' && v.type !== 'MALL') return false;
+  return !PLACE_NAME.test(v.name);
+}
+
+/** A survey2 toilet within this distance of a generic OSM toilet, at any venue, is the same room. */
+export const NEAR_SURVEY_RADIUS_M = 15;
+/** A survey2 toilet this close to an OSM toilet sits on its coordinates: it was merged onto it. */
+export const MERGED_AT_M = 1;
+
+export interface SurveyedToilet extends ExistingToilet {
+  /** Normalised level, or null. */
+  level: string | null;
+  sex: ToiletSex | null;
+  /** Not at its venue's point any more: merged onto an OSM toilet's position (or moved by hand). */
+  placed: boolean;
+}
+
+/**
+ * The second dedupe rule, across venues: an OSM toilet is the survey2 toilet that sits on its own
+ * coordinates (merged), or, when the OSM toilet is generic (isGenericToiletVenue), the nearest survey2
+ * toilet within 15 m that could be the same room: a sex the OSM toilet is tagged for (any when untagged)
+ * and, when the survey2 toilet has a real position (`placed`) and both levels are known, the same level.
+ */
+export function findNearSurveyed(
+  point: { lat: number; lng: number; level: string | null; sexes: ToiletSex[] },
+  generic: boolean,
+  toilets: SurveyedToilet[],
+  radiusM = NEAR_SURVEY_RADIUS_M,
+): { toilet: SurveyedToilet; distanceM: number; rule: 'merged' | 'near-15m' } | null {
+  let best: { toilet: SurveyedToilet; distanceM: number; rule: 'merged' | 'near-15m' } | null = null;
+  for (const t of toilets) {
+    if (t.source !== 'FIELDWORK_2024_EXPANDED') continue;
+    const d = haversineM(point.lat, point.lng, t.lat, t.lng);
+    if (best && d >= best.distanceM) continue;
+    if (d <= MERGED_AT_M) best = { toilet: t, distanceM: d, rule: 'merged' };
+    else if (generic && d <= radiusM && sameRoomCandidate(point, t)) best = { toilet: t, distanceM: d, rule: 'near-15m' };
+  }
+  return best;
+}
+
+function sameRoomCandidate(o: { level: string | null; sexes: ToiletSex[] }, t: SurveyedToilet): boolean {
+  if (o.sexes.length && (!t.sex || !o.sexes.includes(t.sex))) return false;
+  if (t.placed && o.level && t.level && o.level !== t.level) return false;
+  return true;
+}

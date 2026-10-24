@@ -1,4 +1,17 @@
-import { accessOf, chooseVenue, featuresFromTags, findDuplicate, levelOf, openingHoursOf, venueTypeFromTags } from './tags.js';
+import {
+  accessOf,
+  chooseVenue,
+  featuresFromTags,
+  findDuplicate,
+  findNearSurveyed,
+  isGenericToiletVenue,
+  levelOf,
+  openingHoursOf,
+  osmSexes,
+  survey2SexOf,
+  venueTypeFromTags,
+  type SurveyedToilet,
+} from './tags.js';
 import { levelFields } from '../../common/level.js';
 
 describe('featuresFromTags', () => {
@@ -128,5 +141,72 @@ describe('findDuplicate (dedupe rule)', () => {
     expect(findDuplicate({ lat: 1.3005, lng: 103.8 }, 'V', toilets)).toBeNull(); // ~56 m
     expect(findDuplicate({ lat: 1.3, lng: 103.8 }, 'X', toilets)).toBeNull();
     expect(findDuplicate({ lat: 1.3, lng: 103.8 }, 'V', toilets.slice(1, 2))).toBeNull();
+  });
+});
+
+describe('isGenericToiletVenue', () => {
+  const v = (name: string, type: string, externalIds: unknown, source = 'OSM') => ({ name, type, externalIds, source });
+  it('is a generic toilet block, or a toilet node that inherited a shop name', () => {
+    expect(isGenericToiletVenue(v('Public toilet', 'OTHER', { osm: 'node/1', osmKind: 'toilet' }))).toBe(true);
+    expect(isGenericToiletVenue(v('Gourmet Express', 'OTHER', { osm: 'node/2', osmKind: 'feature' }))).toBe(true);
+    expect(isGenericToiletVenue(v('Don Don Donki', 'MALL', { osm: 'node/3', osmKind: 'feature' }))).toBe(true);
+  });
+  it('is not a place of its own: claimed by data.gov.sg, typed, named like one, or not from OSM', () => {
+    expect(isGenericToiletVenue(v('Senja-Cashew Community Club', 'COMMUNITY_CLUB', { osmKind: 'toilet', datagov: { cc: ['x'] } }))).toBe(false);
+    expect(isGenericToiletVenue(v('Public toilet', 'OTHER', { osmKind: 'toilet', datagov: { hawker: ['x'] } }))).toBe(false);
+    expect(isGenericToiletVenue(v('Jurong Regional Library', 'OTHER', { osmKind: 'feature' }))).toBe(false);
+    expect(isGenericToiletVenue(v('Chinatown MRT Station', 'OTHER', { osmKind: 'feature' }))).toBe(false);
+    expect(isGenericToiletVenue(v('Bishan Community Centre', 'OTHER', { osmKind: 'feature' }))).toBe(false);
+    expect(isGenericToiletVenue(v('Some Hawker', 'HAWKER_CENTRE', { osmKind: 'feature' }))).toBe(false);
+    expect(isGenericToiletVenue(v('Causeway Point', 'MALL', { survey2Codes: ['M11'] }, 'FIELDWORK_2024_EXPANDED'))).toBe(false);
+    expect(isGenericToiletVenue(v('Public toilet', 'OTHER', null))).toBe(false);
+  });
+});
+
+describe('osmSexes / survey2SexOf', () => {
+  it('reads the sex tags and the survey2 key', () => {
+    expect(osmSexes(featuresFromTags({ amenity: 'toilets', female: 'yes', male: 'no' }))).toEqual(['FEMALE']);
+    expect(osmSexes(featuresFromTags({ amenity: 'toilets', unisex: 'yes', wheelchair: 'yes' }))).toEqual(['UNISEX']);
+    expect(osmSexes(featuresFromTags({ amenity: 'toilets' }))).toEqual([]);
+    expect(survey2SexOf('survey2:M11/female/b1')).toBe('FEMALE');
+    expect(survey2SexOf('survey2:NE3/male')).toBe('MALE');
+    expect(survey2SexOf('survey2:M18/unisex/l2')).toBe('UNISEX');
+    expect(survey2SexOf('sheet:outram-park-ewl')).toBeNull();
+  });
+});
+
+describe('findNearSurveyed (dedupe across venues)', () => {
+  // 0.0001 deg of latitude is ~11 m.
+  const s = (sourceKey: string, lat: number, extra: Partial<SurveyedToilet> = {}): SurveyedToilet => ({
+    id: sourceKey,
+    sourceKey,
+    venueId: 'cs',
+    source: 'FIELDWORK_2024_EXPANDED',
+    lat,
+    lng: 103.8,
+    level: null,
+    sex: survey2SexOf(sourceKey),
+    placed: false,
+    ...extra,
+  });
+  const at = (lat: number, level: string | null = null, sexes: ('MALE' | 'FEMALE' | 'UNISEX')[] = []) => ({ lat, lng: 103.8, level, sexes });
+  it('a generic OSM toilet within 15 m of a survey2 toilet at any venue is that toilet', () => {
+    const hit = findNearSurveyed(at(1.3001), true, [s('survey2:C1/male', 1.3), s('survey2:C1/female', 1.30005)]);
+    expect([hit?.toilet.sourceKey, hit?.rule]).toEqual(['survey2:C1/female', 'near-15m']);
+    expect(findNearSurveyed(at(1.3002), true, [s('survey2:C1/male', 1.3)])).toBeNull(); // ~22 m
+  });
+  it('a place of its own is only deduped by a survey2 toilet sitting on its coordinates (merged)', () => {
+    expect(findNearSurveyed(at(1.3001), false, [s('survey2:C1/male', 1.3)])).toBeNull();
+    const hit = findNearSurveyed(at(1.3), false, [s('survey2:M11/female/b1', 1.3, { placed: true, level: 'B1', venueId: 'mall' })]);
+    expect([hit?.toilet.sourceKey, hit?.rule]).toEqual(['survey2:M11/female/b1', 'merged']);
+  });
+  it('needs a sex the OSM toilet is tagged for, and the same level as a survey2 toilet with its own position', () => {
+    expect(findNearSurveyed(at(1.3001, null, ['FEMALE']), true, [s('survey2:C1/male', 1.3)])).toBeNull();
+    expect(findNearSurveyed(at(1.3001, 'L1'), true, [s('survey2:M1/male/b1', 1.3, { level: 'B1', placed: true })])).toBeNull();
+    // At the venue's point a survey2 toilet's position says nothing about the floor: the level does not matter.
+    expect(findNearSurveyed(at(1.3001, 'B2'), true, [s('survey2:M1/male/l2', 1.3, { level: 'L2' })])?.rule).toBe('near-15m');
+  });
+  it('ignores other sources', () => {
+    expect(findNearSurveyed(at(1.3), true, [s('sheet:x', 1.3, { source: 'FIELDWORK_2024' })])).toBeNull();
   });
 });

@@ -1,6 +1,7 @@
 import type { Survey2Toilet } from '../curated/schema.js';
 import { PROTECTED_SOURCES, planFeature, sgDate } from './fieldwork.js';
-import { mergeWants, planOsmSupersede, resolveVenue } from './fieldwork2024b.js';
+import { mergeWants, planOsmNear, planOsmSupersede, resolveVenue, type OsmNearCandidate } from './fieldwork2024b.js';
+import { survey2SexOf, type SurveyedToilet } from '../osm/tags.js';
 
 const march = new Date('2024-03-15T00:00:00+08:00');
 const october = new Date('2024-10-12T13:34:14+08:00');
@@ -80,5 +81,130 @@ describe('planOsmSupersede (import:osm dedupe, the other way round)', () => {
     const pilot = [t('sheet:x', 'hc', 1.3, 'FIELDWORK_2024')];
     expect(planOsmSupersede([t('osm:node/5', 'hc', 1.3)], pilot).remove).toEqual([]);
     expect(planOsmSupersede([t('community:1', 'hc', 1.3, 'COMMUNITY')], s2).remove).toEqual([]);
+  });
+});
+
+describe('planOsmNear (OSM toilets next to survey2 toilets at other venues)', () => {
+  // 0.0001 deg of latitude is ~11 m. Mall "M" at 1.3 (survey2 toilets on its point), coffeeshop "C" 1 km north.
+  const venues = new Map([
+    ['M', { lat: 1.3, lng: 103.8 }],
+    ['C', { lat: 1.31, lng: 103.8 }],
+  ]);
+  const s2 = (key: string, venueId: string, level: string | null): SurveyedToilet => ({
+    id: key,
+    sourceKey: key,
+    venueId,
+    source: 'FIELDWORK_2024_EXPANDED',
+    lat: venues.get(venueId)!.lat,
+    lng: 103.8,
+    level,
+    sex: survey2SexOf(key),
+    placed: false,
+  });
+  const survey = [
+    s2('survey2:M1/male/b1', 'M', 'B1'),
+    s2('survey2:M1/female/b1', 'M', 'B1'),
+    s2('survey2:M1/male/l2', 'M', 'L2'),
+    s2('survey2:M1/female/l2', 'M', 'L2'),
+    s2('survey2:M1/male/l3-1', 'M', 'L3'),
+    s2('survey2:M1/male/l3-2', 'M', 'L3'),
+    s2('survey2:C1/male', 'C', null),
+    s2('survey2:C1/female', 'C', null),
+  ];
+  const osm = (key: string, lat: number, o: Partial<OsmNearCandidate> = {}): OsmNearCandidate => ({
+    id: key,
+    sourceKey: key,
+    venueId: `osm-venue:${key}`,
+    source: 'OSM',
+    lat,
+    lng: 103.8,
+    activity: 0,
+    level: null,
+    sexes: [],
+    generic: true,
+    ...o,
+  });
+  const mall = [
+    osm('osm:way/1', 1.3002, { level: 'B1', sexes: ['FEMALE'] }),
+    osm('osm:way/2', 1.30022, { level: 'B1', sexes: ['MALE'] }),
+    osm('osm:way/3', 1.30024, { level: 'B1', sexes: ['UNISEX'] }),
+    osm('osm:way/4', 1.3003, { level: 'L1', sexes: ['FEMALE'] }),
+    osm('osm:way/5', 1.29975, { level: 'L2' }),
+    osm('osm:way/6', 1.2998, { level: 'L3' }),
+    osm('osm:node/7', 1.30035, { level: 'L2', generic: false, venueId: 'library' }),
+  ];
+  const shop = [
+    osm('osm:node/10', 1.31005), // ~6 m from the coffeeshop's toilets
+    osm('osm:node/11', 1.31008, { generic: false }), // a community club next door
+    osm('osm:node/12', 1.30995, { activity: 2 }),
+    osm('osm:node/13', 1.31002, { sexes: ['UNISEX'] }),
+  ];
+
+  it('merges by floor: a sex tag picks one survey2 toilet, an untagged toilet takes one per sex', () => {
+    const plan = planOsmNear(mall, survey, venues);
+    expect(plan.merged.map((m) => [m.osm.sourceKey, m.into.map((t) => t.sourceKey), m.distanceM, m.rule])).toEqual([
+      ['osm:way/1', ['survey2:M1/female/b1'], 22, 'floor'],
+      ['osm:way/2', ['survey2:M1/male/b1'], 24, 'floor'],
+      ['osm:way/5', ['survey2:M1/male/l2', 'survey2:M1/female/l2'], 28, 'floor'],
+    ]);
+    expect(plan.ambiguous).toEqual([
+      { venueId: 'M', level: 'L3', osm: ['osm:way/6'], survey2: ['survey2:M1/male/l3-1', 'survey2:M1/male/l3-2'], reason: '2 MALE survey2 toilets on L3' },
+    ]);
+    // No unisex survey2 toilet on B1, nothing on L1, and the library's own toilet is not the mall's.
+    expect(plan.retired).toEqual([]);
+    expect(plan.near.map((n) => [n.osm.sourceKey, n.reason])).toEqual([
+      // Measured from where the merged survey2 toilets are now.
+      ['osm:way/3', 'not the same room (sex or level differs)'],
+      ['osm:way/6', 'floor merge ambiguous: 2 MALE survey2 toilets on L3'],
+      ['osm:way/4', 'not the same room (sex or level differs)'],
+      ['osm:node/7', 'a place of its own'],
+    ]);
+  });
+
+  it('calls it ambiguous when two OSM toilets claim one sex on a level', () => {
+    const plan = planOsmNear([osm('osm:way/20', 1.3002, { level: 'B1', sexes: ['MALE'] }), osm('osm:way/21', 1.3003, { level: 'B1' })], survey, venues);
+    expect(plan.merged).toEqual([]);
+    expect(plan.ambiguous.map((a) => [a.level, a.osm, a.reason])).toEqual([['B1', ['osm:way/20', 'osm:way/21'], '2 OSM toilets for MALE on B1']]);
+  });
+
+  it('retires a generic OSM toilet in the same room as a survey2 toilet, keeps named places and used toilets', () => {
+    const plan = planOsmNear(shop, survey, venues);
+    expect(plan.retired.map((r) => [r.osm.sourceKey, r.by?.sourceKey, r.distanceM, r.rule])).toEqual([['osm:node/10', 'survey2:C1/male', 6, 'near-15m']]);
+    expect(plan.keptInUse.map((k) => [k.osm.sourceKey, k.rule])).toEqual([['osm:node/12', 'near-15m']]);
+    expect(plan.near.map((n) => [n.osm.sourceKey, n.reason])).toEqual([
+      ['osm:node/13', 'not the same room (sex or level differs)'],
+      ['osm:node/12', 'in use (would be retired)'],
+      ['osm:node/11', 'a place of its own'],
+    ]);
+  });
+
+  it('applies overrides.json osmOverrides before any rule', () => {
+    const far = osm('osm:node/30', 1.32);
+    const plan = planOsmNear([...shop, far, ...mall], survey, venues, {
+      'osm:node/10': 'keep',
+      'osm:node/30': 'retire',
+      'osm:way/6': { mergeInto: 'survey2:M1/male/l3-2' },
+      'osm:node/11': { mergeInto: 'survey2:C1/female' },
+      'osm:node/99': 'retire',
+    });
+    expect(plan.retired.map((r) => [r.osm.sourceKey, r.rule])).toEqual([['osm:node/30', 'override']]);
+    expect(plan.merged.filter((m) => m.rule === 'override').map((m) => [m.osm.sourceKey, m.into.map((t) => t.sourceKey)])).toEqual([
+      ['osm:node/11', ['survey2:C1/female']],
+      ['osm:way/6', ['survey2:M1/male/l3-2']],
+    ]);
+    expect(plan.ambiguous).toEqual([]);
+    expect(plan.near.find((n) => n.osm.sourceKey === 'osm:node/10')?.reason).toBe('overrides.json: keep');
+    expect(plan.unusedOverrides.map((u) => u.key)).toEqual(['osm:node/99']);
+  });
+
+  it('is a no-op once applied: merged survey2 toilets sit on the OSM position, nothing is left to retire', () => {
+    const all = [...mall, ...shop];
+    const first = planOsmNear(all, survey, venues);
+    const gone = new Set([...first.merged, ...first.retired].map((x) => x.osm.sourceKey));
+    const moved = new Map(first.merged.flatMap((m) => m.into.map((t) => [t.sourceKey, m.osm] as const)));
+    const after = survey.map((t) => (moved.has(t.sourceKey) ? { ...t, lat: moved.get(t.sourceKey)!.lat, lng: moved.get(t.sourceKey)!.lng, placed: true } : t));
+    const second = planOsmNear(all.filter((o) => !gone.has(o.sourceKey)), after, venues);
+    expect([second.merged, second.retired, second.ambiguous.length]).toEqual([[], [], first.ambiguous.length]);
+    expect(second.near.map((n) => n.osm.sourceKey).sort()).toEqual(first.near.map((n) => n.osm.sourceKey).sort());
   });
 });

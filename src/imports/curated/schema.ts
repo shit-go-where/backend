@@ -180,6 +180,20 @@ export type Override = z.infer<typeof OverrideSchema>;
 export const REMARK_OVERRIDES_KEY = 'remarkOverrides';
 export const RemarkOverridesSchema = z.record(z.string(), z.string().nullable());
 export type RemarkOverrides = z.infer<typeof RemarkOverridesSchema>;
+/**
+ * overrides.json `osmOverrides`: OSM toilet sourceKey ("osm:way/1395135421") -> what seed:fieldwork-2024b does with
+ * it next to the expanded survey, instead of its own rules: "retire" (delete it), "keep" (never supersede, retire or
+ * merge it), or `{ "mergeInto": "<survey2 toilet sourceKey>" }` (move that survey2 toilet onto it, then delete it).
+ * import:osm reads it too: a retired or merged toilet is never re-added, a kept one is never deduped.
+ */
+export const OSM_OVERRIDES_KEY = 'osmOverrides';
+export const OsmOverrideSchema = z.union([
+  z.enum(['retire', 'keep']),
+  z.object({ mergeInto: z.string().startsWith('survey2:') }).strict(),
+]);
+export type OsmOverride = z.infer<typeof OsmOverrideSchema>;
+export const OsmOverridesSchema = z.record(z.string().startsWith('osm:'), OsmOverrideSchema);
+export type OsmOverrides = z.infer<typeof OsmOverridesSchema>;
 
 // ───────────────────────────── expanded survey (survey2) ─────────────────────────────
 
@@ -296,6 +310,11 @@ export const ReviewSchema = z.object({
   survey2Geocode: z.array(ReviewItemSchema).default([]),
   /** Every survey2 survey with a free-text remark, to read in one place (survey2:normalise). */
   survey2Remarks: z.array(Survey2RemarkSchema).default([]),
+  /**
+   * seed:fieldwork-2024b: OSM toilets it kept within 45 m of a survey2 toilet, floor merges it could not decide, and
+   * unused overrides.json `osmOverrides`; each overridable there by its OSM sourceKey (`key`).
+   */
+  survey2OsmNear: z.array(ReviewItemSchema).default([]),
 });
 export type Review = z.infer<typeof ReviewSchema>;
 
@@ -305,14 +324,18 @@ export function loadFieldwork(file = paths.fieldwork): Fieldwork {
 export function loadGeocoded(file = paths.geocoded): Record<string, GeocodedVenue> {
   return GeocodedSchema.parse(readJsonIfExists(file) ?? {});
 }
-/** Venue-key overrides (everything except `remarkOverrides`). */
+/** Venue-key overrides (everything except `remarkOverrides` and `osmOverrides`). */
 export function loadOverrides(file = paths.overrides): Record<string, Override> {
   const all = (readJsonIfExists(file) ?? {}) as Record<string, unknown>;
-  return OverridesSchema.parse(Object.fromEntries(Object.entries(all).filter(([k]) => k !== REMARK_OVERRIDES_KEY)));
+  return OverridesSchema.parse(Object.fromEntries(Object.entries(all).filter(([k]) => k !== REMARK_OVERRIDES_KEY && k !== OSM_OVERRIDES_KEY)));
 }
 export function loadRemarkOverrides(file = paths.overrides): RemarkOverrides {
   const all = (readJsonIfExists(file) ?? {}) as Record<string, unknown>;
   return RemarkOverridesSchema.parse(all[REMARK_OVERRIDES_KEY] ?? {});
+}
+export function loadOsmOverrides(file = paths.overrides): OsmOverrides {
+  const all = (readJsonIfExists(file) ?? {}) as Record<string, unknown>;
+  return OsmOverridesSchema.parse(all[OSM_OVERRIDES_KEY] ?? {});
 }
 export function loadReview(file = paths.review): Review {
   return ReviewSchema.parse(readJsonIfExists(file) ?? {});

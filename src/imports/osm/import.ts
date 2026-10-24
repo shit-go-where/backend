@@ -1,10 +1,10 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import type { PrismaClient } from '../../generated/prisma/client.js';
-import type { FeatureName } from '../curated/schema.js';
+import { loadOsmOverrides, type FeatureName } from '../curated/schema.js';
 import { loadPlanningAreas } from '../geocode/planningArea.js';
 import { readJson, writeJson } from '../lib/files.js';
-import { inSingapore, PointIndex } from '../lib/geo.js';
+import { haversineM, inSingapore, PointIndex } from '../lib/geo.js';
 import { politeFetch, type CacheMode } from '../lib/http.js';
 import { toJson, type RunCounts } from '../lib/importRun.js';
 import { levelFields } from '../../common/level.js';
@@ -17,14 +17,19 @@ import {
   elementLatLng,
   featuresFromTags,
   findDuplicate,
+  findNearSurveyed,
+  isGenericToiletVenue,
   isToiletsOnFeature,
   levelOf,
   OSM_ATTRIBUTION,
   openingHoursOf,
+  osmSexes,
+  survey2SexOf,
   venueNameFromTags,
   venueTypeFromTags,
   type ExistingToilet,
   type OsmElement,
+  type SurveyedToilet,
   type VenueCandidate,
 } from './tags.js';
 
@@ -99,23 +104,54 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
   const snap = await loadSnapshot(opts);
   const areas = await loadPlanningAreas({ offline: opts.offline });
 
-  type V = VenueCandidate & { sourceKey: string; source: string };
-  const venues = await db.venue.findMany({ select: { id: true, name: true, latitude: true, longitude: true, toiletStatus: true, sourceKey: true, source: true } });
+  /** generic: the venue of a generic OSM toilet, not a place of its own (isGenericToiletVenue). */
+  type V = VenueCandidate & { sourceKey: string; source: string; generic: boolean };
+  const venues = await db.venue.findMany({
+    select: { id: true, name: true, latitude: true, longitude: true, toiletStatus: true, sourceKey: true, source: true, type: true, externalIds: true },
+  });
   const venueIndex = new PointIndex<V>();
   const venueById = new Map<string, V>();
   const venueByKey = new Map<string, V>();
   for (const v of venues) {
-    const c: V = { id: v.id, name: v.name, lat: v.latitude, lng: v.longitude, toiletStatus: v.toiletStatus, sourceKey: v.sourceKey, source: v.source };
+    const c: V = {
+      id: v.id,
+      name: v.name,
+      lat: v.latitude,
+      lng: v.longitude,
+      toiletStatus: v.toiletStatus,
+      sourceKey: v.sourceKey,
+      source: v.source,
+      generic: isGenericToiletVenue(v),
+    };
     venueIndex.add(c);
     venueById.set(v.id, c);
     venueByKey.set(v.sourceKey, c);
   }
   const toilets = await db.toilet.findMany({
-    select: { id: true, sourceKey: true, venueId: true, source: true, latitude: true, longitude: true, status: true },
+    select: { id: true, sourceKey: true, venueId: true, source: true, latitude: true, longitude: true, status: true, level: true },
   });
   const humanToilets: ExistingToilet[] = toilets
     .filter((t) => isFieldwork(t.source) || t.source === 'COMMUNITY')
     .map((t) => ({ id: t.id, sourceKey: t.sourceKey, venueId: t.venueId, source: t.source, lat: t.latitude, lng: t.longitude }));
+  // Expanded-survey toilets for the cross-venue rule (findNearSurveyed). `placed`: no longer on its venue's point,
+  // i.e. seed:fieldwork-2024b merged it onto an OSM toilet's position (or someone moved it).
+  const surveyed: SurveyedToilet[] = toilets
+    .filter((t) => t.source === 'FIELDWORK_2024_EXPANDED' && t.status === 'ACTIVE')
+    .map((t) => {
+      const v = venueById.get(t.venueId);
+      return {
+        id: t.id,
+        sourceKey: t.sourceKey,
+        venueId: t.venueId,
+        source: t.source,
+        lat: t.latitude,
+        lng: t.longitude,
+        level: t.level,
+        sex: survey2SexOf(t.sourceKey),
+        placed: !v || haversineM(t.latitude, t.longitude, v.lat, v.lng) >= 0.5,
+      };
+    });
+  const overrides = loadOsmOverrides();
   const osmToilets = new Map(
     (
       await db.toilet.findMany({ where: { source: 'OSM' }, include: { features: true } })
@@ -125,7 +161,7 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
   const venueT = tally();
   const toiletT = tally();
   const featT = { ...tally(), protected: 0, deleted: 0 };
-  const skipped = { outside: 0, private: [] as string[], deduped: [] as { osm: string; matched: string; venue: string }[] };
+  const skipped = { outside: 0, private: [] as string[], deduped: [] as { osm: string; matched: string; venue: string; rule: string }[] };
   const seen = new Set<string>();
   const now = new Date();
 
@@ -194,17 +230,29 @@ export async function importOsm(db: PrismaClient, opts: CacheMode & { close: boo
         } else venueT.unchanged++;
       }
       if (!venue) {
-        venue = { id, name: data.name, lat: ll.lat, lng: ll.lng, toiletStatus: 'HAS_TOILETS', sourceKey: ownVenueKey, source: 'OSM' };
+        const generic = isGenericToiletVenue({ ...data, externalIds: ex?.externalIds ?? data.externalIds });
+        venue = { id, name: data.name, lat: ll.lat, lng: ll.lng, toiletStatus: 'HAS_TOILETS', sourceKey: ownVenueKey, source: 'OSM', generic };
         venueIndex.add(venue);
         venueById.set(id, venue);
       }
     }
     // Dedupe also on the toilet's own OSM venue: a survey may have reused it (survey2:match) and
     // superseded this toilet (seed:fieldwork-2024b). A brand-new venue has no toilets, so no-op there.
-    if (!existing) {
-      const dup = findDuplicate(ll, venue.id, humanToilets, 40);
+    // Then across venues: the survey2 toilet merged onto this one's position, or the one in the same room
+    // (the rules seed:fieldwork-2024b retires and merges by), and overrides.json osmOverrides.
+    const ov = overrides[sourceKey];
+    if (!existing && ov !== 'keep') {
+      const dup = ov
+        ? { sourceKey: ov === 'retire' ? 'overrides.json: retire' : ov.mergeInto, rule: 'override' }
+        : (() => {
+            const same = findDuplicate(ll, venue.id, humanToilets, 40);
+            if (same) return { sourceKey: same.sourceKey, rule: 'same-venue-40m' };
+            const point = { ...ll, level: levelFields(levelOf(tags)).level, sexes: osmSexes(featuresFromTags(tags)) };
+            const hit = findNearSurveyed(point, venue.generic, surveyed);
+            return hit && { sourceKey: hit.toilet.sourceKey, rule: hit.rule };
+          })();
       if (dup) {
-        skipped.deduped.push({ osm: sourceKey, matched: dup.sourceKey, venue: venue.sourceKey });
+        skipped.deduped.push({ osm: sourceKey, matched: dup.sourceKey, venue: venue.sourceKey, rule: dup.rule });
         continue;
       }
     }

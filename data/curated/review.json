@@ -2297,5 +2297,249 @@
       "sex": "MALE",
       "remark": "just cleaned"
     }
+  ],
+  "survey2OsmNear": [
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:way/1396029684",
+      "message": "OSM toilet at \"Public toilet\" (L1) is 2 m from survey2:M11/female/l2 at Causeway Point (L2)",
+      "resolution": "kept: not the same room (sex or level differs)",
+      "data": {
+        "osmVenue": "osm-venue:way/1392930431",
+        "survey2": "survey2:M11/female/l2",
+        "distanceM": 2
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:way/1392930431",
+      "message": "OSM toilet at \"Public toilet\" (L2) is 5 m from survey2:M11/female/l2 at Causeway Point (L2)",
+      "resolution": "kept: not the same room (sex or level differs)",
+      "data": {
+        "osmVenue": "osm-venue:way/1392930431",
+        "survey2": "survey2:M11/female/l2",
+        "distanceM": 5
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:way/1396029685",
+      "message": "OSM toilet at \"Public toilet\" (L1) is 5 m from survey2:M11/female/l2 at Causeway Point (L2)",
+      "resolution": "kept: not the same room (sex or level differs)",
+      "data": {
+        "osmVenue": "osm-venue:way/1392930431",
+        "survey2": "survey2:M11/female/l2",
+        "distanceM": 5
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:way/1395135418",
+      "message": "OSM toilet at \"Public toilet\" (B1) is 6 m from survey2:M11/male/b1 at Causeway Point (B1)",
+      "resolution": "kept: not the same room (sex or level differs)",
+      "data": {
+        "osmVenue": "osm-venue:way/1392930431",
+        "survey2": "survey2:M11/male/b1",
+        "distanceM": 6
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:way/1396029686",
+      "message": "OSM toilet at \"Public toilet\" (L1) is 9 m from survey2:M11/male/b1 at Causeway Point (B1)",
+      "resolution": "kept: not the same room (sex or level differs)",
+      "data": {
+        "osmVenue": "osm-venue:way/1392930431",
+        "survey2": "survey2:M11/male/b1",
+        "distanceM": 9
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/13049492674",
+      "message": "OSM toilet at \"Senja-Cashew Community Club\" (L1) is 15 m from survey2:C673/female at Coffeeshop, Blk 101 Bukit Panjang Road",
+      "resolution": "kept: a place of its own",
+      "data": {
+        "osmVenue": "osm-venue:node/13049492674",
+        "survey2": "survey2:C673/female",
+        "distanceM": 15
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/4400982771",
+      "message": "OSM toilet at \"Public toilet\" is 15 m from survey2:B34/female at Woodlands Temporary Bus Interchange",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/4400982771",
+        "survey2": "survey2:B34/female",
+        "distanceM": 15
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/11873507500",
+      "message": "OSM toilet at \"Team Salon One Holland Village (Aveda)\" is 18 m from survey2:H13/female at Holland Village Market and Food Centre",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/11724884012",
+        "survey2": "survey2:H13/female",
+        "distanceM": 18
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/12593356906",
+      "message": "OSM toilet at \"WU DA LANG OLD HOT POT 武大郎老火锅\" is 20 m from survey2:DT19/unisex at Chinatown",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/12593356906",
+        "survey2": "survey2:DT19/unisex",
+        "distanceM": 20
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/9840153345",
+      "message": "OSM toilet at \"Jurong Regional Library\" is 29 m from survey2:M293/female at Jurong Regional Library (L3)",
+      "resolution": "kept: a place of its own",
+      "data": {
+        "osmVenue": "osm-venue:node/9840153345",
+        "survey2": "survey2:M293/female",
+        "distanceM": 29
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/12376393332",
+      "message": "OSM toilet at \"Clementi Public Library\" (L3; L4; L5) is 30 m from survey2:M163/male/b1 at Clementi Mall (B1)",
+      "resolution": "kept: a place of its own",
+      "data": {
+        "osmVenue": "osm-venue:node/12376393332",
+        "survey2": "survey2:M163/male/b1",
+        "distanceM": 30
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/11293429401",
+      "message": "OSM toilet at \"Public toilet\" (L1) is 31 m from survey2:C1045/female at Coffeeshop, Blk 46 Owen Road",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/11293429401",
+        "survey2": "survey2:C1045/female",
+        "distanceM": 31
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/14249215474",
+      "message": "OSM toilet at \"Public toilet\" is 31 m from survey2:C586/male at Coffeeshop, Blk 376 Bukit Batok Street 31",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/14249215468",
+        "survey2": "survey2:C586/male",
+        "distanceM": 31
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/11724884012",
+      "message": "OSM toilet at \"Team Salon One Holland Village (Aveda)\" is 32 m from survey2:M156/female/1 at One Holland Village",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/11724884012",
+        "survey2": "survey2:M156/female/1",
+        "distanceM": 32
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/9354942743",
+      "message": "OSM toilet at \"Public toilet\" (B1) is 33 m from survey2:EW13/male at City Hall",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/9354942743",
+        "survey2": "survey2:EW13/male",
+        "distanceM": 33
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/10761017213",
+      "message": "OSM toilet at \"Public toilet\" is 34 m from survey2:C1051/female at Coffeeshop, Blk 12 Telok Blangah Crescent",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/10761017213",
+        "survey2": "survey2:C1051/female",
+        "distanceM": 34
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/14249215468",
+      "message": "OSM toilet at \"Public toilet\" is 34 m from survey2:C586/male at Coffeeshop, Blk 376 Bukit Batok Street 31",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/14249215468",
+        "survey2": "survey2:C586/male",
+        "distanceM": 34
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/8277411856",
+      "message": "OSM toilet at \"Public toilet\" is 36 m from survey2:M195/female/1 at Great World City",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/8277411856",
+        "survey2": "survey2:M195/female/1",
+        "distanceM": 36
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:way/746033006",
+      "message": "OSM toilet at \"Public toilet\" (L6) is 36 m from survey2:M87/female/l1 at Parkway Parade (L1)",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:way/746033006",
+        "survey2": "survey2:M87/female/l1",
+        "distanceM": 36
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/1867211717",
+      "message": "OSM toilet at \"Chinatown\" is 42 m from survey2:DT19/unisex at Chinatown",
+      "resolution": "kept: a place of its own",
+      "data": {
+        "osmVenue": "sheet-venue:mrt-chinatown",
+        "survey2": "survey2:DT19/unisex",
+        "distanceM": 42
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/10886433177",
+      "message": "OSM toilet at \"Public toilet\" is 45 m from survey2:M18/male/b1 at The Star Vista (B1)",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/10886433177",
+        "survey2": "survey2:M18/male/b1",
+        "distanceM": 45
+      }
+    },
+    {
+      "kind": "survey2-osm-near",
+      "key": "osm:node/8459997648",
+      "message": "OSM toilet at \"80 Eating House\" is 45 m from survey2:H85/female at Redhill Lane Blk 79 (Redhill Market)",
+      "resolution": "kept: over 15 m",
+      "data": {
+        "osmVenue": "osm-venue:node/8459997648",
+        "survey2": "survey2:H85/female",
+        "distanceM": 45
+      }
+    }
   ]
 }
