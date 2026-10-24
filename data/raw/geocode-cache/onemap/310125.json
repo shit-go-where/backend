@@ -1,0 +1,19 @@
+{
+  "query": "310125",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "125 LORONG 1 TOA PAYOH SINGAPORE 310125",
+      "BLK_NO": "125",
+      "ROAD_NAME": "LORONG 1 TOA PAYOH",
+      "BUILDING": "NIL",
+      "ADDRESS": "125 LORONG 1 TOA PAYOH SINGAPORE 310125",
+      "POSTAL": "310125",
+      "X": "29382.05076062679",
+      "Y": "35611.39906609431",
+      "LATITUDE": "1.338331333952078",
+      "LONGITUDE": "103.8457371171314"
+    }
+  ]
+}

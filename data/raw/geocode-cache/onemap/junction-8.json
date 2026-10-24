@@ -1,0 +1,19 @@
+{
+  "query": "Junction 8",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "JUNCTION 8",
+      "BLK_NO": "9",
+      "ROAD_NAME": "BISHAN PLACE",
+      "BUILDING": "JUNCTION 8",
+      "ADDRESS": "9 BISHAN PLACE JUNCTION 8 SINGAPORE 579837",
+      "POSTAL": "579837",
+      "X": "29718.50954655651",
+      "Y": "36954.87699977681",
+      "LATITUDE": "1.350481253450499",
+      "LONGITUDE": "103.848760473211"
+    }
+  ]
+}

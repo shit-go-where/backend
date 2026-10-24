@@ -1,0 +1,19 @@
+{
+  "query": "164018",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "18 JALAN MEMBINA SINGAPORE 164018",
+      "BLK_NO": "18",
+      "ROAD_NAME": "JALAN MEMBINA",
+      "BUILDING": "NIL",
+      "ADDRESS": "18 JALAN MEMBINA SINGAPORE 164018",
+      "POSTAL": "164018",
+      "X": "27272.91702843457",
+      "Y": "29791.4099248033",
+      "LATITUDE": "1.285697428832258",
+      "LONGITUDE": "103.8267854480945"
+    }
+  ]
+}

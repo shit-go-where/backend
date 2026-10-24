@@ -1,0 +1,19 @@
+{
+  "query": "090012",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "12 TELOK BLANGAH CRESCENT SINGAPORE 090012",
+      "BLK_NO": "12",
+      "ROAD_NAME": "TELOK BLANGAH CRESCENT",
+      "BUILDING": "NIL",
+      "ADDRESS": "12 TELOK BLANGAH CRESCENT SINGAPORE 090012",
+      "POSTAL": "090012",
+      "X": "26463.90319075342",
+      "Y": "28850.20363449864",
+      "LATITUDE": "1.277185460248468",
+      "LONGITUDE": "103.8195161810062"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "310066",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TOA PAYOH VISTA",
+      "BLK_NO": "66",
+      "ROAD_NAME": "LORONG 4 TOA PAYOH",
+      "BUILDING": "TOA PAYOH VISTA",
+      "ADDRESS": "66 LORONG 4 TOA PAYOH TOA PAYOH VISTA SINGAPORE 310066",
+      "POSTAL": "310066",
+      "X": "30054.38409986347",
+      "Y": "35244.51490293257",
+      "LATITUDE": "1.335013325636516",
+      "LONGITUDE": "103.8517784022934"
+    }
+  ]
+}

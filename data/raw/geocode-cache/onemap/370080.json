@@ -1,0 +1,19 @@
+{
+  "query": "370080",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CIRCUIT ROAD MARKET AND FOOD CENTRE",
+      "BLK_NO": "80",
+      "ROAD_NAME": "CIRCUIT ROAD",
+      "BUILDING": "CIRCUIT ROAD MARKET AND FOOD CENTRE",
+      "ADDRESS": "80 CIRCUIT ROAD CIRCUIT ROAD MARKET AND FOOD CENTRE SINGAPORE 370080",
+      "POSTAL": "370080",
+      "X": "33985.62142483983",
+      "Y": "34450.73539547622",
+      "LATITUDE": "1.327834146159377",
+      "LONGITUDE": "103.8871026692355"
+    }
+  ]
+}

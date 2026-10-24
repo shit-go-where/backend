@@ -1,0 +1,19 @@
+{
+  "query": "550326",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "326 SERANGOON AVENUE 3 SINGAPORE 550326",
+      "BLK_NO": "326",
+      "ROAD_NAME": "SERANGOON AVENUE 3",
+      "BUILDING": "NIL",
+      "ADDRESS": "326 SERANGOON AVENUE 3 SINGAPORE 550326",
+      "POSTAL": "550326",
+      "X": "31970.6072592726",
+      "Y": "36940.60682590492",
+      "LATITUDE": "1.35035198508251",
+      "LONGITUDE": "103.8689969906034"
+    }
+  ]
+}

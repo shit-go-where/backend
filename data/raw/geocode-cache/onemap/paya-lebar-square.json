@@ -1,0 +1,19 @@
+{
+  "query": "Paya Lebar Square",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "PAYA LEBAR SQUARE",
+      "BLK_NO": "60",
+      "ROAD_NAME": "PAYA LEBAR ROAD",
+      "BUILDING": "PAYA LEBAR SQUARE",
+      "ADDRESS": "60 PAYA LEBAR ROAD PAYA LEBAR SQUARE SINGAPORE 409051",
+      "POSTAL": "409051",
+      "X": "34595.30321592093",
+      "Y": "33453.44353018701",
+      "LATITUDE": "1.318814870076511",
+      "LONGITUDE": "103.8925807785135"
+    }
+  ]
+}

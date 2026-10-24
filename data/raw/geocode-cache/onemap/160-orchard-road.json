@@ -1,0 +1,19 @@
+{
+  "query": "160 ORCHARD ROAD",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "JUSTCO PLACE",
+      "BLK_NO": "160",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "JUSTCO PLACE",
+      "ADDRESS": "160 ORCHARD ROAD JUSTCO PLACE SINGAPORE 238842",
+      "POSTAL": "238842",
+      "X": "28804.75168648176",
+      "Y": "31524.55170619301",
+      "LATITUDE": "1.30137135194991",
+      "LONGITUDE": "103.8405496392505"
+    }
+  ]
+}

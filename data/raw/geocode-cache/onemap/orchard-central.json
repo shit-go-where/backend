@@ -1,0 +1,19 @@
+{
+  "query": "Orchard Central",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ORCHARD CENTRAL",
+      "BLK_NO": "181",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "ORCHARD CENTRAL",
+      "ADDRESS": "181 ORCHARD ROAD ORCHARD CENTRAL SINGAPORE 238896",
+      "POSTAL": "238896",
+      "X": "28680.67293011025",
+      "Y": "31465.67651275732",
+      "LATITUDE": "1.300838908392453",
+      "LONGITUDE": "103.8394347338989"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "270040",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "40 HOLLAND DRIVE SINGAPORE 270040",
+      "BLK_NO": "40",
+      "ROAD_NAME": "HOLLAND DRIVE",
+      "BUILDING": "NIL",
+      "ADDRESS": "40 HOLLAND DRIVE SINGAPORE 270040",
+      "POSTAL": "270040",
+      "X": "23568.59808122367",
+      "Y": "32166.42367956415",
+      "LATITUDE": "1.307175908431961",
+      "LONGITUDE": "103.7935003287138"
+    }
+  ]
+}

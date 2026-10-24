@@ -1,0 +1,19 @@
+{
+  "query": "International Plaza",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "INTERNATIONAL PLAZA",
+      "BLK_NO": "10",
+      "ROAD_NAME": "ANSON ROAD",
+      "BUILDING": "INTERNATIONAL PLAZA",
+      "ADDRESS": "10 ANSON ROAD INTERNATIONAL PLAZA SINGAPORE 079903",
+      "POSTAL": "079903",
+      "X": "29402.860423184",
+      "Y": "28706.59745816328",
+      "LATITUDE": "1.27588674266837",
+      "LONGITUDE": "103.845923793168"
+    }
+  ]
+}

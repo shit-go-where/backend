@@ -1,0 +1,19 @@
+{
+  "query": "679910",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SENJA-CASHEW COMMUNITY CLUB",
+      "BLK_NO": "101",
+      "ROAD_NAME": "BUKIT PANJANG ROAD",
+      "BUILDING": "SENJA-CASHEW COMMUNITY CLUB",
+      "ADDRESS": "101 BUKIT PANJANG ROAD SENJA-CASHEW COMMUNITY CLUB SINGAPORE 679910",
+      "POSTAL": "679910",
+      "X": "20360.97586904094",
+      "Y": "40400.15101023391",
+      "LATITUDE": "1.381638133193397",
+      "LONGITUDE": "103.7646762509678"
+    }
+  ]
+}

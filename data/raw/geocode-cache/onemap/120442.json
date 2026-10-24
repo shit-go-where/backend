@@ -1,0 +1,19 @@
+{
+  "query": "120442",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "442 CLEMENTI AVENUE 3 SINGAPORE 120442",
+      "BLK_NO": "442",
+      "ROAD_NAME": "CLEMENTI AVENUE 3",
+      "BUILDING": "NIL",
+      "ADDRESS": "442 CLEMENTI AVENUE 3 SINGAPORE 120442",
+      "POSTAL": "120442",
+      "X": "20343.21973148547",
+      "Y": "32934.61699448898",
+      "LATITUDE": "1.314122541847549",
+      "LONGITUDE": "103.7645185941417"
+    }
+  ]
+}

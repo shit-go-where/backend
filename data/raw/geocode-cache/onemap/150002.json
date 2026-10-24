@@ -1,0 +1,19 @@
+{
+  "query": "150002",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BRICKWORKS ESTATE",
+      "BLK_NO": "2",
+      "ROAD_NAME": "JALAN BUKIT MERAH",
+      "BUILDING": "BRICKWORKS ESTATE",
+      "ADDRESS": "2 JALAN BUKIT MERAH BRICKWORKS ESTATE SINGAPORE 150002",
+      "POSTAL": "150002",
+      "X": "25055.59114514478",
+      "Y": "29894.45618572086",
+      "LATITUDE": "1.286629213299609",
+      "LONGITUDE": "103.8068618797596"
+    }
+  ]
+}

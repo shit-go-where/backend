@@ -1,0 +1,31 @@
+{
+  "query": "JEM",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "JEM",
+      "BLK_NO": "50",
+      "ROAD_NAME": "JURONG GATEWAY ROAD",
+      "BUILDING": "JEM",
+      "ADDRESS": "50 JURONG GATEWAY ROAD JEM SINGAPORE 608549",
+      "POSTAL": "608549",
+      "X": "17979.50262387469",
+      "Y": "35054.50379111245",
+      "LATITUDE": "1.333293344734624",
+      "LONGITUDE": "103.743278742341"
+    },
+    {
+      "SEARCHVAL": "JEM",
+      "BLK_NO": "52",
+      "ROAD_NAME": "JURONG GATEWAY ROAD",
+      "BUILDING": "JEM",
+      "ADDRESS": "52 JURONG GATEWAY ROAD JEM SINGAPORE 608550",
+      "POSTAL": "608550",
+      "X": "18004.53806017525",
+      "Y": "35028.69997177832",
+      "LATITUDE": "1.333059992695819",
+      "LONGITUDE": "103.7435037081684"
+    }
+  ]
+}

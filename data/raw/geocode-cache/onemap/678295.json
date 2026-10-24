@@ -1,0 +1,19 @@
+{
+  "query": "678295",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT PANJANG COMMUNITY CLUB",
+      "BLK_NO": "8",
+      "ROAD_NAME": "PENDING ROAD",
+      "BUILDING": "BUKIT PANJANG COMMUNITY CLUB",
+      "ADDRESS": "8 PENDING ROAD BUKIT PANJANG COMMUNITY CLUB SINGAPORE 678295",
+      "POSTAL": "678295",
+      "X": "21015.61472660489",
+      "Y": "39826.53869757615",
+      "LATITUDE": "1.376450755554642",
+      "LONGITUDE": "103.7705588026539"
+    }
+  ]
+}

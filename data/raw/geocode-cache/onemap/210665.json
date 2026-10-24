@@ -1,0 +1,19 @@
+{
+  "query": "210665",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ZHUJIAO CENTRE (TEKKA MARKET)",
+      "BLK_NO": "665",
+      "ROAD_NAME": "BUFFALO ROAD",
+      "BUILDING": "ZHUJIAO CENTRE (TEKKA MARKET)",
+      "ADDRESS": "665 BUFFALO ROAD ZHUJIAO CENTRE (TEKKA MARKET) SINGAPORE 210665",
+      "POSTAL": "210665",
+      "X": "29921.65653955657",
+      "Y": "32057.0067345053",
+      "LATITUDE": "1.306186638467718",
+      "LONGITUDE": "103.8505855700667"
+    }
+  ]
+}

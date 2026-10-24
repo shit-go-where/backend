@@ -1,0 +1,19 @@
+{
+  "query": "310074",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TOA PAYOH VISTA MARKET",
+      "BLK_NO": "74",
+      "ROAD_NAME": "LORONG 4 TOA PAYOH",
+      "BUILDING": "TOA PAYOH VISTA MARKET",
+      "ADDRESS": "74 LORONG 4 TOA PAYOH TOA PAYOH VISTA MARKET SINGAPORE 310074",
+      "POSTAL": "310074",
+      "X": "30079.43651650287",
+      "Y": "35193.36570314504",
+      "LATITUDE": "1.334550748721397",
+      "LONGITUDE": "103.852003509176"
+    }
+  ]
+}

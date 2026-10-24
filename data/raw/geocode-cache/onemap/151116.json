@@ -1,0 +1,19 @@
+{
+  "query": "151116",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "116 BUKIT MERAH VIEW SINGAPORE 151116",
+      "BLK_NO": "116",
+      "ROAD_NAME": "BUKIT MERAH VIEW",
+      "BUILDING": "NIL",
+      "ADDRESS": "116 BUKIT MERAH VIEW SINGAPORE 151116",
+      "POSTAL": "151116",
+      "X": "26688.27699966263",
+      "Y": "29729.14090342447",
+      "LATITUDE": "1.285134270670557",
+      "LONGITUDE": "103.8215322263205"
+    }
+  ]
+}

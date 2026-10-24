@@ -1,0 +1,19 @@
+{
+  "query": "441 Commonwealth Avenue West",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CLEMENTI BUS INTERCHANGE",
+      "BLK_NO": "441",
+      "ROAD_NAME": "COMMONWEALTH AVENUE WEST",
+      "BUILDING": "CLEMENTI BUS INTERCHANGE",
+      "ADDRESS": "441 COMMONWEALTH AVENUE WEST CLEMENTI BUS INTERCHANGE SINGAPORE 120441",
+      "POSTAL": "120441",
+      "X": "20315.60824762657",
+      "Y": "33027.94090662524",
+      "LATITUDE": "1.314966522855612",
+      "LONGITUDE": "103.7642704681367"
+    }
+  ]
+}

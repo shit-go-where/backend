@@ -1,0 +1,19 @@
+{
+  "query": "Mandarin Gallery",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MANDARIN GALLERY",
+      "BLK_NO": "333A",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "MANDARIN GALLERY",
+      "ADDRESS": "333A ORCHARD ROAD MANDARIN GALLERY",
+      "POSTAL": "NIL",
+      "X": "28363.40795042738",
+      "Y": "31594.58507075347",
+      "LATITUDE": "1.302004717319636",
+      "LONGITUDE": "103.8365839658053"
+    }
+  ]
+}

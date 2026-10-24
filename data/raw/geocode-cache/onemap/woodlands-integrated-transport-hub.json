@@ -1,0 +1,19 @@
+{
+  "query": "Woodlands Integrated Transport Hub",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "WOODLANDS INTEGRATED TRANSPORT HUB",
+      "BLK_NO": "30",
+      "ROAD_NAME": "WOODLANDS AVENUE 2",
+      "BUILDING": "WOODLANDS INTEGRATED TRANSPORT HUB",
+      "ADDRESS": "30 WOODLANDS AVENUE 2 WOODLANDS INTEGRATED TRANSPORT HUB SINGAPORE 738343",
+      "POSTAL": "738343",
+      "X": "22741.59819038119",
+      "Y": "46501.78610091656",
+      "LATITUDE": "1.436819629615197",
+      "LONGITUDE": "103.7860667992523"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "query": "Waterway point",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SHAW THEATRES WATERWAY POINT",
+      "BLK_NO": "83",
+      "ROAD_NAME": "PUNGGOL CENTRAL",
+      "BUILDING": "SHAW THEATRES WATERWAY POINT",
+      "ADDRESS": "83 PUNGGOL CENTRAL SHAW THEATRES WATERWAY POINT",
+      "POSTAL": "NIL",
+      "X": "35641.97814414836",
+      "Y": "43153.24587256834",
+      "LATITUDE": "1.406536116905548",
+      "LONGITUDE": "103.9019881717096"
+    },
+    {
+      "SEARCHVAL": "WATERWAY POINT",
+      "BLK_NO": "83",
+      "ROAD_NAME": "PUNGGOL CENTRAL",
+      "BUILDING": "WATERWAY POINT",
+      "ADDRESS": "83 PUNGGOL CENTRAL WATERWAY POINT SINGAPORE 828761",
+      "POSTAL": "828761",
+      "X": "35655.05545678083",
+      "Y": "43147.5521318838",
+      "LATITUDE": "1.406484621320066",
+      "LONGITUDE": "103.9021056807848"
+    }
+  ]
+}

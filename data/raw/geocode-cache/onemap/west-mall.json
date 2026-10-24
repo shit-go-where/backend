@@ -1,0 +1,19 @@
+{
+  "query": "West Mall",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "WEST MALL",
+      "BLK_NO": "1",
+      "ROAD_NAME": "BUKIT BATOK CENTRAL LINK",
+      "BUILDING": "WEST MALL",
+      "ADDRESS": "1 BUKIT BATOK CENTRAL LINK WEST MALL SINGAPORE 658713",
+      "POSTAL": "658713",
+      "X": "18640.37668608408",
+      "Y": "36904.14937246591",
+      "LATITUDE": "1.350021075943163",
+      "LONGITUDE": "103.7492164938305"
+    }
+  ]
+}

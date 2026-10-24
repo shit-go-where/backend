@@ -1,0 +1,19 @@
+{
+  "query": "Scape",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SCAPE",
+      "BLK_NO": "2",
+      "ROAD_NAME": "ORCHARD LINK",
+      "BUILDING": "SCAPE",
+      "ADDRESS": "2 ORCHARD LINK SCAPE SINGAPORE 237978",
+      "POSTAL": "237978",
+      "X": "28267.71381302178",
+      "Y": "31484.69966811128",
+      "LATITUDE": "1.301010953395632",
+      "LONGITUDE": "103.835724109292"
+    }
+  ]
+}

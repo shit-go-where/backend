@@ -1,0 +1,19 @@
+{
+  "query": "570514",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BISHAN BUS INTERCHANGE",
+      "BLK_NO": "514",
+      "ROAD_NAME": "BISHAN STREET 13",
+      "BUILDING": "BISHAN BUS INTERCHANGE",
+      "ADDRESS": "514 BISHAN STREET 13 BISHAN BUS INTERCHANGE SINGAPORE 570514",
+      "POSTAL": "570514",
+      "X": "29830.09988418594",
+      "Y": "36914.59403640963",
+      "LATITUDE": "1.350116942059639",
+      "LONGITUDE": "103.8497631804412"
+    }
+  ]
+}

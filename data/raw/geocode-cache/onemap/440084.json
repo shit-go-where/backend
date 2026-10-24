@@ -1,0 +1,19 @@
+{
+  "query": "440084",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MARINE PARADE PROMENADE",
+      "BLK_NO": "84",
+      "ROAD_NAME": "MARINE PARADE CENTRAL",
+      "BUILDING": "MARINE PARADE PROMENADE",
+      "ADDRESS": "84 MARINE PARADE CENTRAL MARINE PARADE PROMENADE SINGAPORE 440084",
+      "POSTAL": "440084",
+      "X": "36127.05067190621",
+      "Y": "31626.97247922793",
+      "LATITUDE": "1.302296555672787",
+      "LONGITUDE": "103.906343833939"
+    }
+  ]
+}

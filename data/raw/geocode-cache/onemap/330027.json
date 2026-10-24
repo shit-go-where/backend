@@ -1,0 +1,19 @@
+{
+  "query": "330027",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BENDEMEER VILLE",
+      "BLK_NO": "27",
+      "ROAD_NAME": "BENDEMEER ROAD",
+      "BUILDING": "BENDEMEER VILLE",
+      "ADDRESS": "27 BENDEMEER ROAD BENDEMEER VILLE SINGAPORE 330027",
+      "POSTAL": "330027",
+      "X": "31283.94696342666",
+      "Y": "33454.76723991893",
+      "LATITUDE": "1.318827374993538",
+      "LONGITUDE": "103.8628265396421"
+    }
+  ]
+}

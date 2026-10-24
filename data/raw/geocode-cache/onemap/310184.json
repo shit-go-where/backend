@@ -1,0 +1,19 @@
+{
+  "query": "310184",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TOA PAYOH CENTRAL",
+      "BLK_NO": "184",
+      "ROAD_NAME": "TOA PAYOH CENTRAL",
+      "BUILDING": "TOA PAYOH CENTRAL",
+      "ADDRESS": "184 TOA PAYOH CENTRAL TOA PAYOH CENTRAL SINGAPORE 310184",
+      "POSTAL": "310184",
+      "X": "29820.60173035972",
+      "Y": "34976.55531854182",
+      "LATITUDE": "1.33259000918315",
+      "LONGITUDE": "103.8496777172531"
+    }
+  ]
+}

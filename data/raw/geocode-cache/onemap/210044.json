@@ -1,0 +1,19 @@
+{
+  "query": "210044",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "44 OWEN ROAD SINGAPORE 210044",
+      "BLK_NO": "44",
+      "ROAD_NAME": "OWEN ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "44 OWEN ROAD SINGAPORE 210044",
+      "POSTAL": "210044",
+      "X": "29898.53543215524",
+      "Y": "33088.11620076746",
+      "LATITUDE": "1.315511629762019",
+      "LONGITUDE": "103.8503778790639"
+    }
+  ]
+}

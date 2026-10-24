@@ -1,0 +1,19 @@
+{
+  "query": "160022",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "22 HAVELOCK ROAD SINGAPORE 160022",
+      "BLK_NO": "22",
+      "ROAD_NAME": "HAVELOCK ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "22 HAVELOCK ROAD SINGAPORE 160022",
+      "POSTAL": "160022",
+      "X": "27499.81276574824",
+      "Y": "30128.50878778473",
+      "LATITUDE": "1.288746037040882",
+      "LONGITUDE": "103.8288241916547"
+    }
+  ]
+}

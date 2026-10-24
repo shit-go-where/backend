@@ -1,0 +1,19 @@
+{
+  "query": "081006",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TANJONG PAGAR PLAZA",
+      "BLK_NO": "6",
+      "ROAD_NAME": "TANJONG PAGAR PLAZA",
+      "BUILDING": "TANJONG PAGAR PLAZA",
+      "ADDRESS": "6 TANJONG PAGAR PLAZA TANJONG PAGAR PLAZA SINGAPORE 081006",
+      "POSTAL": "081006",
+      "X": "29095.45853840746",
+      "Y": "28786.97596554086",
+      "LATITUDE": "1.276613669833867",
+      "LONGITUDE": "103.8431616776339"
+    }
+  ]
+}

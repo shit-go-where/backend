@@ -1,0 +1,19 @@
+{
+  "query": "570320",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SHUNFU MART",
+      "BLK_NO": "320",
+      "ROAD_NAME": "SHUNFU ROAD",
+      "BUILDING": "SHUNFU MART",
+      "ADDRESS": "320 SHUNFU ROAD SHUNFU MART SINGAPORE 570320",
+      "POSTAL": "570320",
+      "X": "28405.75077115744",
+      "Y": "37125.63452608138",
+      "LATITUDE": "1.352025570307382",
+      "LONGITUDE": "103.8369645083527"
+    }
+  ]
+}

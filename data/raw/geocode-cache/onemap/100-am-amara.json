@@ -1,0 +1,19 @@
+{
+  "query": "100 AM Amara",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "AMARA SINGAPORE",
+      "BLK_NO": "100",
+      "ROAD_NAME": "TRAS STREET",
+      "BUILDING": "AMARA SINGAPORE",
+      "ADDRESS": "100 TRAS STREET AMARA SINGAPORE SINGAPORE 079027",
+      "POSTAL": "079027",
+      "X": "29138.94500463363",
+      "Y": "28601.32958777808",
+      "LATITUDE": "1.274934747509414",
+      "LONGITUDE": "103.8435524129149"
+    }
+  ]
+}

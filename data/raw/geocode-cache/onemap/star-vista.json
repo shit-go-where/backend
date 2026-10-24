@@ -1,0 +1,19 @@
+{
+  "query": "Star Vista",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "THE STAR VISTA",
+      "BLK_NO": "1",
+      "ROAD_NAME": "VISTA EXCHANGE GREEN",
+      "BUILDING": "THE STAR VISTA",
+      "ADDRESS": "1 VISTA EXCHANGE GREEN THE STAR VISTA",
+      "POSTAL": "NIL",
+      "X": "23003.23461136594",
+      "Y": "32143.71361138113",
+      "LATITUDE": "1.306970440383233",
+      "LONGITUDE": "103.7884202741146"
+    }
+  ]
+}

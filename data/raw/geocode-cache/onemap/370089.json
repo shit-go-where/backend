@@ -1,0 +1,19 @@
+{
+  "query": "370089",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MARKET & HAWKER CENTRE (BLK 89 CIRCUIT ROAD)",
+      "BLK_NO": "89",
+      "ROAD_NAME": "CIRCUIT ROAD",
+      "BUILDING": "MARKET & HAWKER CENTRE (BLK 89 CIRCUIT ROAD)",
+      "ADDRESS": "89 CIRCUIT ROAD MARKET & HAWKER CENTRE (BLK 89 CIRCUIT ROAD) SINGAPORE 370089",
+      "POSTAL": "370089",
+      "X": "33800.46429876611",
+      "Y": "33980.29795240052",
+      "LATITUDE": "1.323579714005833",
+      "LONGITUDE": "103.8854388424738"
+    }
+  ]
+}

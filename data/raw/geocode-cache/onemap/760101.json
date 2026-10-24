@@ -1,0 +1,19 @@
+{
+  "query": "760101",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "101 YISHUN AVENUE 5 SINGAPORE 760101",
+      "BLK_NO": "101",
+      "ROAD_NAME": "YISHUN AVENUE 5",
+      "BUILDING": "NIL",
+      "ADDRESS": "101 YISHUN AVENUE 5 SINGAPORE 760101",
+      "POSTAL": "760101",
+      "X": "27371.14429339767",
+      "Y": "45806.89309510775",
+      "LATITUDE": "1.430535753840807",
+      "LONGITUDE": "103.8276677220736"
+    }
+  ]
+}

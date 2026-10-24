@@ -1,0 +1,19 @@
+{
+  "query": "277700",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HOLLAND VILLAGE MARKET & FOOD CENTRE",
+      "BLK_NO": "1",
+      "ROAD_NAME": "LORONG MAMBONG",
+      "BUILDING": "HOLLAND VILLAGE MARKET & FOOD CENTRE",
+      "ADDRESS": "1 LORONG MAMBONG HOLLAND VILLAGE MARKET & FOOD CENTRE SINGAPORE 277700",
+      "POSTAL": "277700",
+      "X": "23721.75087042712",
+      "Y": "32597.33885424212",
+      "LATITUDE": "1.311072974021275",
+      "LONGITUDE": "103.7948764196615"
+    }
+  ]
+}

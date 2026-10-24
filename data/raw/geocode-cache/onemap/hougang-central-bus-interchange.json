@@ -1,0 +1,19 @@
+{
+  "query": "Hougang Central Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HOUGANG CENTRAL BUS INTERCHANGE",
+      "BLK_NO": "840",
+      "ROAD_NAME": "HOUGANG CENTRAL",
+      "BUILDING": "HOUGANG CENTRAL BUS INTERCHANGE",
+      "ADDRESS": "840 HOUGANG CENTRAL HOUGANG CENTRAL BUS INTERCHANGE SINGAPORE 538757",
+      "POSTAL": "538757",
+      "X": "34659.34427640587",
+      "Y": "39212.15559246205",
+      "LATITUDE": "1.370894573702754",
+      "LONGITUDE": "103.8931574882931"
+    }
+  ]
+}

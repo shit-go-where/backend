@@ -1,0 +1,19 @@
+{
+  "query": "313078",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CENTRAL HORIZON",
+      "BLK_NO": "78C",
+      "ROAD_NAME": "TOA PAYOH CENTRAL",
+      "BUILDING": "CENTRAL HORIZON",
+      "ADDRESS": "78C TOA PAYOH CENTRAL CENTRAL HORIZON SINGAPORE 313078",
+      "POSTAL": "313078",
+      "X": "29834.11117899604",
+      "Y": "35186.89004963636",
+      "LATITUDE": "1.334492201052799",
+      "LONGITUDE": "103.8497991199415"
+    }
+  ]
+}

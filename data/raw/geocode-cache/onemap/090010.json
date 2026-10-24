@@ -1,0 +1,19 @@
+{
+  "query": "090010",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "10 TELOK BLANGAH CRESCENT SINGAPORE 090010",
+      "BLK_NO": "10",
+      "ROAD_NAME": "TELOK BLANGAH CRESCENT",
+      "BUILDING": "NIL",
+      "ADDRESS": "10 TELOK BLANGAH CRESCENT SINGAPORE 090010",
+      "POSTAL": "090010",
+      "X": "26492.08825290296",
+      "Y": "28910.58526548371",
+      "LATITUDE": "1.277731531905598",
+      "LONGITUDE": "103.8197694313528"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "671163",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MULTI STOREY CAR PARK",
+      "BLK_NO": "163A",
+      "ROAD_NAME": "GANGSA ROAD",
+      "BUILDING": "MULTI STOREY CAR PARK",
+      "ADDRESS": "163A GANGSA ROAD MULTI STOREY CAR PARK SINGAPORE 671163",
+      "POSTAL": "671163",
+      "X": "20324.96383924969",
+      "Y": "39880.43719886243",
+      "LATITUDE": "1.376938021458483",
+      "LONGITUDE": "103.7643527915211"
+    }
+  ]
+}

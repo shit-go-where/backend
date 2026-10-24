@@ -1,0 +1,19 @@
+{
+  "query": "Bukit Merah Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT MERAH BUS INTERCHANGE",
+      "BLK_NO": "3591",
+      "ROAD_NAME": "BUKIT MERAH CENTRAL",
+      "BUILDING": "BUKIT MERAH BUS INTERCHANGE",
+      "ADDRESS": "3591 BUKIT MERAH CENTRAL BUKIT MERAH BUS INTERCHANGE SINGAPORE 159840",
+      "POSTAL": "159840",
+      "X": "26207.25348062254",
+      "Y": "29387.03060064837",
+      "LATITUDE": "1.282040321452185",
+      "LONGITUDE": "103.8172100581177"
+    }
+  ]
+}

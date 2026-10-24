@@ -1,0 +1,19 @@
+{
+  "query": "Woodlands Temporary Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "WOODLANDS TEMPORARY BUS INTERCHANGE",
+      "BLK_NO": "3A",
+      "ROAD_NAME": "WOODLANDS SQUARE",
+      "BUILDING": "WOODLANDS TEMPORARY BUS INTERCHANGE",
+      "ADDRESS": "3A WOODLANDS SQUARE WOODLANDS TEMPORARY BUS INTERCHANGE SINGAPORE 737735",
+      "POSTAL": "737735",
+      "X": "22798.14011575654",
+      "Y": "46586.7444569096",
+      "LATITUDE": "1.43758797246449",
+      "LONGITUDE": "103.7865748668926"
+    }
+  ]
+}

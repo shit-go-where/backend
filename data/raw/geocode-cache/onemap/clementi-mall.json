@@ -1,0 +1,19 @@
+{
+  "query": "Clementi Mall",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "THE CLEMENTI MALL",
+      "BLK_NO": "3155",
+      "ROAD_NAME": "COMMONWEALTH AVENUE WEST",
+      "BUILDING": "THE CLEMENTI MALL",
+      "ADDRESS": "3155 COMMONWEALTH AVENUE WEST THE CLEMENTI MALL SINGAPORE 129588",
+      "POSTAL": "129588",
+      "X": "20332.58940372802",
+      "Y": "33020.16409303434",
+      "LATITUDE": "1.314896196393653",
+      "LONGITUDE": "103.764423054189"
+    }
+  ]
+}

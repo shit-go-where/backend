@@ -1,0 +1,19 @@
+{
+  "query": "370079",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HAWKER CENTRE (BLKS 79/79A CIRCUIT ROAD)",
+      "BLK_NO": "79",
+      "ROAD_NAME": "CIRCUIT ROAD",
+      "BUILDING": "HAWKER CENTRE (BLKS 79/79A CIRCUIT ROAD)",
+      "ADDRESS": "79 CIRCUIT ROAD HAWKER CENTRE (BLKS 79/79A CIRCUIT ROAD) SINGAPORE 370079",
+      "POSTAL": "370079",
+      "X": "33757.43742160406",
+      "Y": "34313.94063539244",
+      "LATITUDE": "1.326597067296303",
+      "LONGITUDE": "103.8850522857353"
+    }
+  ]
+}

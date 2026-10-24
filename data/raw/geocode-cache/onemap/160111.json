@@ -1,0 +1,19 @@
+{
+  "query": "160111",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TIONG BAHRU ORCHID",
+      "BLK_NO": "111",
+      "ROAD_NAME": "JALAN BUKIT MERAH",
+      "BUILDING": "TIONG BAHRU ORCHID",
+      "ADDRESS": "111 JALAN BUKIT MERAH TIONG BAHRU ORCHID SINGAPORE 160111",
+      "POSTAL": "160111",
+      "X": "27206.18559821695",
+      "Y": "29196.9274438899",
+      "LATITUDE": "1.2803211362185",
+      "LONGITUDE": "103.8261858544358"
+    }
+  ]
+}

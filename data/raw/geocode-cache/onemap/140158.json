@@ -1,0 +1,19 @@
+{
+  "query": "140158",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MEILING HEIGHTS",
+      "BLK_NO": "158",
+      "ROAD_NAME": "MEI LING STREET",
+      "BUILDING": "MEILING HEIGHTS",
+      "ADDRESS": "158 MEI LING STREET MEILING HEIGHTS SINGAPORE 140158",
+      "POSTAL": "140158",
+      "X": "24604.28818306793",
+      "Y": "30570.20299682207",
+      "LATITUDE": "1.2927403836569",
+      "LONGITUDE": "103.8028066684135"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "Midpoint Orchard",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MIDPOINT ORCHARD",
+      "BLK_NO": "220",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "MIDPOINT ORCHARD",
+      "ADDRESS": "220 ORCHARD ROAD MIDPOINT ORCHARD SINGAPORE 238852",
+      "POSTAL": "238852",
+      "X": "28594.4257633714",
+      "Y": "31570.59820821323",
+      "LATITUDE": "1.301787785028482",
+      "LONGITUDE": "103.8386597660212"
+    }
+  ]
+}

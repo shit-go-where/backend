@@ -1,0 +1,31 @@
+{
+  "query": "069111",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MND COMPLEX",
+      "BLK_NO": "7",
+      "ROAD_NAME": "MAXWELL ROAD",
+      "BUILDING": "MND COMPLEX",
+      "ADDRESS": "7 MAXWELL ROAD MND COMPLEX SINGAPORE 069111",
+      "POSTAL": "069111",
+      "X": "29433.1499879742",
+      "Y": "29089.9773092363",
+      "LATITUDE": "1.279353894271223",
+      "LONGITUDE": "103.8461959732205"
+    },
+    {
+      "SEARCHVAL": "MND COMPLEX (ANNEXE B)",
+      "BLK_NO": "7",
+      "ROAD_NAME": "MAXWELL ROAD",
+      "BUILDING": "MND COMPLEX (ANNEXE B)",
+      "ADDRESS": "7 MAXWELL ROAD MND COMPLEX (ANNEXE B) SINGAPORE 069111",
+      "POSTAL": "069111",
+      "X": "29480.26001613867",
+      "Y": "29076.41174375825",
+      "LATITUDE": "1.279231209884403",
+      "LONGITUDE": "103.8466192739763"
+    }
+  ]
+}

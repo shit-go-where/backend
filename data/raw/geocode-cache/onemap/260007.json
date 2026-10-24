@@ -1,0 +1,19 @@
+{
+  "query": "260007",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "EMPRESS ROAD MARKET AND FOOD CENTRE",
+      "BLK_NO": "7",
+      "ROAD_NAME": "EMPRESS ROAD",
+      "BUILDING": "EMPRESS ROAD MARKET AND FOOD CENTRE",
+      "ADDRESS": "7 EMPRESS ROAD EMPRESS ROAD MARKET AND FOOD CENTRE SINGAPORE 260007",
+      "POSTAL": "260007",
+      "X": "24919.27489161678",
+      "Y": "33168.72483562306",
+      "LATITUDE": "1.316240529605173",
+      "LONGITUDE": "103.8056367003967"
+    }
+  ]
+}

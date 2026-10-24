@@ -1,0 +1,19 @@
+{
+  "query": "090036",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TELOK BLANGAH RISE MARKET",
+      "BLK_NO": "36",
+      "ROAD_NAME": "TELOK BLANGAH RISE",
+      "BUILDING": "TELOK BLANGAH RISE MARKET",
+      "ADDRESS": "36 TELOK BLANGAH RISE TELOK BLANGAH RISE MARKET SINGAPORE 090036",
+      "POSTAL": "090036",
+      "X": "26780.78969956748",
+      "Y": "28360.99976910651",
+      "LATITUDE": "1.272761285702876",
+      "LONGITUDE": "103.8223635422557"
+    }
+  ]
+}

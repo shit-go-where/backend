@@ -1,0 +1,19 @@
+{
+  "query": "469027",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "510 CHAI CHEE LANE SINGAPORE 469027",
+      "BLK_NO": "510",
+      "ROAD_NAME": "CHAI CHEE LANE",
+      "BUILDING": "NIL",
+      "ADDRESS": "510 CHAI CHEE LANE SINGAPORE 469027",
+      "POSTAL": "469027",
+      "X": "37455.52854955755",
+      "Y": "34653.20138910972",
+      "LATITUDE": "1.329664294610568",
+      "LONGITUDE": "103.9182817309176"
+    }
+  ]
+}

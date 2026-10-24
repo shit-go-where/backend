@@ -1,0 +1,19 @@
+{
+  "query": "Parkway Parade",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "PARKWAY PARADE",
+      "BLK_NO": "80",
+      "ROAD_NAME": "MARINE PARADE ROAD",
+      "BUILDING": "PARKWAY PARADE",
+      "ADDRESS": "80 MARINE PARADE ROAD PARKWAY PARADE SINGAPORE 449269",
+      "POSTAL": "449269",
+      "X": "36008.60278961807",
+      "Y": "31491.31567426026",
+      "LATITUDE": "1.301069755063101",
+      "LONGITUDE": "103.9052794915233"
+    }
+  ]
+}

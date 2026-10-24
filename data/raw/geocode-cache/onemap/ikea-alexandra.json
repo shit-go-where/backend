@@ -1,0 +1,31 @@
+{
+  "query": "Ikea Alexandra",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "IKEA FOOD CENTRE",
+      "BLK_NO": "317",
+      "ROAD_NAME": "ALEXANDRA ROAD",
+      "BUILDING": "IKEA FOOD CENTRE",
+      "ADDRESS": "317 ALEXANDRA ROAD IKEA FOOD CENTRE",
+      "POSTAL": "NIL",
+      "X": "24938.39066700079",
+      "Y": "30043.19227074087",
+      "LATITUDE": "1.287974318866028",
+      "LONGITUDE": "103.8058087719127"
+    },
+    {
+      "SEARCHVAL": "IKEA INDUSTRIAL BUILDING",
+      "BLK_NO": "317",
+      "ROAD_NAME": "ALEXANDRA ROAD",
+      "BUILDING": "IKEA INDUSTRIAL BUILDING",
+      "ADDRESS": "317 ALEXANDRA ROAD IKEA INDUSTRIAL BUILDING SINGAPORE 159965",
+      "POSTAL": "159965",
+      "X": "24960.05246410426",
+      "Y": "30039.81348598562",
+      "LATITUDE": "1.287943764434407",
+      "LONGITUDE": "103.8060034122968"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "169982",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BEO CRESCENT MARKET",
+      "BLK_NO": "38A",
+      "ROAD_NAME": "BEO CRESCENT",
+      "BUILDING": "BEO CRESCENT MARKET",
+      "ADDRESS": "38A BEO CRESCENT BEO CRESCENT MARKET SINGAPORE 169982",
+      "POSTAL": "169982",
+      "X": "27336.18092816975",
+      "Y": "30137.891893005",
+      "LATITUDE": "1.28883089150259",
+      "LONGITUDE": "103.8273538922275"
+    }
+  ]
+}

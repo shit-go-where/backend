@@ -1,0 +1,19 @@
+{
+  "query": "51A Compassvale Road",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "51A COMPASSVALE ROAD SINGAPORE 544760",
+      "BLK_NO": "51A",
+      "ROAD_NAME": "COMPASSVALE ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "51A COMPASSVALE ROAD SINGAPORE 544760",
+      "POSTAL": "544760",
+      "X": "35104.55405121669",
+      "Y": "41448.80237726122",
+      "LATITUDE": "1.391121889976811",
+      "LONGITUDE": "103.8971585503749"
+    }
+  ]
+}

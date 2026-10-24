@@ -1,0 +1,19 @@
+{
+  "query": "550237",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "237 SERANGOON AVENUE 3 SINGAPORE 550237",
+      "BLK_NO": "237",
+      "ROAD_NAME": "SERANGOON AVENUE 3",
+      "BUILDING": "NIL",
+      "ADDRESS": "237 SERANGOON AVENUE 3 SINGAPORE 550237",
+      "POSTAL": "550237",
+      "X": "32097.20182991493",
+      "Y": "37323.1977419816",
+      "LATITUDE": "1.353811983424735",
+      "LONGITUDE": "103.8701345746497"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "161022",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HAVELOCK ROAD COOKED FOOD CENTRE",
+      "BLK_NO": "22A",
+      "ROAD_NAME": "HAVELOCK ROAD",
+      "BUILDING": "HAVELOCK ROAD COOKED FOOD CENTRE",
+      "ADDRESS": "22A HAVELOCK ROAD HAVELOCK ROAD COOKED FOOD CENTRE SINGAPORE 161022",
+      "POSTAL": "161022",
+      "X": "27588.75926154293",
+      "Y": "30042.75559454039",
+      "LATITUDE": "1.28797051657173",
+      "LONGITUDE": "103.8296234135538"
+    }
+  ]
+}

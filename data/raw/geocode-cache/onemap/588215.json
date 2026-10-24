@@ -1,0 +1,19 @@
+{
+  "query": "588215",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT TIMAH MARKET",
+      "BLK_NO": "51",
+      "ROAD_NAME": "UPPER BUKIT TIMAH ROAD",
+      "BUILDING": "BUKIT TIMAH MARKET",
+      "ADDRESS": "51 UPPER BUKIT TIMAH ROAD BUKIT TIMAH MARKET SINGAPORE 588215",
+      "POSTAL": "588215",
+      "X": "21657.82682131045",
+      "Y": "35711.56532836147",
+      "LATITUDE": "1.339236566637926",
+      "LONGITUDE": "103.7763304146309"
+    }
+  ]
+}

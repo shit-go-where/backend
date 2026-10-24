@@ -1,0 +1,19 @@
+{
+  "query": "Tampines Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TAMPINES BUS INTERCHANGE",
+      "BLK_NO": "512",
+      "ROAD_NAME": "TAMPINES CENTRAL 1",
+      "BUILDING": "TAMPINES BUS INTERCHANGE",
+      "ADDRESS": "512 TAMPINES CENTRAL 1 TAMPINES BUS INTERCHANGE SINGAPORE 520512",
+      "POSTAL": "520512",
+      "X": "40281.38897654135",
+      "Y": "37384.86512664706",
+      "LATITUDE": "1.354367434829519",
+      "LONGITUDE": "103.9436747283467"
+    }
+  ]
+}

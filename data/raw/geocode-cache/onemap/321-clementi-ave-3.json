@@ -1,0 +1,19 @@
+{
+  "query": "321 Clementi Ave 3",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "321 CLEMENTI",
+      "BLK_NO": "321",
+      "ROAD_NAME": "CLEMENTI AVENUE 3",
+      "BUILDING": "321 CLEMENTI",
+      "ADDRESS": "321 CLEMENTI AVENUE 3 321 CLEMENTI SINGAPORE 129905",
+      "POSTAL": "129905",
+      "X": "20395.30642153323",
+      "Y": "32700.15008426644",
+      "LATITUDE": "1.312002120308228",
+      "LONGITUDE": "103.7649866763643"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "650376",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "376 BUKIT BATOK STREET 31 SINGAPORE 650376",
+      "BLK_NO": "376",
+      "ROAD_NAME": "BUKIT BATOK STREET 31",
+      "BUILDING": "NIL",
+      "ADDRESS": "376 BUKIT BATOK STREET 31 SINGAPORE 650376",
+      "POSTAL": "650376",
+      "X": "18680.84797684476",
+      "Y": "37821.47570674866",
+      "LATITUDE": "1.358317052499262",
+      "LONGITUDE": "103.7495798687479"
+    }
+  ]
+}

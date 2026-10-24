@@ -1,0 +1,19 @@
+{
+  "query": "571514",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "514A BISHAN STREET 13 SINGAPORE 571514",
+      "BLK_NO": "514A",
+      "ROAD_NAME": "BISHAN STREET 13",
+      "BUILDING": "NIL",
+      "ADDRESS": "514A BISHAN STREET 13 SINGAPORE 571514",
+      "POSTAL": "571514",
+      "X": "29920.05297204759",
+      "Y": "36991.97546857409",
+      "LATITUDE": "1.350816746546297",
+      "LONGITUDE": "103.850571470566"
+    }
+  ]
+}

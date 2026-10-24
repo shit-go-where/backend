@@ -1,0 +1,19 @@
+{
+  "query": "679947",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT PANJANG HAWKER CENTRE",
+      "BLK_NO": "2",
+      "ROAD_NAME": "BUKIT PANJANG RING ROAD",
+      "BUILDING": "BUKIT PANJANG HAWKER CENTRE",
+      "ADDRESS": "2 BUKIT PANJANG RING ROAD BUKIT PANJANG HAWKER CENTRE SINGAPORE 679947",
+      "POSTAL": "679947",
+      "X": "21230.70628321636",
+      "Y": "39953.32586340047",
+      "LATITUDE": "1.37759742308949",
+      "LONGITUDE": "103.7724915267466"
+    }
+  ]
+}

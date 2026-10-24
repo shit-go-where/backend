@@ -1,0 +1,31 @@
+{
+  "query": "313@Somerset",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "313 @ SOMERSET",
+      "BLK_NO": "313",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "313 @ SOMERSET",
+      "ADDRESS": "313 ORCHARD ROAD 313 @ SOMERSET SINGAPORE 238895",
+      "POSTAL": "238895",
+      "X": "28561.1386390822",
+      "Y": "31485.07723093964",
+      "LATITUDE": "1.301014364040584",
+      "LONGITUDE": "103.8383606644851"
+    },
+    {
+      "SEARCHVAL": "313 @ SOMERSET (CAR PARK ENTRANCE)\n313 @ SOMERSET",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "313 @ SOMERSET (CAR PARK ENTRANCE)\n313 @ SOMERSET",
+      "ADDRESS": "313 @ SOMERSET (CAR PARK ENTRANCE) 313 @ SOMERSET",
+      "POSTAL": "NIL",
+      "X": "28521.40449479688",
+      "Y": "31448.18576488271",
+      "LATITUDE": "1.300680731300169",
+      "LONGITUDE": "103.8380036345583"
+    }
+  ]
+}

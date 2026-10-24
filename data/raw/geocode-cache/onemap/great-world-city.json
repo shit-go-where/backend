@@ -1,0 +1,19 @@
+{
+  "query": "Great World City",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "GREAT WORLD CITY",
+      "BLK_NO": "1",
+      "ROAD_NAME": "KIM SENG PROMENADE",
+      "BUILDING": "GREAT WORLD CITY",
+      "ADDRESS": "1 KIM SENG PROMENADE GREAT WORLD CITY SINGAPORE 237994",
+      "POSTAL": "237994",
+      "X": "27855.71830746345",
+      "Y": "30645.63256778941",
+      "LATITUDE": "1.293422726500028",
+      "LONGITUDE": "103.8320221466545"
+    }
+  ]
+}

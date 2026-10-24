@@ -1,0 +1,19 @@
+{
+  "query": "051531",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HONG LIM COMPLEX",
+      "BLK_NO": "531A",
+      "ROAD_NAME": "UPPER CROSS STREET",
+      "BUILDING": "HONG LIM COMPLEX",
+      "ADDRESS": "531A UPPER CROSS STREET HONG LIM COMPLEX SINGAPORE 051531",
+      "POSTAL": "051531",
+      "X": "29391.72713234089",
+      "Y": "29747.36474186555",
+      "LATITUDE": "1.285299077367731",
+      "LONGITUDE": "103.8458238020424"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "828629",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ONE PUNGGOL",
+      "BLK_NO": "1",
+      "ROAD_NAME": "PUNGGOL DRIVE",
+      "BUILDING": "ONE PUNGGOL",
+      "ADDRESS": "1 PUNGGOL DRIVE ONE PUNGGOL SINGAPORE 828629",
+      "POSTAL": "828629",
+      "X": "35994.38679543696",
+      "Y": "43395.67665252462",
+      "LATITUDE": "1.408728475961338",
+      "LONGITUDE": "103.9051549249232"
+    }
+  ]
+}

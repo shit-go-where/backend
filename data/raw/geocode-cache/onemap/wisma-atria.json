@@ -1,0 +1,19 @@
+{
+  "query": "Wisma Atria",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "WISMA ATRIA",
+      "BLK_NO": "435",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "WISMA ATRIA",
+      "ADDRESS": "435 ORCHARD ROAD WISMA ATRIA SINGAPORE 238877",
+      "POSTAL": "238877",
+      "X": "27987.44345268607",
+      "Y": "31782.56837900355",
+      "LATITUDE": "1.303704774261485",
+      "LONGITUDE": "103.8332057528079"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "query": "Causeway Point",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CAUSEWAY POINT",
+      "BLK_NO": "1",
+      "ROAD_NAME": "WOODLANDS SQUARE",
+      "BUILDING": "CAUSEWAY POINT",
+      "ADDRESS": "1 WOODLANDS SQUARE CAUSEWAY POINT SINGAPORE 738099",
+      "POSTAL": "738099",
+      "X": "22732.10666524339",
+      "Y": "46418.90319029987",
+      "LATITUDE": "1.436070065080311",
+      "LONGITUDE": "103.7859815242531"
+    },
+    {
+      "SEARCHVAL": "CAUSEWAY POINT (CAR PARK ENTRANCE)",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "CAUSEWAY POINT (CAR PARK ENTRANCE)",
+      "ADDRESS": "CAUSEWAY POINT (CAR PARK ENTRANCE)",
+      "POSTAL": "NIL",
+      "X": "22803.2953890115",
+      "Y": "46403.83715006337",
+      "LATITUDE": "1.43593382656025",
+      "LONGITUDE": "103.7866212255665"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "Pasir Ris Mall",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "PASIR RIS MALL",
+      "BLK_NO": "7",
+      "ROAD_NAME": "PASIR RIS CENTRAL",
+      "BUILDING": "PASIR RIS MALL",
+      "ADDRESS": "7 PASIR RIS CENTRAL PASIR RIS MALL SINGAPORE 519612",
+      "POSTAL": "519612",
+      "X": "40845.98143004999",
+      "Y": "39536.34543279931",
+      "LATITUDE": "1.373824377794677",
+      "LONGITUDE": "103.9487488736156"
+    }
+  ]
+}

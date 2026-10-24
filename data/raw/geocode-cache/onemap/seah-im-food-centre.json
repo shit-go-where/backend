@@ -1,0 +1,19 @@
+{
+  "query": "Seah Im Food Centre",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SEAH IM FOOD CENTRE",
+      "BLK_NO": "2",
+      "ROAD_NAME": "SEAH IM ROAD",
+      "BUILDING": "SEAH IM FOOD CENTRE",
+      "ADDRESS": "2 SEAH IM ROAD SEAH IM FOOD CENTRE SINGAPORE 099114",
+      "POSTAL": "099114",
+      "X": "26434.05435807444",
+      "Y": "27676.19459798373",
+      "LATITUDE": "1.26656813225079",
+      "LONGITUDE": "103.819248035765"
+    }
+  ]
+}

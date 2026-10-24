@@ -1,0 +1,19 @@
+{
+  "query": "270043",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "43 HOLLAND DRIVE SINGAPORE 270043",
+      "BLK_NO": "43",
+      "ROAD_NAME": "HOLLAND DRIVE",
+      "BUILDING": "NIL",
+      "ADDRESS": "43 HOLLAND DRIVE SINGAPORE 270043",
+      "POSTAL": "270043",
+      "X": "23501.51760061737",
+      "Y": "32194.97549887374",
+      "LATITUDE": "1.307434111262477",
+      "LONGITUDE": "103.7928975747119"
+    }
+  ]
+}

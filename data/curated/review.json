@@ -316,5 +316,1986 @@
         "matched": "HARBOURFRONT MRT STATION"
       }
     }
+  ],
+  "survey2": [
+    {
+      "kind": "survey2-none-and-items",
+      "key": "M232",
+      "message": "Raw Data row 194: Toiletries ticks \"None of the Above\" and 3 item(s)",
+      "resolution": "auto: the ticked items are imported"
+    },
+    {
+      "kind": "survey2-none-and-items",
+      "key": "M9",
+      "message": "Raw Data row 444: Facilities ticks \"None of the Above\" and 9 item(s)",
+      "resolution": "auto: the ticked items are imported"
+    },
+    {
+      "kind": "survey2-none-and-items",
+      "key": "M124",
+      "message": "Raw Data row 586: Facilities ticks \"None of the Above\" and 10 item(s)",
+      "resolution": "auto: the ticked items are imported"
+    },
+    {
+      "kind": "survey2-code-fixed",
+      "key": "M6",
+      "message": "Raw Data row 611: Location Code \"M6.\" read as \"M6\"",
+      "resolution": "auto: typo fixed (stray punctuation)"
+    },
+    {
+      "kind": "survey2-retraction",
+      "key": "H86",
+      "message": "Raw Data row 20 (H86 FEMALE, Bukit Merah B, 2024-08-24T09:39) says \"(ignore previous response pls sorry)\". No earlier FEMALE row from that team within 15 min. Earlier rows at H86: row 7 UNISEX Bukit Merah B 09:26, row 8 MALE Bukit Merah B 09:26, row 13 MALE Bukit Merah B 09:28",
+      "resolution": "auto: every row imported (it is not clear which earlier row is meant); the note is not shown. Drop the wrong row by hand."
+    },
+    {
+      "kind": "survey2-name-collision",
+      "key": "C28,C29,C41",
+      "message": "3 venues would be called \"Coffeeshop, Blk 101 Yishun Avenue 5\": C28 -> \"Coffeeshop, Blk 101 Yishun Avenue 5 (#01-93)\"; C29 -> \"Coffeeshop, Blk 101 Yishun Avenue 5 (#01-101)\"; C41 -> \"Coffeeshop, Blk 101 Yishun Avenue 5 (#01-03)\"",
+      "resolution": "auto: unit number (or code) added to each name"
+    },
+    {
+      "kind": "survey2-name-collision",
+      "key": "C171,C173",
+      "message": "2 venues would be called \"Coffeeshop, Blk 450 Clementi Avenue 3\": C171 -> \"Coffeeshop, Blk 450 Clementi Avenue 3 (#01-305)\"; C173 -> \"Coffeeshop, Blk 450 Clementi Avenue 3 (#01-271)\"",
+      "resolution": "auto: unit number (or code) added to each name"
+    },
+    {
+      "kind": "survey2-name-collision",
+      "key": "C181,C186",
+      "message": "2 venues would be called \"Coffeeshop, Blk 727 Clementi West Street 2\": C181 -> \"Coffeeshop, Blk 727 Clementi West Street 2 (#01-232)\"; C186 -> \"Coffeeshop, Blk 727 Clementi West Street 2 (#01-294)\"",
+      "resolution": "auto: unit number (or code) added to each name"
+    },
+    {
+      "kind": "survey2-name-collision",
+      "key": "C741,C748",
+      "message": "2 venues would be called \"Coffeeshop, Blk 73 Lorong 4 Toa Payoh\": C741 -> \"Coffeeshop, Blk 73 Lorong 4 Toa Payoh (#01-585)\"; C748 -> \"Coffeeshop, Blk 73 Lorong 4 Toa Payoh (#01-611)\"",
+      "resolution": "auto: unit number (or code) added to each name"
+    },
+    {
+      "kind": "survey2-name-collision",
+      "key": "C1018,C1019",
+      "message": "2 venues would be called \"Coffeeshop, Blk 116 Bukit Merah View\": C1018 -> \"Coffeeshop, Blk 116 Bukit Merah View (#01-211)\"; C1019 -> \"Coffeeshop, Blk 116 Bukit Merah View (#01-253)\"",
+      "resolution": "auto: unit number (or code) added to each name"
+    },
+    {
+      "kind": "survey2-type-check",
+      "key": "M125",
+      "message": "M125 \"Ikea Alexandra\" has an M (mall) code but the name suggests another kind of place",
+      "resolution": "auto: imported as MALL (the type comes from the code prefix); change Venue.type by hand if wrong"
+    },
+    {
+      "kind": "survey2-type-check",
+      "key": "M160",
+      "message": "M160 \"Woodlands Civic Centre\" has an M (mall) code but the name suggests another kind of place",
+      "resolution": "auto: imported as MALL (the type comes from the code prefix); change Venue.type by hand if wrong"
+    },
+    {
+      "kind": "survey2-type-check",
+      "key": "M196",
+      "message": "M196 \"Guoco Tower\" has an M (mall) code but the name suggests another kind of place",
+      "resolution": "auto: imported as MALL (the type comes from the code prefix); change Venue.type by hand if wrong"
+    },
+    {
+      "kind": "survey2-type-check",
+      "key": "M293",
+      "message": "M293 \"Jurong Regional Library\" has an M (mall) code but the name suggests another kind of place",
+      "resolution": "auto: imported as MALL (the type comes from the code prefix); change Venue.type by hand if wrong"
+    },
+    {
+      "kind": "survey2-type-check",
+      "key": "M295",
+      "message": "M295 \"Gardens By The Bay\" has an M (mall) code but the name suggests another kind of place",
+      "resolution": "auto: imported as MALL (the type comes from the code prefix); change Venue.type by hand if wrong"
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:B21/unisex",
+      "message": "2 unisex rows at B21 (Pasir Ris Bus Interchange) that the level does not tell apart: 1 = row 596 2024-10-13T15:42 \"Family toilet\"; 2 = row 597 2024-10-13T15:43 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:C891/unisex",
+      "message": "2 unisex rows at C891 (Coffeeshop, Blk 514A Bishan Street 13) that the level does not tell apart: 1 = row 165 2024-08-24T13:45 \"(no location given)\"; 2 = row 176 2024-08-24T14:02 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:C1013/female",
+      "message": "2 female rows at C1013 (Coffeeshop, Blk 158 Mei Ling Street) that the level does not tell apart: 1 = row 211 2024-08-28T16:14 \"(no location given)\"; 2 = row 316 2024-09-14T16:35 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:C1018/male",
+      "message": "2 male rows at C1018 (Coffeeshop, Blk 116 Bukit Merah View (#01-211)) that the level does not tell apart: 1 = row 31 2024-08-24T09:49 \"(no location given)\"; 2 = row 32 2024-08-24T09:50 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:C1037/male",
+      "message": "2 male rows at C1037 (Coffeeshop, Blk 40 Holland Drive) that the level does not tell apart: 1 = row 296 2024-09-14T15:37 \"(no location given)\"; 2 = row 300 2024-09-14T15:42 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:CC20/female",
+      "message": "2 female rows at CC20 (Farrer Road) that the level does not tell apart: 1 = row 209 2024-08-28T06:41 \"(no location given)\"; 2 = row 450 2024-10-12T12:36 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:DT32/female",
+      "message": "2 female rows at DT32 (Tampines) that the level does not tell apart: 1 = row 671 2024-10-13T18:45 \"Exit F\"; 2 = row 677 2024-10-13T18:49 \"Next to Passenger Service\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:DT32/male",
+      "message": "2 male rows at DT32 (Tampines) that the level does not tell apart: 1 = row 672 2024-10-13T18:47 \"Exit F\"; 2 = row 674 2024-10-13T18:48 \"Next to Passenger Service\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:EW5/male",
+      "message": "2 male rows at EW5 (Bedok) that the level does not tell apart: 1 = row 326 2024-09-14T18:08 \"(no location given)\"; 2 = row 578 2024-10-13T13:25 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:H6/unisex",
+      "message": "2 unisex rows at H6 (Bukit Timah Interim Market) that the level does not tell apart: 1 = row 373 2024-10-12T09:30 \"(no location given)\"; 2 = row 374 2024-10-12T09:32 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:H16/female",
+      "message": "2 female rows at H16 (Market Street Hawker Centre) that the level does not tell apart: 1 = row 554 2024-10-13T11:50 \"(no location given)\"; l3 = row 557 2024-10-13T11:57 \"Level 3\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:H16/male",
+      "message": "2 male rows at H16 (Market Street Hawker Centre) that the level does not tell apart: 1 = row 553 2024-10-13T11:50 \"(no location given)\"; l3 = row 556 2024-10-13T11:56 \"Level 3\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:H16/unisex",
+      "message": "2 unisex rows at H16 (Market Street Hawker Centre) that the level does not tell apart: 1 = row 555 2024-10-13T11:53 \"(no location given)\"; l3 = row 559 2024-10-13T12:00 \"Level 3\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:H86/male",
+      "message": "2 male rows at H86 (Blk 85 Redhill Lane) that the level does not tell apart: 1 = row 8 2024-08-24T09:26 \"(no location given)\"; 2 = row 13 2024-08-24T09:28 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:H86/unisex",
+      "message": "2 unisex rows at H86 (Blk 85 Redhill Lane) that the level does not tell apart: 1 = row 7 2024-08-24T09:26 \"(no location given)\"; 2 = row 22 2024-08-24T09:40 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M6/male",
+      "message": "4 male rows at M6 (White Sands) that the level does not tell apart: 1 = row 611 2024-10-13T16:19 \"(no location given)\"; l5 = row 616 2024-10-13T16:24 \"Level 5\"; b1 = row 618 2024-10-13T16:33 \"Level B1\"; l1 = row 620 2024-10-13T16:35 \"Level 1\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M10/male",
+      "message": "3 male rows at M10 (Bukit Panjang Plaza) that the level does not tell apart: l1-1 = row 56 2024-08-24T10:34 \"Bukit Panjang Plaza, Ground Level, next to Vivian and Sean\"; l1-2 = row 67 2024-08-24T10:38 \"Bukit Panjang Plaza, Level 1, next to Burger King\"; l4 = row 73 2024-08-24T10:43 \"Bukit Panjang Plaza, Level 4\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M32/male",
+      "message": "2 male rows at M32 (WestGate) that the level does not tell apart: b1 = row 312 2024-09-14T16:28 \"Westgate B1 toilet\"; 1 = row 315 2024-09-14T16:34 \"Westgate\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M33/female",
+      "message": "4 female rows at M33 (Tampines Mall) that the level does not tell apart: l1 = row 660 2024-10-13T18:12 \"Level 1\"; l4 = row 662 2024-10-13T18:19 \"Level 4 near Kopitiam\"; b1-1 = row 666 2024-10-13T18:27 \"Level B1\"; b1-2 = row 668 2024-10-13T18:32 \"Level B1\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M44/male",
+      "message": "5 male rows at M44 (Junction 8) that the level does not tell apart: l3 = row 147 2024-08-24T13:10 \"level 3 j8\"; l4 = row 148 2024-08-24T13:14 \"level 4\"; b1 = row 149 2024-08-24T13:15 \"J8 Basement\"; l1-1 = row 150 2024-08-24T13:18 \"Level 1 near DintaiFung\"; l1-2 = row 151 2024-08-24T13:21 \"Level 1 near macs\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M46/female",
+      "message": "4 female rows at M46 (Tampines 1) that the level does not tell apart: l1 = row 647 2024-10-13T17:46 \"Level 1 near Kaleido\"; l3-1 = row 650 2024-10-13T17:52 \"Level 3 near Hooga\"; l3-2 = row 652 2024-10-13T17:56 \"Level 3\"; b1 = row 656 2024-10-13T18:05 \"Level B1\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M47/male",
+      "message": "3 male rows at M47 (PLQ Mall) that the level does not tell apart: b2 = row 678 2024-10-13T18:52 \"PLQ B2\"; b1-1 = row 679 2024-10-13T18:55 \"PLQ B1\"; b1-2 = row 682 2024-10-13T18:56 \"PLQ B1\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M54/male",
+      "message": "3 male rows at M54 (Hillion Mall) that the level does not tell apart: l1 = row 77 2024-08-24T10:53 \"Hillion, Ground Level, next to Dian Xiao Er\"; 1 = row 83 2024-08-24T10:58 \"Hillion, Top Level, beside Raffles Medical\"; 2 = row 90 2024-08-24T11:04 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M54/unisex",
+      "message": "2 unisex rows at M54 (Hillion Mall) that the level does not tell apart: 1 = row 82 2024-08-24T10:57 \"(no location given)\"; b2 = row 89 2024-08-24T11:03 \"B2, hillion mall, next to pet lovers centre\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M62/male",
+      "message": "3 male rows at M62 (Nex) that the level does not tell apart: b1 = row 162 2024-08-24T13:38 \"opposite collins b1\"; 1 = row 166 2024-08-24T13:47 \"Outside Library L4R\"; l3 = row 169 2024-08-24T13:51 \"Outside Isetan L3\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M87/male",
+      "message": "3 male rows at M87 (Parkway Parade) that the level does not tell apart: 1 = row 536 2024-10-12T17:42 \"(no location given)\"; l2 = row 538 2024-10-12T17:45 \"Level 2\"; l3 = row 540 2024-10-12T17:49 \"Level 3\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M89/male",
+      "message": "6 male rows at M89 (Waterway point) that the level does not tell apart: l1-1 = row 412 2024-10-12T11:00 \"West Wing L1\"; l1-2 = row 415 2024-10-12T11:05 \"L1\"; l2 = row 416 2024-10-12T11:06 \"West Wing L2\"; b1-1 = row 420 2024-10-12T11:12 \"West Wing B1\"; b1-2 = row 421 2024-10-12T11:12 \"B1\"; b2 = row 424 2024-10-12T11:16 \"B2\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M89/unisex",
+      "message": "6 unisex rows at M89 (Waterway point) that the level does not tell apart: l1-1 = row 413 2024-10-12T11:02 \"West Wing L1\"; l1-2 = row 414 2024-10-12T11:02 \"Level 1\"; l2 = row 418 2024-10-12T11:07 \"West Wing L2\"; b1-1 = row 422 2024-10-12T11:13 \"West Wing B1\"; b1-2 = row 423 2024-10-12T11:14 \"B1\"; b3 = row 425 2024-10-12T11:19 \"B3\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M94/male",
+      "message": "3 male rows at M94 (United Square Shopping Mall) that the level does not tell apart: l2 = row 157 2024-08-24T13:32 \"United Square, Level 2 near Minmed Clinic\"; 1 = row 159 2024-08-24T13:37 \"(no location given)\"; b1 = row 164 2024-08-24T13:45 \"United Square, Level B1\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M97/female",
+      "message": "2 female rows at M97 (Tripleone Somerset) that the level does not tell apart: 1 = row 75 2024-08-24T10:50 \"111 somerset\"; l2 = row 79 2024-08-24T10:54 \"111 Somerset L2\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M98/male",
+      "message": "3 male rows at M98 (112 Katong Mall) that the level does not tell apart: 1 = row 542 2024-10-12T18:05 \"(no location given)\"; l4 = row 545 2024-10-12T18:15 \"Level 4\"; b1 = row 546 2024-10-12T18:21 \"b1\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M104/male",
+      "message": "3 male rows at M104 (Orchard Point) that the level does not tell apart: l1 = row 109 2024-08-24T11:35 \"Taste Orchard Level 1\"; l2-1 = row 113 2024-08-24T11:45 \"Taste Orchard Level 2\"; l2-2 = row 121 2024-08-24T11:53 \"Orchard Plaza Level 2\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M121/male",
+      "message": "3 male rows at M121 (Tiong Bahru Plaza) that the level does not tell apart: 1 = row 598 2024-10-13T15:43 \"(no location given)\"; l1 = row 600 2024-10-13T15:51 \"Tiong Bahru Plaza L1\"; l2 = row 605 2024-10-13T16:00 \"Tb Plaza l2\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M124/female",
+      "message": "3 female rows at M124 (Bedok Mall) that the level does not tell apart: l1 = row 582 2024-10-13T14:41 \"Level 1 near Mr Coconut\"; b1-1 = row 584 2024-10-13T14:51 \"Level B1 near Xiaomi\"; b1-2 = row 587 2024-10-13T15:02 \"B1 near Best Denki\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M124/male",
+      "message": "3 male rows at M124 (Bedok Mall) that the level does not tell apart: l1 = row 581 2024-10-13T14:41 \"Level 1 near Mr Coconut\"; b1-1 = row 583 2024-10-13T14:49 \"Level B1 near Xiaomi\"; b1-2 = row 585 2024-10-13T14:59 \"Level B1 near Best Denki\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M156/female",
+      "message": "2 female rows at M156 (One Holland Village) that the level does not tell apart: 1 = row 468 2024-10-12T13:13 \"(no location given)\"; l3 = row 470 2024-10-12T13:16 \"Level 3 Holland Village\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M163/male",
+      "message": "3 male rows at M163 (Clementi Mall) that the level does not tell apart: b1 = row 362 2024-09-21T18:35 \"Level B1\"; l3 = row 363 2024-09-21T18:41 \"Level 3 (near Japan Home)\"; 1 = row 364 2024-09-21T19:22 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M195/female",
+      "message": "3 female rows at M195 (Great World City) that the level does not tell apart: l1 = row 456 2024-10-12T12:48 \"L1\"; l3 = row 461 2024-10-12T12:55 \"L3\"; 1 = row 465 2024-10-12T13:01 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M196/female",
+      "message": "2 female rows at M196 (Guoco Tower) that the level does not tell apart: b1 = row 155 2024-08-24T13:29 \"guoco tower B1\"; 1 = row 163 2024-08-24T13:38 \"guoco tower B\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M213/female",
+      "message": "2 female rows at M213 (Specialists' Shopping Centre / Orchard Gateway) that the level does not tell apart: 1 = row 133 2024-08-24T12:11 \"orchard gateway solace studios\"; l4 = row 135 2024-08-24T12:17 \"orchard gateway L4\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M232/male",
+      "message": "4 male rows at M232 (Novena Square 2) that the level does not tell apart: 1 = row 185 2024-08-24T14:26 \"(no location given)\"; l1 = row 189 2024-08-24T14:31 \"Velocity square two level 1, next to ZOEO\"; l4 = row 192 2024-08-24T14:37 \"Square 2, Level 4\"; l2 = row 275 2024-09-13T21:24 \"Level 2, near Lao Beijing\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M239/female",
+      "message": "3 female rows at M239 (Velocity@Novena Square) that the level does not tell apart: l2-1 = row 206 2024-08-24T17:55 \"Velocity, Level 2, Next to New Balance\"; l2-2 = row 207 2024-08-24T18:01 \"Velocity, Level 2, Across Monster Curry\"; l3 = row 208 2024-08-24T18:09 \"Velocity, Level 3, Next to Pixie Nail Spa\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M291/female",
+      "message": "6 female rows at M291 (Marina Bay Sands (Shoppes, Expo & Convention Centre, Hotel)) that the level does not tell apart: b2 = row 264 2024-09-10T18:18 \"b2 next to club monaco\"; 1 = row 265 2024-09-10T18:19 \"(no location given)\"; b1-1 = row 268 2024-09-10T18:24 \"b1 next to leica\"; b1-2 = row 270 2024-09-10T18:30 \"b1 next to theatre\"; l1-1 = row 271 2024-09-10T18:33 \"L1 next to christofle\"; l1-2 = row 274 2024-09-10T18:37 \"L1 next to jason deli\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M291/male",
+      "message": "6 male rows at M291 (Marina Bay Sands (Shoppes, Expo & Convention Centre, Hotel)) that the level does not tell apart: b2-1 = row 263 2024-09-10T18:13 \"B2, next to Club Monaco\"; b2-2 = row 266 2024-09-10T18:19 \"B2 next to Dior\"; b1-1 = row 267 2024-09-10T18:24 \"B1 next to Leica\"; b1-2 = row 269 2024-09-10T18:28 \"B1 next to theatre\"; l1-1 = row 272 2024-09-10T18:33 \"L1 next to Christofle\"; l1-2 = row 273 2024-09-10T18:36 \"L1 next to Jason Deli\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M292/female",
+      "message": "6 female rows at M292 (Pasir Ris Mall) that the level does not tell apart: l1 = row 626 2024-10-13T16:43 \"Level 1 near YGF Malatang\"; l3 = row 630 2024-10-13T16:56 \"Level 3 near Elm Tree\"; l2 = row 633 2024-10-13T17:03 \"Level 2 near dancepointeacademy\"; b2 = row 635 2024-10-13T17:10 \"Level B2 near EcoRing\"; b1-1 = row 638 2024-10-13T17:16 \"Level B1 near Tamjai Samgor Mixian\"; b1-2 = row 640 2024-10-13T17:22 \"Level B1 near Cold Storage\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:M292/male",
+      "message": "6 male rows at M292 (Pasir Ris Mall) that the level does not tell apart: l1 = row 625 2024-10-13T16:43 \"Level 1 near YGF Malatang\"; l2-1 = row 629 2024-10-13T16:55 \"Level 2 near Elm Tree\"; l2-2 = row 632 2024-10-13T17:01 \"Level 2, near dancepointeacademy\"; b2 = row 634 2024-10-13T17:10 \"Level B2 near EcoRing\"; b1-1 = row 637 2024-10-13T17:15 \"B1 near Tamjai Samgor Mixian\"; b1-2 = row 639 2024-10-13T17:20 \"Level B1 near Cold Storage\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:NS9/male",
+      "message": "2 male rows at NS9 (Woodlands) that the level does not tell apart: 1 = row 225 2024-09-10T14:33 \"(no location given)\"; 2 = row 371 2024-10-12T09:27 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:TE2/female",
+      "message": "3 female rows at TE2 (Woodlands) that the level does not tell apart: 1 = row 214 2024-09-10T13:53 \"(no location given)\"; 2 = row 377 2024-10-12T09:36 \"(near link to BI)\"; 3 = row 381 2024-10-12T09:49 \"Near Exit 5-7\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:TE2/male",
+      "message": "3 male rows at TE2 (Woodlands) that the level does not tell apart: 1 = row 213 2024-09-10T13:51 \"(no location given)\"; 2 = row 375 2024-10-12T09:35 \"(near link to BI)\"; 3 = row 382 2024-10-12T09:49 \"Near Exit 5-7\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:TE22/male",
+      "message": "2 male rows at TE22 (Gardens by the Bay) that the level does not tell apart: 1 = row 198 2024-08-24T16:49 \"Near exit 3\"; 2 = row 514 2024-10-12T15:33 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    },
+    {
+      "kind": "survey2-same-sex-ordinal",
+      "key": "survey2:TE23/female",
+      "message": "2 female rows at TE23 (Tanjong Rhu) that the level does not tell apart: 1 = row 516 2024-10-12T15:46 \"(no location given)\"; 2 = row 517 2024-10-12T15:58 \"(no location given)\"",
+      "resolution": "auto: one toilet each, numbered by survey time. Merge or rename by hand if two rows are the same toilet."
+    }
+  ],
+  "survey2Match": [
+    {
+      "kind": "survey2-match-check",
+      "key": "C94",
+      "message": "C94 \"Coffeeshop, Blk 259 Bukit Panjang Ring Road\" -> sheet-venue:cs-kim-san-leng-at-bukit-panjang-blk-259 \"Kim San Leng @ Bukit Panjang (Blk 259)\" via pilot-postcode, 0 m from our geocode: same postcode 671259 as pilot coffeeshop \"Kim San Leng @ Bukit Panjang (Blk 259)\" (several coffeeshops can share a block: confirm the unit)",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "H6",
+      "message": "H6 \"Bukit Timah Interim Market\" -> datagov-hawker:bukit-timah-interim-hawker-centre-and-market \"Bukit Timah Interim Hawker Centre and Market\" via datagov-name, 212 m from our geocode: matched by name (\"Bukit Timah Interim Market\" ~ \"Bukit Timah Interim Hawker Centre and Market\"); NEA postcode differs from 588215",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "H109",
+      "message": "H109 \"Bukit Panjang Hawker Centre & Market\" -> sheet-venue:hc-bukit-panjang-hawker-centre \"Bukit Panjang Hawker Centre\" via pilot-name, 0 m from our geocode: \"Bukit Panjang Hawker Centre & Market\" and pilot \"Bukit Panjang Hawker Centre\" share every word of the shorter name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "M10",
+      "message": "M10 \"Bukit Panjang Plaza\" -> osm-venue:way/173144799 \"Bukit Panjang Plaza\" via osm-60m-name, 11 m from our geocode: OSM \"Bukit Panjang Plaza\" 11 m from our geocode",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "M39",
+      "message": "M39 \"Cathay Cineleisure Orchard\" -> osm-venue:way/42010371 \"Cathay Cineleisure Orchard\" via osm-60m-name, 8 m from our geocode: OSM \"Cathay Cineleisure Orchard\" 8 m from our geocode",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "M89",
+      "message": "M89 \"Waterway point\" -> osm-venue:way/301736937 \"Waterway Point\" via osm-60m-name, 28 m from our geocode: OSM \"Waterway Point\" 28 m from our geocode",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "M294",
+      "message": "M294 \"313@Somerset\" -> osm-venue:way/52236347 \"313@Somerset\" via osm-60m-name, 8 m from our geocode: OSM \"313@Somerset\" 8 m from our geocode",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE23",
+      "message": "TE23 \"Tanjong Rhu\" -> wikidata:Q18387904 \"Tanjong Rhu\" via wikidata-name, 43 m from our geocode: Wikidata Q18387904 has no station code for TE23; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE24",
+      "message": "TE24 \"Katong Park\" -> wikidata:Q18387296 \"Katong Park\" via wikidata-name, 94 m from our geocode: Wikidata Q18387296 has no station code for TE24; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE25",
+      "message": "TE25 \"Tanjong Katong\" -> wikidata:Q18209162 \"Tanjong Katong\" via wikidata-name, 71 m from our geocode: Wikidata Q18209162 has no station code for TE25; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE26",
+      "message": "TE26 \"Marine Parade\" -> wikidata:Q17611609 \"Marine Parade\" via wikidata-name, 32 m from our geocode: Wikidata Q17611609 has no station code for TE26; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE27",
+      "message": "TE27 \"Marine Terrace\" -> wikidata:Q17611611 \"Marine Terrace\" via wikidata-name, 211 m from our geocode: Wikidata Q17611611 has no station code for TE27; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE28",
+      "message": "TE28 \"Siglap\" -> wikidata:Q18378404 \"Siglap\" via wikidata-name, 121 m from our geocode: Wikidata Q18378404 has no station code for TE28; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-match-check",
+      "key": "TE29",
+      "message": "TE29 \"Bayshore\" -> wikidata:Q18209994 \"Bayshore\" via wikidata-name, 236 m from our geocode: Wikidata Q18209994 has no station code for TE29; matched by name",
+      "resolution": "auto: matched. To overrule, edit the entry in survey2-venue-matches.json and set \"locked\": true."
+    },
+    {
+      "kind": "survey2-attach-none",
+      "key": "DT32/MALE",
+      "message": "2 MALE rows at DT32 (Tampines), one pilot toilet sheet:tampines-dtl: survey2:DT32/male/1 new \"Exit F\"; survey2:DT32/male/2 new \"Next to Passenger Service\"",
+      "resolution": "auto: none attached (every row names a spot); all are new toilets. Lock attach.pilotToiletSourceKey on the right one."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "EW5/MALE",
+      "message": "2 MALE rows at EW5 (Bedok), one pilot toilet sheet:bedok-ewl: survey2:EW5/male/1 ATTACHED \"(no location)\"; survey2:EW5/male/2 ATTACHED \"(no location)\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    },
+    {
+      "kind": "survey2-attach-none",
+      "key": "survey2:EW17/male",
+      "message": "survey2:EW17/male (MALE) at pilot venue sheet-venue:mrt-tiong-bahru, but the pilot only lists sheet:tiong-bahru-ewl (UNISEX)",
+      "resolution": "auto: a toilet of its own. Set attach.pilotToiletSourceKey and \"locked\": true if it is the same toilet."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "M9/MALE",
+      "message": "5 MALE rows at M9 (Compass One), one pilot toilet sheet:compass-one-l1 (L1): survey2:M9/male/b1 new \"B1 Compass One\"; survey2:M9/male/l1 ATTACHED \"L1\"; survey2:M9/male/l2 new \"L2\"; survey2:M9/male/l3 new \"L3\"; survey2:M9/male/l4 new \"L4\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "M54/MALE",
+      "message": "3 MALE rows at M54 (Hillion Mall), one pilot toilet sheet:hillion-mall-l1 (L1): survey2:M54/male/1 new \"Hillion, Top Level, beside Raffles Medical\"; survey2:M54/male/2 new \"(no location)\"; survey2:M54/male/l1 ATTACHED \"Hillion, Ground Level, next to Dian Xiao Er\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "M65/MALE",
+      "message": "2 MALE rows at M65 (Sun Plaza), one pilot toilet sheet:sun-plaza-l1 (L1): survey2:M65/male/l1 ATTACHED \"Level 1\"; survey2:M65/male/l4 new \"Level 4\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    },
+    {
+      "kind": "survey2-attach-none",
+      "key": "M291/MALE",
+      "message": "6 MALE rows at M291 (Marina Bay Sands), one pilot toilet sheet:marina-bay-sands: survey2:M291/male/b1-1 new \"B1 next to Leica\"; survey2:M291/male/b1-2 new \"B1 next to theatre\"; survey2:M291/male/b2-1 new \"B2, next to Club Monaco\"; survey2:M291/male/b2-2 new \"B2 next to Dior\"; survey2:M291/male/l1-1 new \"L1 next to Christofle\"; survey2:M291/male/l1-2 new \"L1 next to Jason Deli\"",
+      "resolution": "auto: none attached (every row names a spot); all are new toilets. Lock attach.pilotToiletSourceKey on the right one."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "NS9/MALE",
+      "message": "2 MALE rows at NS9 (Woodlands), one pilot toilet sheet:woodlands-nsl: survey2:NS9/male/1 ATTACHED \"(no location)\"; survey2:NS9/male/2 ATTACHED \"(no location)\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "TE2/MALE",
+      "message": "3 MALE rows at TE2 (Woodlands), one pilot toilet sheet:woodlands-tel: survey2:TE2/male/1 ATTACHED \"(no location)\"; survey2:TE2/male/2 new \"(near link to BI)\"; survey2:TE2/male/3 new \"Near Exit 5-7\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    },
+    {
+      "kind": "survey2-attach-check",
+      "key": "TE22/MALE",
+      "message": "2 MALE rows at TE22 (Gardens by the Bay), one pilot toilet sheet:gardens-by-the-bay-tel: survey2:TE22/male/1 new \"Near exit 3\"; survey2:TE22/male/2 ATTACHED \"(no location)\"",
+      "resolution": "auto: rows without a location are taken to be the pilot toilet; the others are new toilets. Lock a different choice in survey2-venue-matches.json if wrong."
+    }
+  ],
+  "survey2Geocode": [
+    {
+      "kind": "geocode-check",
+      "key": "B1",
+      "message": "Ang Mo Kio Integrated Transport Hub: no OneMap match for \"Ang Mo Kio Integrated Transport Hub\" (0 results); used the fallback query \"53 Ang Mo Kio Avenue 3\"",
+      "data": {
+        "lat": 1.369181,
+        "lng": 103.848188,
+        "matched": "53 ANG MO KIO AVENUE 3"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "B10",
+      "message": "Clementi Integrated Transport Hub: no OneMap match for \"Clementi Integrated Transport Hub\" (0 results); used the fallback query \"441 Commonwealth Avenue West\"",
+      "data": {
+        "lat": 1.314967,
+        "lng": 103.76427,
+        "matched": "CLEMENTI BUS INTERCHANGE"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "B11",
+      "message": "Compassvale Bus Interchange: no OneMap match for \"Compassvale Bus Interchange\" (0 results); used the fallback query \"51A Compassvale Road\"",
+      "data": {
+        "lat": 1.391122,
+        "lng": 103.897159,
+        "matched": "51A COMPASSVALE ROAD SINGAPORE 544760"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "B21",
+      "message": "Pasir Ris Bus Interchange: no OneMap match for \"Pasir Ris Bus Interchange\" (0 results); used the fallback query \"501 Pasir Ris Drive 3\"",
+      "data": {
+        "lat": 1.373547,
+        "lng": 103.95049,
+        "matched": "501 PASIR RIS DRIVE 3 SINGAPORE 519490"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M6",
+      "message": "White Sands: multi-hit: candidates spread 1452 m",
+      "data": {
+        "lat": 1.365636,
+        "lng": 103.960862,
+        "matched": "LEARNING LEAP PTE LTD (WHITE SANDS PRIMARY SCHOOL)"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M18",
+      "message": "Star Vista: resolved via override",
+      "resolution": "override in overrides.json: survey2 M18: full name",
+      "data": {
+        "lat": 1.30697,
+        "lng": 103.78842,
+        "matched": "THE STAR VISTA"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M25",
+      "message": "Scape: resolved via override",
+      "resolution": "override in overrides.json: survey2 M25: the mall writes its name *SCAPE",
+      "data": {
+        "lat": 1.301011,
+        "lng": 103.835724,
+        "matched": "SCAPE"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M46",
+      "message": "Tampines 1: resolved via override",
+      "resolution": "override in overrides.json: survey2 M46: \"Tampines 1\" first matches a family centre at Tampines Plaza 1; the mall is 10 Tampines Central 1",
+      "data": {
+        "lat": 1.354256,
+        "lng": 103.945072,
+        "matched": "TAMPINES ONE"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M62",
+      "message": "Nex: multi-hit: candidates spread 10848 m",
+      "resolution": "override in overrides.json: survey2 M62: the mall writes its name NEX",
+      "data": {
+        "lat": 1.350769,
+        "lng": 103.872296,
+        "matched": "NEX"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M65",
+      "message": "Sun Plaza: multi-hit: candidates spread 17507 m",
+      "data": {
+        "lat": 1.448195,
+        "lng": 103.819502,
+        "matched": "SUN PLAZA"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M75",
+      "message": "Ang Mo Kio Hub: multi-hit: candidates spread 2283 m",
+      "data": {
+        "lat": 1.369389,
+        "lng": 103.848478,
+        "matched": "AMK HUB"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M89",
+      "message": "Waterway point: resolved via override",
+      "resolution": "override in overrides.json: survey2 M89: capitalisation",
+      "data": {
+        "lat": 1.406536,
+        "lng": 103.901988,
+        "matched": "SHAW THEATRES WATERWAY POINT"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M94",
+      "message": "United Square Shopping Mall: no OneMap match for \"United Square Shopping Mall\" (0 results); used the fallback query \"101 THOMSON RD\"",
+      "data": {
+        "lat": 1.317428,
+        "lng": 103.843671,
+        "matched": "CONSULATE OF THE REPUBLIC OF VANUATU"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M97",
+      "message": "Tripleone Somerset: no OneMap match for \"Tripleone Somerset\" (0 results); used the fallback query \"111 SOMERSET ROAD\"",
+      "resolution": "override in overrides.json: survey2 M97: index has it in capitals",
+      "data": {
+        "lat": 1.300206,
+        "lng": 103.837317,
+        "matched": "111 SOMERSET"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M98",
+      "message": "112 Katong Mall: no OneMap match for \"112 Katong Mall\" (0 results); used the fallback query \"112 EAST COAST ROAD\"; multi-hit: candidates spread 2838 m",
+      "resolution": "override in overrides.json: survey2 M98: the mall is called 112 Katong (index: 112 Katong Mall)",
+      "data": {
+        "lat": 1.305207,
+        "lng": 103.905046,
+        "matched": "112 KATONG"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M104",
+      "message": "Orchard Point: no OneMap match for \"Orchard Point\" (0 results); used the fallback query \"160 ORCHARD ROAD\"",
+      "data": {
+        "lat": 1.301371,
+        "lng": 103.84055,
+        "matched": "JUSTCO PLACE"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M112",
+      "message": "Orchard Emerald / Orchard Gateway@Emerald: resolved via override",
+      "resolution": "override in overrides.json: survey2 M112: index name \"Orchard Emerald / Orchard Gateway@Emerald\"",
+      "data": {
+        "lat": 1.301601,
+        "lng": 103.838869,
+        "matched": "ORCHARD GATEWAY @ EMERALD"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M126",
+      "message": "321 Mall: no OneMap match for \"321 Mall\" (0 results); used the fallback query \"321 Clementi Ave 3\"",
+      "data": {
+        "lat": 1.312002,
+        "lng": 103.764987,
+        "matched": "321 CLEMENTI"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M162",
+      "message": "Grantral Mall: multi-hit: candidates spread 13776 m",
+      "data": {
+        "lat": 1.31427,
+        "lng": 103.765147,
+        "matched": "GRANTRAL MALL @ CLEMENTI"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M213",
+      "message": "Specialists' Shopping Centre / Orchard Gateway: no OneMap match for \"Specialists' Shopping Centre / Orchard Gateway\" (0 results); used the fallback query \"277 ORCHARD ROAD\"",
+      "resolution": "override in overrides.json: survey2 M213: the index says \"Specialists' Shopping Centre / Orchard Gateway\"; Specialists' was rebuilt as orchardgateway (277 Orchard Road)",
+      "data": {
+        "lat": 1.300489,
+        "lng": 103.839325,
+        "matched": "JEN SINGAPORE ORCHARDGATEWAY BY SHANGRI-LA"
+      }
+    },
+    {
+      "kind": "geocode-overridden",
+      "key": "M215",
+      "message": "Takashimaya Shopping Centre/Ngee Ann City: no OneMap match for \"Takashimaya Shopping Centre/Ngee Ann City\" (0 results); used the fallback query \"391 ORCHARD ROAD\"",
+      "resolution": "override in overrides.json: survey2 M215: index name \"Takashimaya Shopping Centre/Ngee Ann City\"",
+      "data": {
+        "lat": 1.302242,
+        "lng": 103.835182,
+        "matched": "NGEE ANN CITY"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M291",
+      "message": "Marina Bay Sands (Shoppes, Expo & Convention Centre, Hotel): no OneMap match for \"Marina Bay Sands (Shoppes, Expo & Convention Centre, Hotel)\" (0 results); used the fallback query \"10 BAYFRONT AVENUE\"",
+      "data": {
+        "lat": 1.282397,
+        "lng": 103.858405,
+        "matched": "SANDS EXPO AND CONVENTION CENTRE"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M293",
+      "message": "Jurong Regional Library: no OneMap match for \"Jurong Regional Library\" (0 results); used the fallback query \"21 Jurong East Central 1\"",
+      "data": {
+        "lat": 1.332885,
+        "lng": 103.73949,
+        "matched": "JURONG LIBRARY"
+      }
+    },
+    {
+      "kind": "geocode-check",
+      "key": "M295",
+      "message": "Gardens By The Bay: multi-hit: candidates spread 834 m",
+      "data": {
+        "lat": 1.284589,
+        "lng": 103.864657,
+        "matched": "GARDENS BY THE BAY"
+      }
+    }
+  ],
+  "survey2Remarks": [
+    {
+      "key": "survey2:B2/male#2024-09-14T17:58:18+08:00",
+      "toilet": "survey2:B2/male",
+      "venue": "Bedok Integrated Transport Hub",
+      "sex": "MALE",
+      "remark": "Toilets and walls are stained"
+    },
+    {
+      "key": "survey2:B6/female#2024-08-24T10:55:42+08:00",
+      "toilet": "survey2:B6/female",
+      "venue": "Bukit Merah Bus Interchange",
+      "sex": "FEMALE",
+      "remark": "Clogged toilet/non functional flush"
+    },
+    {
+      "key": "survey2:B6/male#2024-08-24T10:54:08+08:00",
+      "toilet": "survey2:B6/male",
+      "venue": "Bukit Merah Bus Interchange",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:B21/female#2024-10-13T15:41:04+08:00",
+      "toilet": "survey2:B21/female",
+      "venue": "Pasir Ris Bus Interchange",
+      "sex": "FEMALE",
+      "remark": "rubbish bins overflowing. floor is wet"
+    },
+    {
+      "key": "survey2:B21/male#2024-10-13T15:39:36+08:00",
+      "toilet": "survey2:B21/male",
+      "venue": "Pasir Ris Bus Interchange",
+      "sex": "MALE",
+      "remark": "Toilet floor is wet and stained"
+    },
+    {
+      "key": "survey2:B21/unisex/1#2024-10-13T15:42:13+08:00",
+      "toilet": "survey2:B21/unisex/1",
+      "venue": "Pasir Ris Bus Interchange",
+      "sex": "UNISEX",
+      "remark": "Floor is wet and litter present"
+    },
+    {
+      "key": "survey2:B21/unisex/2#2024-10-13T15:43:07+08:00",
+      "toilet": "survey2:B21/unisex/2",
+      "venue": "Pasir Ris Bus Interchange",
+      "sex": "UNISEX",
+      "remark": "footprints on ground"
+    },
+    {
+      "key": "survey2:B29/female#2024-10-13T18:43:26+08:00",
+      "toilet": "survey2:B29/female",
+      "venue": "Tampines Bus Interchange",
+      "sex": "FEMALE",
+      "remark": "Toilet paper strips litter the floor. Sanitary bin overflows"
+    },
+    {
+      "key": "survey2:B29/male#2024-10-13T18:40:36+08:00",
+      "toilet": "survey2:B29/male",
+      "venue": "Tampines Bus Interchange",
+      "sex": "MALE",
+      "remark": "Some staining on floor"
+    },
+    {
+      "key": "survey2:B35/female#2024-09-10T14:07:46+08:00",
+      "toilet": "survey2:B35/female",
+      "venue": "Woodlands Integrated Transport Hub",
+      "sex": "FEMALE",
+      "remark": "gloomy and none of the above"
+    },
+    {
+      "key": "survey2:B37/female#2024-09-10T16:31:19+08:00",
+      "toilet": "survey2:B37/female",
+      "venue": "Yishun Integrated Transport Hub",
+      "sex": "FEMALE",
+      "remark": "kinda gloomy"
+    },
+    {
+      "key": "survey2:C28/female#2024-09-10T16:57:38+08:00",
+      "toilet": "survey2:C28/female",
+      "venue": "Coffeeshop, Blk 101 Yishun Avenue 5 (#01-93)",
+      "sex": "FEMALE",
+      "remark": "squat toilet, REALLY REAALY STINKY"
+    },
+    {
+      "key": "survey2:C29/female#2024-09-10T16:54:12+08:00",
+      "toilet": "survey2:C29/female",
+      "venue": "Coffeeshop, Blk 101 Yishun Avenue 5 (#01-101)",
+      "sex": "FEMALE",
+      "remark": "realky reaaly wet moldy disgusting"
+    },
+    {
+      "key": "survey2:C73/male#2024-08-24T09:16:12+08:00",
+      "toilet": "survey2:C73/male",
+      "venue": "Coffeeshop, Blk 103 Gangsa Road",
+      "sex": "MALE",
+      "remark": "toilet has none of the above"
+    },
+    {
+      "key": "survey2:C80/male#2024-08-24T09:52:11+08:00",
+      "toilet": "survey2:C80/male",
+      "venue": "Coffeeshop, Blk 117 Pending Road",
+      "sex": "MALE",
+      "remark": "floor is very very dirty"
+    },
+    {
+      "key": "survey2:C121/male#2024-08-24T10:06:02+08:00",
+      "toilet": "survey2:C121/male",
+      "venue": "Coffeeshop, Blk 163A Gangsa Road",
+      "sex": "MALE",
+      "remark": "sink has vomit in it"
+    },
+    {
+      "key": "survey2:C136/female#2024-09-21T15:02:00+08:00",
+      "toilet": "survey2:C136/female",
+      "venue": "Coffeeshop, Blk 721 Clementi West Street 2",
+      "sex": "FEMALE",
+      "remark": "Floor is wet and walls are stained"
+    },
+    {
+      "key": "survey2:C136/male#2024-09-21T15:05:10+08:00",
+      "toilet": "survey2:C136/male",
+      "venue": "Coffeeshop, Blk 721 Clementi West Street 2",
+      "sex": "MALE",
+      "remark": "Litter on floor, floor stained"
+    },
+    {
+      "key": "survey2:C136/unisex#2024-09-21T15:03:56+08:00",
+      "toilet": "survey2:C136/unisex",
+      "venue": "Coffeeshop, Blk 721 Clementi West Street 2",
+      "sex": "UNISEX",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:C181/female#2024-09-21T15:18:06+08:00",
+      "toilet": "survey2:C181/female",
+      "venue": "Coffeeshop, Blk 727 Clementi West Street 2 (#01-232)",
+      "sex": "FEMALE",
+      "remark": "Floor is stained"
+    },
+    {
+      "key": "survey2:C181/male#2024-09-21T15:17:18+08:00",
+      "toilet": "survey2:C181/male",
+      "venue": "Coffeeshop, Blk 727 Clementi West Street 2 (#01-232)",
+      "sex": "MALE",
+      "remark": "Walls are stained"
+    },
+    {
+      "key": "survey2:C184/female#2024-09-21T15:09:27+08:00",
+      "toilet": "survey2:C184/female",
+      "venue": "Coffeeshop, Blk 722 Clementi West Street 2",
+      "sex": "FEMALE",
+      "remark": "Floor is littered and stained"
+    },
+    {
+      "key": "survey2:C186/male#2024-09-21T15:21:55+08:00",
+      "toilet": "survey2:C186/male",
+      "venue": "Coffeeshop, Blk 727 Clementi West Street 2 (#01-294)",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:C793/male#2024-09-14T17:33:21+08:00",
+      "toilet": "survey2:C793/male",
+      "venue": "Coffeeshop, 510 Chai Chee Lane",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:C867/male#2024-08-24T13:51:58+08:00",
+      "toilet": "survey2:C867/male",
+      "venue": "Coffeeshop, Blk 504 Bishan Street 11",
+      "sex": "MALE",
+      "remark": "dirty asl"
+    },
+    {
+      "key": "survey2:C1013/female/2#2024-09-14T16:35:13+08:00",
+      "toilet": "survey2:C1013/female/2",
+      "venue": "Coffeeshop, Blk 158 Mei Ling Street",
+      "sex": "FEMALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:C1018/male/2#2024-08-24T09:50:06+08:00",
+      "toilet": "survey2:C1018/male/2",
+      "venue": "Coffeeshop, Blk 116 Bukit Merah View (#01-211)",
+      "sex": "MALE",
+      "remark": "Floor is wet and dirty"
+    },
+    {
+      "key": "survey2:C1019/male#2024-08-24T09:44:55+08:00",
+      "toilet": "survey2:C1019/male",
+      "venue": "Coffeeshop, Blk 116 Bukit Merah View (#01-253)",
+      "sex": "MALE",
+      "remark": "Floor is wet and has some litter"
+    },
+    {
+      "key": "survey2:C1024/male#2024-08-24T10:34:50+08:00",
+      "toilet": "survey2:C1024/male",
+      "venue": "Coffeeshop, Blk 10 Telok Blangah Crescent",
+      "sex": "MALE",
+      "remark": "Floor is wet, stained and has rubbish. Food remnants in sink"
+    },
+    {
+      "key": "survey2:C1027/male#2024-09-14T15:53:44+08:00",
+      "toilet": "survey2:C1027/male",
+      "venue": "Coffeeshop, Blk 46 Holland Drive",
+      "sex": "MALE",
+      "remark": "Floor is wet and walls are stained"
+    },
+    {
+      "key": "survey2:C1028/female#2024-09-14T15:39:31+08:00",
+      "toilet": "survey2:C1028/female",
+      "venue": "Coffeeshop, Blk 43 Holland Drive",
+      "sex": "FEMALE",
+      "remark": "Toilet and walls are stained"
+    },
+    {
+      "key": "survey2:C1028/unisex#2024-09-14T15:38:45+08:00",
+      "toilet": "survey2:C1028/unisex",
+      "venue": "Coffeeshop, Blk 43 Holland Drive",
+      "sex": "UNISEX",
+      "remark": "Floor is wet, toilets and walls are stained"
+    },
+    {
+      "key": "survey2:C1029/male#2024-08-24T11:37:58+08:00",
+      "toilet": "survey2:C1029/male",
+      "venue": "Coffeeshop, Blk 2 Jalan Bukit Merah",
+      "sex": "MALE",
+      "remark": "Floor is dirty and wet. Toilet not intact."
+    },
+    {
+      "key": "survey2:C1037/male/1#2024-09-14T15:37:09+08:00",
+      "toilet": "survey2:C1037/male/1",
+      "venue": "Coffeeshop, Blk 40 Holland Drive",
+      "sex": "MALE",
+      "remark": "Toilets and walls are stained, floor is wet."
+    },
+    {
+      "key": "survey2:C1037/male/2#2024-09-14T15:42:41+08:00",
+      "toilet": "survey2:C1037/male/2",
+      "venue": "Coffeeshop, Blk 40 Holland Drive",
+      "sex": "MALE",
+      "remark": "Toilets and walls are stained"
+    },
+    {
+      "key": "survey2:C1045/unisex#2024-08-24T12:54:54+08:00",
+      "toilet": "survey2:C1045/unisex",
+      "venue": "Coffeeshop, Blk 46 Owen Road",
+      "sex": "UNISEX",
+      "remark": "floor quite dirty"
+    },
+    {
+      "key": "survey2:C1047/male#2024-08-24T11:59:29+08:00",
+      "toilet": "survey2:C1047/male",
+      "venue": "Coffeeshop, Blk 119 Bukit Merah Lane 1",
+      "sex": "MALE",
+      "remark": "Toilets are stained"
+    },
+    {
+      "key": "survey2:C1051/male#2024-08-24T10:31:55+08:00",
+      "toilet": "survey2:C1051/male",
+      "venue": "Coffeeshop, Blk 12 Telok Blangah Crescent",
+      "sex": "MALE",
+      "remark": "Some staining on wet floor and toilet seat"
+    },
+    {
+      "key": "survey2:C1053/male#2024-08-24T11:10:30+08:00",
+      "toilet": "survey2:C1053/male",
+      "venue": "Coffeeshop, Blk 165 Bukit Merah Central",
+      "sex": "MALE",
+      "remark": "Floor is wet and stained"
+    },
+    {
+      "key": "survey2:C1054/unisex#2024-08-24T11:15:15+08:00",
+      "toilet": "survey2:C1054/unisex",
+      "venue": "Coffeeshop, Blk 161 Bukit Merah Central",
+      "sex": "UNISEX",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:C1061/male#2024-08-24T11:49:39+08:00",
+      "toilet": "survey2:C1061/male",
+      "venue": "Coffeeshop, Blk 125 Bukit Merah Lane 1",
+      "sex": "MALE",
+      "remark": "Floors and walls are stained"
+    },
+    {
+      "key": "survey2:C1061/unisex#2024-08-24T11:50:04+08:00",
+      "toilet": "survey2:C1061/unisex",
+      "venue": "Coffeeshop, Blk 125 Bukit Merah Lane 1",
+      "sex": "UNISEX",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:CC10/male#2024-10-13T20:10:51+08:00",
+      "toilet": "survey2:CC10/male",
+      "venue": "MacPherson",
+      "sex": "MALE",
+      "remark": "Staining on floor, basin and walls"
+    },
+    {
+      "key": "survey2:CC22/unisex#2024-09-14T16:08:27+08:00",
+      "toilet": "survey2:CC22/unisex",
+      "venue": "Buona Vista",
+      "sex": "UNISEX",
+      "remark": "Floor is wet and walls are stained"
+    },
+    {
+      "key": "survey2:CE1/female#2024-08-24T13:02:09+08:00",
+      "toilet": "survey2:CE1/female",
+      "venue": "Bayfront",
+      "sex": "FEMALE",
+      "remark": "floor wet"
+    },
+    {
+      "key": "survey2:DT8/male#2024-10-12T10:00:59+08:00",
+      "toilet": "survey2:DT8/male",
+      "venue": "Sixth Avenue",
+      "sex": "MALE",
+      "remark": "someone vaped"
+    },
+    {
+      "key": "survey2:DT22/female#2024-10-13T21:47:28+08:00",
+      "toilet": "survey2:DT22/female",
+      "venue": "Jalan Besar",
+      "sex": "FEMALE",
+      "remark": "Seat stains. Mouldy sinks. Floor a bit wet"
+    },
+    {
+      "key": "survey2:DT24/male#2024-10-13T21:04:25+08:00",
+      "toilet": "survey2:DT24/male",
+      "venue": "Geylang Bahru",
+      "sex": "MALE",
+      "remark": "Staining on floor and walls"
+    },
+    {
+      "key": "survey2:DT26/male#2024-10-13T20:06:59+08:00",
+      "toilet": "survey2:DT26/male",
+      "venue": "MacPherson",
+      "sex": "MALE",
+      "remark": "Some staining on floor"
+    },
+    {
+      "key": "survey2:DT28/male#2024-10-13T19:59:11+08:00",
+      "toilet": "survey2:DT28/male",
+      "venue": "Kaki Bukit",
+      "sex": "MALE",
+      "remark": "Floor is flooded"
+    },
+    {
+      "key": "survey2:DT30/female#2024-10-13T19:49:49+08:00",
+      "toilet": "survey2:DT30/female",
+      "venue": "Bedok Reservoir",
+      "sex": "FEMALE",
+      "remark": "Sanitary bin overflowing"
+    },
+    {
+      "key": "survey2:DT30/male#2024-10-13T19:49:18+08:00",
+      "toilet": "survey2:DT30/male",
+      "venue": "Bedok Reservoir",
+      "sex": "MALE",
+      "remark": "Some staining on wet floor"
+    },
+    {
+      "key": "survey2:DT31/female#2024-10-13T18:55:48+08:00",
+      "toilet": "survey2:DT31/female",
+      "venue": "Tampines West",
+      "sex": "FEMALE",
+      "remark": "Sink a bit mouldy, 1 toilet clogged"
+    },
+    {
+      "key": "survey2:DT31/male#2024-10-13T18:55:43+08:00",
+      "toilet": "survey2:DT31/male",
+      "venue": "Tampines West",
+      "sex": "MALE",
+      "remark": "Floor is wet and stained"
+    },
+    {
+      "key": "survey2:DT32/female/2#2024-10-13T18:49:24+08:00",
+      "toilet": "survey2:DT32/female/2",
+      "venue": "Tampines",
+      "sex": "FEMALE",
+      "remark": "Sink a bit mouldy"
+    },
+    {
+      "key": "survey2:DT32/male/1#2024-10-13T18:47:02+08:00",
+      "toilet": "survey2:DT32/male/1",
+      "venue": "Tampines",
+      "sex": "MALE",
+      "remark": "Some staining on wall"
+    },
+    {
+      "key": "survey2:DT32/male/2#2024-10-13T18:48:10+08:00",
+      "toilet": "survey2:DT32/male/2",
+      "venue": "Tampines",
+      "sex": "MALE",
+      "remark": "Floor is wet and stained"
+    },
+    {
+      "key": "survey2:EW1/female#2024-10-13T15:38:10+08:00",
+      "toilet": "survey2:EW1/female",
+      "venue": "Pasir Ris",
+      "sex": "FEMALE",
+      "remark": "sanitary bin super choked. continual flushing (jammed or something)"
+    },
+    {
+      "key": "survey2:EW1/male#2024-10-13T15:35:42+08:00",
+      "toilet": "survey2:EW1/male",
+      "venue": "Pasir Ris",
+      "sex": "MALE",
+      "remark": "Wet floor"
+    },
+    {
+      "key": "survey2:EW2/male#2024-10-13T17:40:20+08:00",
+      "toilet": "survey2:EW2/male",
+      "venue": "Tampines",
+      "sex": "MALE",
+      "remark": "Floor is wet, some staining on floor"
+    },
+    {
+      "key": "survey2:EW3/male#2024-09-14T22:15:08+08:00",
+      "toilet": "survey2:EW3/male",
+      "venue": "Simei",
+      "sex": "MALE",
+      "remark": "Toilet walls are stained, floor is wet"
+    },
+    {
+      "key": "survey2:EW5/female#2024-10-13T13:26:14+08:00",
+      "toilet": "survey2:EW5/female",
+      "venue": "Bedok",
+      "sex": "FEMALE",
+      "remark": "sanitary bin super choked"
+    },
+    {
+      "key": "survey2:EW5/male/1#2024-09-14T18:08:45+08:00",
+      "toilet": "survey2:EW5/male/1",
+      "venue": "Bedok",
+      "sex": "MALE",
+      "remark": "Floor is wet and walls are stained"
+    },
+    {
+      "key": "survey2:EW5/male/2#2024-10-13T13:25:26+08:00",
+      "toilet": "survey2:EW5/male/2",
+      "venue": "Bedok",
+      "sex": "MALE",
+      "remark": "Stained toilets, floor and wall, litter on floor and floor is wet"
+    },
+    {
+      "key": "survey2:EW6/male#2024-09-14T17:20:25+08:00",
+      "toilet": "survey2:EW6/male",
+      "venue": "Kembangan",
+      "sex": "MALE",
+      "remark": "Floor is wet, toilets and walls are stained"
+    },
+    {
+      "key": "survey2:EW7/male#2024-10-13T13:04:15+08:00",
+      "toilet": "survey2:EW7/male",
+      "venue": "Eunos",
+      "sex": "MALE",
+      "remark": "Litter on floor, choked toilets and general filth"
+    },
+    {
+      "key": "survey2:EW9/male#2024-10-13T12:49:37+08:00",
+      "toilet": "survey2:EW9/male",
+      "venue": "Aljunied",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:EW10/male#2024-10-13T12:40:12+08:00",
+      "toilet": "survey2:EW10/male",
+      "venue": "Kallang",
+      "sex": "MALE",
+      "remark": "Floor and walls are stained, some litter"
+    },
+    {
+      "key": "survey2:EW11/unisex#2024-10-13T12:31:46+08:00",
+      "toilet": "survey2:EW11/unisex",
+      "venue": "Lavender",
+      "sex": "UNISEX",
+      "remark": "Some staining on floor"
+    },
+    {
+      "key": "survey2:EW12/unisex#2024-10-13T12:24:30+08:00",
+      "toilet": "survey2:EW12/unisex",
+      "venue": "Bugis",
+      "sex": "UNISEX",
+      "remark": "Floor stained, some litter"
+    },
+    {
+      "key": "survey2:EW13/female#2024-10-13T12:17:15+08:00",
+      "toilet": "survey2:EW13/female",
+      "venue": "City Hall",
+      "sex": "FEMALE",
+      "remark": "Floor dry"
+    },
+    {
+      "key": "survey2:EW13/male#2024-10-13T12:14:12+08:00",
+      "toilet": "survey2:EW13/male",
+      "venue": "City Hall",
+      "sex": "MALE",
+      "remark": "Some staining on floor and walls"
+    },
+    {
+      "key": "survey2:EW14/male#2024-10-13T11:37:41+08:00",
+      "toilet": "survey2:EW14/male",
+      "venue": "Raffles Place",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:EW14/unisex#2024-10-13T11:40:16+08:00",
+      "toilet": "survey2:EW14/unisex",
+      "venue": "Raffles Place",
+      "sex": "UNISEX",
+      "remark": "Some staining on floor"
+    },
+    {
+      "key": "survey2:EW21/male#2024-09-14T15:01:02+08:00",
+      "toilet": "survey2:EW21/male",
+      "venue": "Buona Vista",
+      "sex": "MALE",
+      "remark": "Staining on toilets and sinks"
+    },
+    {
+      "key": "survey2:EW21/unisex#2024-09-14T15:03:35+08:00",
+      "toilet": "survey2:EW21/unisex",
+      "venue": "Buona Vista",
+      "sex": "UNISEX",
+      "remark": "Staining on floor"
+    },
+    {
+      "key": "survey2:H2/male#2024-10-12T13:59:06+08:00",
+      "toilet": "survey2:H2/male",
+      "venue": "Amoy Street Food Centre",
+      "sex": "MALE",
+      "remark": "kinda ironic that there are ambulant facilities yet it takes a flight of stairs to use them"
+    },
+    {
+      "key": "survey2:H16/male/1#2024-10-13T11:50:26+08:00",
+      "toilet": "survey2:H16/male/1",
+      "venue": "Market Street Hawker Centre",
+      "sex": "MALE",
+      "remark": "Floor is wet; some staining on tiles and floor"
+    },
+    {
+      "key": "survey2:H16/male/l3#2024-10-13T11:56:27+08:00",
+      "toilet": "survey2:H16/male/l3",
+      "venue": "Market Street Hawker Centre",
+      "sex": "MALE",
+      "remark": "Floor is wet, some staining on tiles"
+    },
+    {
+      "key": "survey2:H16/unisex/1#2024-10-13T11:53:41+08:00",
+      "toilet": "survey2:H16/unisex/1",
+      "venue": "Market Street Hawker Centre",
+      "sex": "UNISEX",
+      "remark": "Some staining on walls"
+    },
+    {
+      "key": "survey2:H16/unisex/l3#2024-10-13T12:00:18+08:00",
+      "toilet": "survey2:H16/unisex/l3",
+      "venue": "Market Street Hawker Centre",
+      "sex": "UNISEX",
+      "remark": "Floor is dirty"
+    },
+    {
+      "key": "survey2:H21/male#2024-10-14T09:50:56+08:00",
+      "toilet": "survey2:H21/male",
+      "venue": "Pasir Panjang Food Centre",
+      "sex": "MALE",
+      "remark": "u can literally look inside the toilet and see people pee at the urinal if u want…"
+    },
+    {
+      "key": "survey2:H28/female#2024-08-24T11:33:26+08:00",
+      "toilet": "survey2:H28/female",
+      "venue": "ABC Brickworks Market & Food Centre",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H28/male#2024-08-24T11:32:58+08:00",
+      "toilet": "survey2:H28/male",
+      "venue": "ABC Brickworks Market & Food Centre",
+      "sex": "MALE",
+      "remark": "Floor is wet and stained."
+    },
+    {
+      "key": "survey2:H30/female#2024-08-24T12:03:27+08:00",
+      "toilet": "survey2:H30/female",
+      "venue": "Alexandra Village Food Centre",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H30/male#2024-08-24T12:03:40+08:00",
+      "toilet": "survey2:H30/male",
+      "venue": "Alexandra Village Food Centre",
+      "sex": "MALE",
+      "remark": "Floor is wet and stained, toilets are stained"
+    },
+    {
+      "key": "survey2:H34/female#2024-10-12T10:51:57+08:00",
+      "toilet": "survey2:H34/female",
+      "venue": "Blks 160/162 Ang Mo Kio Ave 4",
+      "sex": "FEMALE",
+      "remark": "no bins"
+    },
+    {
+      "key": "survey2:H49/male#2024-08-24T11:01:26+08:00",
+      "toilet": "survey2:H49/male",
+      "venue": "Blk 163 Bukit Merah Central",
+      "sex": "MALE",
+      "remark": "Stained floors and walls"
+    },
+    {
+      "key": "survey2:H49/unisex#2024-08-24T11:03:21+08:00",
+      "toilet": "survey2:H49/unisex",
+      "venue": "Blk 163 Bukit Merah Central",
+      "sex": "UNISEX",
+      "remark": "Walls are stained and floors are wet"
+    },
+    {
+      "key": "survey2:H50/female#2024-08-24T09:36:55+08:00",
+      "toilet": "survey2:H50/female",
+      "venue": "Blk 115 Bukit Merah View",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H50/male#2024-08-24T09:39:37+08:00",
+      "toilet": "survey2:H50/male",
+      "venue": "Blk 115 Bukit Merah View",
+      "sex": "MALE",
+      "remark": "Toilet is newly renovated and is quite pleasant"
+    },
+    {
+      "key": "survey2:H53/female#2024-09-10T17:10:10+08:00",
+      "toilet": "survey2:H53/female",
+      "venue": "Chong Pang Market & Food Centre",
+      "sex": "FEMALE",
+      "remark": "wet"
+    },
+    {
+      "key": "survey2:H55/female/l1#2024-10-13T20:21:57+08:00",
+      "toilet": "survey2:H55/female/l1",
+      "venue": "Blk 80 Circuit Road",
+      "sex": "FEMALE",
+      "remark": "No toilet paper. Litter. Floor wet. Stains"
+    },
+    {
+      "key": "survey2:H55/female/l2#2024-10-13T20:26:07+08:00",
+      "toilet": "survey2:H55/female/l2",
+      "venue": "Blk 80 Circuit Road",
+      "sex": "FEMALE",
+      "remark": "Wet, stain, litter"
+    },
+    {
+      "key": "survey2:H55/male/l2#2024-10-13T20:24:15+08:00",
+      "toilet": "survey2:H55/male/l2",
+      "venue": "Blk 80 Circuit Road",
+      "sex": "MALE",
+      "remark": "Floor is stained and littered"
+    },
+    {
+      "key": "survey2:H56/female#2024-10-13T20:40:44+08:00",
+      "toilet": "survey2:H56/female",
+      "venue": "Blk 89 Circuit Road",
+      "sex": "FEMALE",
+      "remark": "Vivid defecation on the outside of the toilet, tissues liquified on the floor, plastic clogging the toilets"
+    },
+    {
+      "key": "survey2:H56/male#2024-10-13T20:36:54+08:00",
+      "toilet": "survey2:H56/male",
+      "venue": "Blk 89 Circuit Road",
+      "sex": "MALE",
+      "remark": "Litter and staining on floor"
+    },
+    {
+      "key": "survey2:H59/male#2024-09-21T14:57:30+08:00",
+      "toilet": "survey2:H59/male",
+      "venue": "Blk 726 Clementi West Street 2",
+      "sex": "MALE",
+      "remark": "Toilets and floors are stained."
+    },
+    {
+      "key": "survey2:H59/unisex#2024-09-21T14:59:26+08:00",
+      "toilet": "survey2:H59/unisex",
+      "venue": "Blk 726 Clementi West Street 2",
+      "sex": "UNISEX",
+      "remark": "Toilets and walls stained, floor flooded"
+    },
+    {
+      "key": "survey2:H61/male#2024-10-13T13:11:18+08:00",
+      "toilet": "survey2:H61/male",
+      "venue": "Blk 4A Eunos Crescent",
+      "sex": "MALE",
+      "remark": "Walls and floors are stained, some litter."
+    },
+    {
+      "key": "survey2:H61/unisex#2024-10-13T13:13:50+08:00",
+      "toilet": "survey2:H61/unisex",
+      "venue": "Blk 4A Eunos Crescent",
+      "sex": "UNISEX",
+      "remark": "wet"
+    },
+    {
+      "key": "survey2:H62/male#2024-10-13T21:12:25+08:00",
+      "toilet": "survey2:H62/male",
+      "venue": "Blk 69 Geylang Bahru",
+      "sex": "MALE",
+      "remark": "Shit on the floor and litter everywhere"
+    },
+    {
+      "key": "survey2:H67/male#2024-10-12T15:06:41+08:00",
+      "toilet": "survey2:H67/male",
+      "venue": "Hong Lim Market & Food Centre",
+      "sex": "MALE",
+      "remark": "nil man this toilets ass"
+    },
+    {
+      "key": "survey2:H70/female#2024-08-24T10:06:54+08:00",
+      "toilet": "survey2:H70/female",
+      "venue": "Blk 112 Jalan Bukit Merah",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H70/male#2024-08-24T10:05:55+08:00",
+      "toilet": "survey2:H70/male",
+      "venue": "Blk 112 Jalan Bukit Merah",
+      "sex": "MALE",
+      "remark": "Some staining on toilet and mirror. One clogged toilet"
+    },
+    {
+      "key": "survey2:H70/unisex#2024-08-24T10:04:28+08:00",
+      "toilet": "survey2:H70/unisex",
+      "venue": "Blk 112 Jalan Bukit Merah",
+      "sex": "UNISEX",
+      "remark": "Dark and dinghy in general"
+    },
+    {
+      "key": "survey2:H76/male#2024-10-12T17:11:45+08:00",
+      "toilet": "survey2:H76/male",
+      "venue": "Blk 84 Marine Parade Central",
+      "sex": "MALE",
+      "remark": "floor is wet"
+    },
+    {
+      "key": "survey2:H79/female#2024-08-28T16:11:02+08:00",
+      "toilet": "survey2:H79/female",
+      "venue": "Blk 159 Mei Chin Road",
+      "sex": "FEMALE",
+      "remark": "no sanitary bin, toilet unflushed/choked"
+    },
+    {
+      "key": "survey2:H79/male#2024-09-14T16:30:43+08:00",
+      "toilet": "survey2:H79/male",
+      "venue": "Blk 159 Mei Chin Road",
+      "sex": "MALE",
+      "remark": "Toilets stained and littered"
+    },
+    {
+      "key": "survey2:H85/female#2024-08-24T09:23:29+08:00",
+      "toilet": "survey2:H85/female",
+      "venue": "Blk 79 Redhill Lane",
+      "sex": "FEMALE",
+      "remark": "There does not appear to be a sanitary bin"
+    },
+    {
+      "key": "survey2:H85/male#2024-08-24T09:24:20+08:00",
+      "toilet": "survey2:H85/male",
+      "venue": "Blk 79 Redhill Lane",
+      "sex": "MALE",
+      "remark": "Sink leaking, lots of rubbish"
+    },
+    {
+      "key": "survey2:H86/female#2024-08-24T09:39:08+08:00",
+      "toilet": "survey2:H86/female",
+      "venue": "Blk 85 Redhill Lane",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H86/male/1#2024-08-24T09:26:51+08:00",
+      "toilet": "survey2:H86/male/1",
+      "venue": "Blk 85 Redhill Lane",
+      "sex": "MALE",
+      "remark": "Floor wet, stained toilet bowls and a lot of rubbish"
+    },
+    {
+      "key": "survey2:H86/male/2#2024-08-24T09:28:54+08:00",
+      "toilet": "survey2:H86/male/2",
+      "venue": "Blk 85 Redhill Lane",
+      "sex": "MALE",
+      "remark": "thin layer of grease on the doors"
+    },
+    {
+      "key": "survey2:H90/female#2024-08-24T14:37:58+08:00",
+      "toilet": "survey2:H90/female",
+      "venue": "Blk 6 Tanjong Pagar Plaza",
+      "sex": "FEMALE",
+      "remark": "water on floor"
+    },
+    {
+      "key": "survey2:H93/female#2024-08-24T10:38:28+08:00",
+      "toilet": "survey2:H93/female",
+      "venue": "Blk 11 Telok Blangah Crescent",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H93/male#2024-08-24T10:38:30+08:00",
+      "toilet": "survey2:H93/male",
+      "venue": "Blk 11 Telok Blangah Crescent",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:H96/female#2024-08-24T10:22:27+08:00",
+      "toilet": "survey2:H96/female",
+      "venue": "Blk 36 Telok Blangah Rise",
+      "sex": "FEMALE",
+      "remark": "No sanitary bin"
+    },
+    {
+      "key": "survey2:H96/male#2024-08-24T10:24:03+08:00",
+      "toilet": "survey2:H96/male",
+      "venue": "Blk 36 Telok Blangah Rise",
+      "sex": "MALE",
+      "remark": "Stained toilets and sinks"
+    },
+    {
+      "key": "survey2:H114/female#2024-10-13T15:54:52+08:00",
+      "toilet": "survey2:H114/female",
+      "venue": "Pasir Ris Central Hawker Centre",
+      "sex": "FEMALE",
+      "remark": "Bloody pad very graphic"
+    },
+    {
+      "key": "survey2:H114/male/l1#2024-10-13T15:54:24+08:00",
+      "toilet": "survey2:H114/male/l1",
+      "venue": "Pasir Ris Central Hawker Centre",
+      "sex": "MALE",
+      "remark": "Floor is wet and stained"
+    },
+    {
+      "key": "survey2:H114/male/l2#2024-10-13T16:02:44+08:00",
+      "toilet": "survey2:H114/male/l2",
+      "venue": "Pasir Ris Central Hawker Centre",
+      "sex": "MALE",
+      "remark": "Floor is stained and wet"
+    },
+    {
+      "key": "survey2:H114/unisex#2024-10-13T16:04:22+08:00",
+      "toilet": "survey2:H114/unisex",
+      "venue": "Pasir Ris Central Hawker Centre",
+      "sex": "UNISEX",
+      "remark": "Floor is stained"
+    },
+    {
+      "key": "survey2:M6/female/b1#2024-10-13T16:31:42+08:00",
+      "toilet": "survey2:M6/female/b1",
+      "venue": "White Sands",
+      "sex": "FEMALE",
+      "remark": "1 choked toilet, a bit of toilet paper littet"
+    },
+    {
+      "key": "survey2:M6/female/l1#2024-10-13T16:38:57+08:00",
+      "toilet": "survey2:M6/female/l1",
+      "venue": "White Sands",
+      "sex": "FEMALE",
+      "remark": "Litter, bins are full"
+    },
+    {
+      "key": "survey2:M6/female/l5#2024-10-13T16:23:24+08:00",
+      "toilet": "survey2:M6/female/l5",
+      "venue": "White Sands",
+      "sex": "FEMALE",
+      "remark": "Floor a bit wet in squat toilet"
+    },
+    {
+      "key": "survey2:M6/male/1#2024-10-13T16:19:16+08:00",
+      "toilet": "survey2:M6/male/1",
+      "venue": "White Sands",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:M6/male/l1#2024-10-13T16:35:46+08:00",
+      "toilet": "survey2:M6/male/l1",
+      "venue": "White Sands",
+      "sex": "MALE",
+      "remark": "Floor is wet, some litter"
+    },
+    {
+      "key": "survey2:M6/male/l5#2024-10-13T16:24:14+08:00",
+      "toilet": "survey2:M6/male/l5",
+      "venue": "White Sands",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:M6/unisex/l3#2024-10-13T16:21:38+08:00",
+      "toilet": "survey2:M6/unisex/l3",
+      "venue": "White Sands",
+      "sex": "UNISEX",
+      "remark": "Some staining"
+    },
+    {
+      "key": "survey2:M6/unisex/l5#2024-10-13T16:22:48+08:00",
+      "toilet": "survey2:M6/unisex/l5",
+      "venue": "White Sands",
+      "sex": "UNISEX",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:M11/male/b1#2024-09-10T14:14:10+08:00",
+      "toilet": "survey2:M11/male/b1",
+      "venue": "Causeway Point",
+      "sex": "MALE",
+      "remark": "comment: female cleaner was present during surveying"
+    },
+    {
+      "key": "survey2:M18/male/b1#2024-09-14T15:22:53+08:00",
+      "toilet": "survey2:M18/male/b1",
+      "venue": "Star Vista",
+      "sex": "MALE",
+      "remark": "Floor is wet, litter in cubicles"
+    },
+    {
+      "key": "survey2:M18/unisex/l1#2024-09-14T15:15:49+08:00",
+      "toilet": "survey2:M18/unisex/l1",
+      "venue": "Star Vista",
+      "sex": "UNISEX",
+      "remark": "Floor wet and walls are stained"
+    },
+    {
+      "key": "survey2:M18/unisex/l2#2024-09-14T15:10:53+08:00",
+      "toilet": "survey2:M18/unisex/l2",
+      "venue": "Star Vista",
+      "sex": "UNISEX",
+      "remark": "Floor is wet and walls are stained"
+    },
+    {
+      "key": "survey2:M33/female/l4#2024-10-13T18:19:31+08:00",
+      "toilet": "survey2:M33/female/l4",
+      "venue": "Tampines Mall",
+      "sex": "FEMALE",
+      "remark": "Massive bood stains on toilet seat"
+    },
+    {
+      "key": "survey2:M33/male/l1#2024-10-13T18:11:49+08:00",
+      "toilet": "survey2:M33/male/l1",
+      "venue": "Tampines Mall",
+      "sex": "MALE",
+      "remark": "Some staining on floor tiles"
+    },
+    {
+      "key": "survey2:M33/male/l4#2024-10-13T18:17:30+08:00",
+      "toilet": "survey2:M33/male/l4",
+      "venue": "Tampines Mall",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:M46/male/l1#2024-10-13T17:45:07+08:00",
+      "toilet": "survey2:M46/male/l1",
+      "venue": "Tampines 1",
+      "sex": "MALE",
+      "remark": "Floor is wet, some litter"
+    },
+    {
+      "key": "survey2:M46/male/l3#2024-10-13T17:57:31+08:00",
+      "toilet": "survey2:M46/male/l3",
+      "venue": "Tampines 1",
+      "sex": "MALE",
+      "remark": "Floor is wet and slightly stained"
+    },
+    {
+      "key": "survey2:M46/male/l5#2024-10-13T17:52:28+08:00",
+      "toilet": "survey2:M46/male/l5",
+      "venue": "Tampines 1",
+      "sex": "MALE",
+      "remark": "Some staining on floor"
+    },
+    {
+      "key": "survey2:M46/unisex#2024-10-13T17:46:11+08:00",
+      "toilet": "survey2:M46/unisex",
+      "venue": "Tampines 1",
+      "sex": "UNISEX",
+      "remark": "Floor is slightly stained, some litter"
+    },
+    {
+      "key": "survey2:M72/male/l1#2024-09-14T16:07:35+08:00",
+      "toilet": "survey2:M72/male/l1",
+      "venue": "JEM",
+      "sex": "MALE",
+      "remark": "legit damn smelly it’s like -5"
+    },
+    {
+      "key": "survey2:M103/male/l2#2024-09-21T17:03:13+08:00",
+      "toilet": "survey2:M103/male/l2",
+      "venue": "West Coast Plaza",
+      "sex": "MALE",
+      "remark": "Floor slightly wet"
+    },
+    {
+      "key": "survey2:M103/unisex#2024-09-21T17:04:41+08:00",
+      "toilet": "survey2:M103/unisex",
+      "venue": "West Coast Plaza",
+      "sex": "UNISEX",
+      "remark": "Floor slightly wet"
+    },
+    {
+      "key": "survey2:M124/male/b1-1#2024-10-13T14:49:37+08:00",
+      "toilet": "survey2:M124/male/b1-1",
+      "venue": "Bedok Mall",
+      "sex": "MALE",
+      "remark": "Some cracked and stained tiles, some litter"
+    },
+    {
+      "key": "survey2:M124/male/b1-2#2024-10-13T14:59:43+08:00",
+      "toilet": "survey2:M124/male/b1-2",
+      "venue": "Bedok Mall",
+      "sex": "MALE",
+      "remark": "Some cracked and stained tiling"
+    },
+    {
+      "key": "survey2:M124/male/l1#2024-10-13T14:41:24+08:00",
+      "toilet": "survey2:M124/male/l1",
+      "venue": "Bedok Mall",
+      "sex": "MALE",
+      "remark": "Cracked and stained tiling"
+    },
+    {
+      "key": "survey2:M124/unisex#2024-10-13T15:01:00+08:00",
+      "toilet": "survey2:M124/unisex",
+      "venue": "Bedok Mall",
+      "sex": "UNISEX",
+      "remark": "Some stained tiling"
+    },
+    {
+      "key": "survey2:M126/male#2024-09-21T18:18:41+08:00",
+      "toilet": "survey2:M126/male",
+      "venue": "321 Mall",
+      "sex": "MALE",
+      "remark": "Floor is wet, some staining on floor"
+    },
+    {
+      "key": "survey2:M160/male/l1#2024-09-10T14:41:33+08:00",
+      "toilet": "survey2:M160/male/l1",
+      "venue": "Woodlands Civic Centre",
+      "sex": "MALE",
+      "remark": "Janitor cleaning as we entered"
+    },
+    {
+      "key": "survey2:M162/male/l3#2024-09-21T18:08:41+08:00",
+      "toilet": "survey2:M162/male/l3",
+      "venue": "Grantral Mall",
+      "sex": "MALE",
+      "remark": "Floor is wet and mirrors are stained"
+    },
+    {
+      "key": "survey2:M188/female/l1#2024-08-24T14:16:52+08:00",
+      "toilet": "survey2:M188/female/l1",
+      "venue": "100 AM Amara",
+      "sex": "FEMALE",
+      "remark": "shit in toilet"
+    },
+    {
+      "key": "survey2:M199/female/l3#2024-08-24T13:59:11+08:00",
+      "toilet": "survey2:M199/female/l3",
+      "venue": "International Plaza",
+      "sex": "FEMALE",
+      "remark": "shit in toilet"
+    },
+    {
+      "key": "survey2:M218/female#2024-08-24T14:30:20+08:00",
+      "toilet": "survey2:M218/female",
+      "venue": "Tanjong Pagar Plaza",
+      "sex": "FEMALE",
+      "remark": "pails in sink"
+    },
+    {
+      "key": "survey2:M292/female/b1-2#2024-10-13T17:22:10+08:00",
+      "toilet": "survey2:M292/female/b1-2",
+      "venue": "Pasir Ris Mall",
+      "sex": "FEMALE",
+      "remark": "Toilet seat wet"
+    },
+    {
+      "key": "survey2:M292/male/b1-2#2024-10-13T17:20:51+08:00",
+      "toilet": "survey2:M292/male/b1-2",
+      "venue": "Pasir Ris Mall",
+      "sex": "MALE",
+      "remark": "Some staining on wet floor"
+    },
+    {
+      "key": "survey2:M292/male/b2#2024-10-13T17:10:48+08:00",
+      "toilet": "survey2:M292/male/b2",
+      "venue": "Pasir Ris Mall",
+      "sex": "MALE",
+      "remark": "Floor is wet"
+    },
+    {
+      "key": "survey2:M292/male/l1#2024-10-13T16:43:04+08:00",
+      "toilet": "survey2:M292/male/l1",
+      "venue": "Pasir Ris Mall",
+      "sex": "MALE",
+      "remark": "Some staining on floor, MUSIC!!!"
+    },
+    {
+      "key": "survey2:M292/male/l2-1#2024-10-13T16:55:36+08:00",
+      "toilet": "survey2:M292/male/l2-1",
+      "venue": "Pasir Ris Mall",
+      "sex": "MALE",
+      "remark": "music slaps"
+    },
+    {
+      "key": "survey2:M292/male/l2-2#2024-10-13T17:01:57+08:00",
+      "toilet": "survey2:M292/male/l2-2",
+      "venue": "Pasir Ris Mall",
+      "sex": "MALE",
+      "remark": "Some staining on floor"
+    },
+    {
+      "key": "survey2:NE12/male#2024-08-24T14:10:57+08:00",
+      "toilet": "survey2:NE12/male",
+      "venue": "Serangoon",
+      "sex": "MALE",
+      "remark": "smelly"
+    },
+    {
+      "key": "survey2:TE2/female/2#2024-10-12T09:36:21+08:00",
+      "toilet": "survey2:TE2/female/2",
+      "venue": "Woodlands",
+      "sex": "FEMALE",
+      "remark": "floor wet"
+    },
+    {
+      "key": "survey2:TE9/female#2024-10-12T11:30:25+08:00",
+      "toilet": "survey2:TE9/female",
+      "venue": "Caldecott",
+      "sex": "FEMALE",
+      "remark": "shit stain on toielt bowl"
+    },
+    {
+      "key": "survey2:TE22/female#2024-10-12T15:32:24+08:00",
+      "toilet": "survey2:TE22/female",
+      "venue": "Gardens by the Bay",
+      "sex": "FEMALE",
+      "remark": "poop and blood on 2 separate toilet , another unflushed clogged toilet"
+    },
+    {
+      "key": "survey2:TE22/male/1#2024-08-24T16:49:20+08:00",
+      "toilet": "survey2:TE22/male/1",
+      "venue": "Gardens by the Bay",
+      "sex": "MALE",
+      "remark": "toilet got automatic scent sprayer 😮😮 so atas 😱"
+    },
+    {
+      "key": "survey2:TE26/female#2024-10-12T17:07:40+08:00",
+      "toilet": "survey2:TE26/female",
+      "venue": "Marine Parade",
+      "sex": "FEMALE",
+      "remark": "shit stains on some toilets"
+    },
+    {
+      "key": "survey2:TE26/male#2024-10-12T17:07:37+08:00",
+      "toilet": "survey2:TE26/male",
+      "venue": "Marine Parade",
+      "sex": "MALE",
+      "remark": "floor is wet"
+    },
+    {
+      "key": "survey2:TE27/male#2024-10-12T16:46:04+08:00",
+      "toilet": "survey2:TE27/male",
+      "venue": "Marine Terrace",
+      "sex": "MALE",
+      "remark": "just cleaned"
+    }
   ]
 }

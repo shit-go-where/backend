@@ -1,0 +1,19 @@
+{
+  "query": "120722",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "722 CLEMENTI WEST STREET 2 SINGAPORE 120722",
+      "BLK_NO": "722",
+      "ROAD_NAME": "CLEMENTI WEST STREET 2",
+      "BUILDING": "NIL",
+      "ADDRESS": "722 CLEMENTI WEST STREET 2 SINGAPORE 120722",
+      "POSTAL": "120722",
+      "X": "20253.64523556363",
+      "Y": "31702.48925225437",
+      "LATITUDE": "1.302979598819522",
+      "LONGITUDE": "103.7637140302802"
+    }
+  ]
+}

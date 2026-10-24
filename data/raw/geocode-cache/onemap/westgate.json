@@ -1,0 +1,31 @@
+{
+  "query": "WestGate",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "WESTGATE",
+      "BLK_NO": "3",
+      "ROAD_NAME": "GATEWAY DRIVE",
+      "BUILDING": "WESTGATE",
+      "ADDRESS": "3 GATEWAY DRIVE WESTGATE SINGAPORE 608532",
+      "POSTAL": "608532",
+      "X": "17922.49711406138",
+      "Y": "35150.07927802205",
+      "LATITUDE": "1.334157675568678",
+      "LONGITUDE": "103.7427664844237"
+    },
+    {
+      "SEARCHVAL": "WESTGATE TOWER",
+      "BLK_NO": "1",
+      "ROAD_NAME": "GATEWAY DRIVE",
+      "BUILDING": "WESTGATE TOWER",
+      "ADDRESS": "1 GATEWAY DRIVE WESTGATE TOWER SINGAPORE 608531",
+      "POSTAL": "608531",
+      "X": "17942.30481555313",
+      "Y": "35198.90646944009",
+      "LATITUDE": "1.334599257412886",
+      "LONGITUDE": "103.7429444516193"
+    }
+  ]
+}

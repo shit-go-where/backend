@@ -1,0 +1,19 @@
+{
+  "query": "150079",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "REDHILL MARKET",
+      "BLK_NO": "79",
+      "ROAD_NAME": "REDHILL LANE",
+      "BUILDING": "REDHILL MARKET",
+      "ADDRESS": "79 REDHILL LANE REDHILL MARKET SINGAPORE 150079",
+      "POSTAL": "150079",
+      "X": "26334.35685607046",
+      "Y": "30028.67919629999",
+      "LATITUDE": "1.287843172980647",
+      "LONGITUDE": "103.8183520972984"
+    }
+  ]
+}

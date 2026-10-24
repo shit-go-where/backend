@@ -1,0 +1,19 @@
+{
+  "query": "140159",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BLK 139 MEI CHIN ROAD",
+      "BLK_NO": "159",
+      "ROAD_NAME": "MEI CHIN ROAD",
+      "BUILDING": "BLK 139 MEI CHIN ROAD",
+      "ADDRESS": "159 MEI CHIN ROAD BLK 139 MEI CHIN ROAD SINGAPORE 140159",
+      "POSTAL": "140159",
+      "X": "24615.10674741678",
+      "Y": "30625.03260182217",
+      "LATITUDE": "1.293236244437354",
+      "LONGITUDE": "103.8029038718891"
+    }
+  ]
+}

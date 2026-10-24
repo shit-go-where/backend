@@ -1,0 +1,19 @@
+{
+  "query": "211041",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "PEK KIO MARKET & FOOD CENTRE",
+      "BLK_NO": "41A",
+      "ROAD_NAME": "CAMBRIDGE ROAD",
+      "BUILDING": "PEK KIO MARKET & FOOD CENTRE",
+      "ADDRESS": "41A CAMBRIDGE ROAD PEK KIO MARKET & FOOD CENTRE SINGAPORE 211041",
+      "POSTAL": "211041",
+      "X": "29882.4041102333",
+      "Y": "33156.63386577554",
+      "LATITUDE": "1.316131280294595",
+      "LONGITUDE": "103.8502329351617"
+    }
+  ]
+}

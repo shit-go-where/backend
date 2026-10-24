@@ -1,0 +1,19 @@
+{
+  "query": "Woodlands Civic Centre",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "WOODLANDS CIVIC CENTRE",
+      "BLK_NO": "900",
+      "ROAD_NAME": "SOUTH WOODLANDS DRIVE",
+      "BUILDING": "WOODLANDS CIVIC CENTRE",
+      "ADDRESS": "900 SOUTH WOODLANDS DRIVE WOODLANDS CIVIC CENTRE SINGAPORE 730900",
+      "POSTAL": "730900",
+      "X": "22837.75494365022",
+      "Y": "46302.60161073506",
+      "LATITUDE": "1.435018295660144",
+      "LONGITUDE": "103.7869308959553"
+    }
+  ]
+}

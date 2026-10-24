@@ -1,0 +1,19 @@
+{
+  "query": "Tiong Bahru Plaza",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TIONG BAHRU PLAZA",
+      "BLK_NO": "302",
+      "ROAD_NAME": "TIONG BAHRU ROAD",
+      "BUILDING": "TIONG BAHRU PLAZA",
+      "ADDRESS": "302 TIONG BAHRU ROAD TIONG BAHRU PLAZA SINGAPORE 168732",
+      "POSTAL": "168732",
+      "X": "27298.49296012055",
+      "Y": "29875.60882681608",
+      "LATITUDE": "1.286458894728254",
+      "LONGITUDE": "103.8270152561934"
+    }
+  ]
+}

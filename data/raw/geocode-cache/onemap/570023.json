@@ -1,0 +1,19 @@
+{
+  "query": "570023",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "SIN MING VILLE",
+      "BLK_NO": "23",
+      "ROAD_NAME": "SIN MING ROAD",
+      "BUILDING": "SIN MING VILLE",
+      "ADDRESS": "23 SIN MING ROAD SIN MING VILLE SINGAPORE 570023",
+      "POSTAL": "570023",
+      "X": "28278.79383221362",
+      "Y": "37382.95751724206",
+      "LATITUDE": "1.354352709309696",
+      "LONGITUDE": "103.8358237216668"
+    }
+  ]
+}

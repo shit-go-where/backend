@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto';
-import { resolve } from 'node:path';
 import {
   BadRequestException,
   Inject,
@@ -10,7 +9,6 @@ import {
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import sharp from 'sharp';
-import { env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Photo, User } from '../generated/prisma/client.js';
 import { ALLOWED_TYPES, MAX_UPLOAD_BYTES, type PhotoRef } from './media.dto.js';
@@ -26,12 +24,12 @@ import {
 import {
   EXT_BY_TYPE,
   LocalStorage,
-  S3Storage,
   contentTypeForKey,
   isSafeKey,
   type ImageType,
   type Storage,
 } from './storage.js';
+import { createStorageFromEnv } from './storage-env.js';
 
 export const MEDIA_STORAGE = Symbol('MEDIA_STORAGE');
 export const PRESIGN_EXPIRY_S = 600;
@@ -43,19 +41,8 @@ export const THUMB_WIDTH = 400;
  */
 export const MAX_INPUT_PIXELS = 40_000_000;
 
-/** S3/R2 when bucket + keys are configured, else local files under backend/uploads. */
-export function createStorageFromEnv(): Storage {
-  if (env.S3_BUCKET && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY) {
-    return new S3Storage({
-      bucket: env.S3_BUCKET,
-      accessKeyId: env.S3_ACCESS_KEY_ID,
-      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
-      endpoint: env.S3_ENDPOINT,
-      region: env.S3_REGION,
-    });
-  }
-  return new LocalStorage(resolve(process.cwd(), 'uploads'));
-}
+// Lives in storage-env.ts so the CLI (survey2:photos) can create the store without loading Nest.
+export { createStorageFromEnv };
 
 const SHARP_FORMAT: Record<ImageType, string> = {
   'image/jpeg': 'jpeg',

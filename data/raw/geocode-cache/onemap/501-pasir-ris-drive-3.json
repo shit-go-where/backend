@@ -1,0 +1,19 @@
+{
+  "query": "501 Pasir Ris Drive 3",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "501 PASIR RIS DRIVE 3 SINGAPORE 519490",
+      "BLK_NO": "501",
+      "ROAD_NAME": "PASIR RIS DRIVE 3",
+      "BUILDING": "NIL",
+      "ADDRESS": "501 PASIR RIS DRIVE 3 SINGAPORE 519490",
+      "POSTAL": "519490",
+      "X": "41039.76711077895",
+      "Y": "39505.69017023034",
+      "LATITUDE": "1.373547057862242",
+      "LONGITUDE": "103.9504901600835"
+    }
+  ]
+}

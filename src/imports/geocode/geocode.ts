@@ -1,9 +1,12 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import {
   loadFieldwork,
+  loadFieldwork2024b,
+  loadGeocoded,
   loadOverrides,
   loadReview,
-  type CuratedVenue,
+  loadSurvey2Matches,
   type GeocodedVenue,
   type Override,
   type ReviewItem,
@@ -97,6 +100,16 @@ export function pickMrt(stationName: string, results: OneMapResult[]): Pick | nu
   return p;
 }
 
+/**
+ * Postcode search (coffeeshops, hawker centres): OneMap returns the building(s) with that postcode;
+ * take the first whose POSTAL is exactly it. Every hit is the same building, so no spread check.
+ */
+export function pickPostal(postalCode: string, results: OneMapResult[]): Pick | null {
+  const rs = results.filter((r) => r.POSTAL === postalCode);
+  if (!rs.length) return null;
+  return { ...toPick(rs.slice(0, 1), results.length), spreadM: 0 };
+}
+
 /** Places: prefer results whose BUILDING/SEARCHVAL contains the query (or `pick`). */
 export function pickPlace(query: string, results: OneMapResult[], pick?: string): Pick | null {
   let rs = results;
@@ -122,18 +135,26 @@ function titleAddress(a: string | undefined): string | null {
     .replace(/\bHdb\b/g, 'HDB');
 }
 
-export interface GeocodeOutcome {
-  venue: CuratedVenue;
+/** What geocodeVenue needs of a venue: a pilot CuratedVenue or a survey2 venue. */
+export interface GeocodeTarget {
+  key: string;
+  name: string;
+  type: string;
+  geocode: { strategy: 'mrt' | 'place' | 'postal'; query: string; fallbackQuery?: string };
+}
+
+export interface GeocodeOutcome<V extends GeocodeTarget = GeocodeTarget> {
+  venue: V;
   result: GeocodedVenue | null;
   issues: string[];
 }
 
-export async function geocodeVenue(
-  venue: CuratedVenue,
+export async function geocodeVenue<V extends GeocodeTarget>(
+  venue: V,
   override: Override | undefined,
   stations: WikidataStation[],
   mode: CacheMode,
-): Promise<GeocodeOutcome> {
+): Promise<GeocodeOutcome<V>> {
   const issues: string[] = [];
   const query = override?.query ?? venue.geocode.query;
   let pick: Pick | null = null;
@@ -148,9 +169,25 @@ export async function geocodeVenue(
     pick =
       venue.geocode.strategy === 'mrt' && !override?.pick
         ? pickMrt(venue.name, res.results)
-        : pickPlace(query, res.results, override?.pick);
+        : venue.geocode.strategy === 'postal' && !override?.query && !override?.pick
+          ? pickPostal(query, res.results)
+          : pickPlace(query, res.results, override?.pick);
     if (!pick) issues.push(`no OneMap match for "${query}" (${res.found} results)`);
-    else if (pick.spreadM > (venue.geocode.strategy === "mrt" ? 500 : 300)) issues.push(`multi-hit: candidates spread ${pick.spreadM} m`);
+    else if (pick.spreadM > (venue.geocode.strategy === 'mrt' ? 500 : 300)) issues.push(`multi-hit: candidates spread ${pick.spreadM} m`);
+  }
+  // survey2 venues carry a second query (the index address, or the name for a postcode search).
+  const fallback = venue.geocode.fallbackQuery;
+  if (!pick && fallback && !override?.query) {
+    try {
+      const fb = await oneMapSearch(fallback, mode);
+      pick = pickPlace(fallback, fb.results);
+      if (pick) {
+        issues.push(`used the fallback query "${fallback}"`);
+        if (pick.spreadM > 300) issues.push(`multi-hit: candidates spread ${pick.spreadM} m`);
+      }
+    } catch (err) {
+      issues.push(`OneMap error: ${(err as Error).message}`);
+    }
   }
   if (!pick && venue.type === 'MRT_STATION') {
     const want = nameKey(venue.name);
@@ -170,7 +207,7 @@ export async function geocodeVenue(
         postalCode: pick.postalCode,
         planningArea: null,
         method,
-        query,
+        query: issues.some((i) => i.startsWith('used the fallback')) && fallback ? fallback : query,
         matched: pick.matched,
         candidates: pick.candidates,
       }
@@ -207,6 +244,79 @@ export async function geocodeVenue(
 
 const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 
+interface GeocodePass {
+  out: Record<string, GeocodedVenue>;
+  review: ReviewItem[];
+  rows: string[][];
+  unresolved: number;
+}
+
+/** Geocode one list of venues (pilot or survey2); overrides.json applies to both by venue key. */
+async function geocodeList(
+  venues: GeocodeTarget[],
+  overrides: Record<string, Override>,
+  stations: WikidataStation[],
+  areas: Awaited<ReturnType<typeof loadPlanningAreas>>,
+  mode: CacheMode,
+  previous: Record<string, GeocodedVenue> = {},
+): Promise<GeocodePass> {
+  const pass: GeocodePass = { out: {}, review: [], rows: [], unresolved: 0 };
+  for (const venue of venues) {
+    const ov = overrides[venue.key];
+    const { result, issues } = await geocodeVenue(venue, ov, stations, mode);
+    if (result) {
+      result.planningArea = areas.lookup(result.lat, result.lng);
+      if (!result.planningArea) issues.push('no planning area polygon contains this point');
+      // A geocode that moved a lot since the last run is worth a look (OneMap answers change).
+      const before = previous[venue.key];
+      if (before && haversineM(before.lat, before.lng, result.lat, result.lng) > 200)
+        issues.push(`moved ${Math.round(haversineM(before.lat, before.lng, result.lat, result.lng))} m since the last run`);
+      pass.out[venue.key] = result;
+    } else {
+      pass.unresolved++;
+    }
+    const resolution = ov ? `override in overrides.json${ov.reason ? `: ${ov.reason}` : ''}` : undefined;
+    if (issues.length || !result || ov)
+      pass.review.push({
+        kind: result ? (ov ? 'geocode-overridden' : 'geocode-check') : 'geocode-failed',
+        key: venue.key,
+        message: `${venue.name}: ${issues.join('; ') || (result ? 'resolved via override' : 'unresolved')}`,
+        ...(resolution ? { resolution } : {}),
+        data: result ? { lat: result.lat, lng: result.lng, matched: result.matched } : undefined,
+      });
+    pass.rows.push([
+      venue.key,
+      result ? `${result.lat.toFixed(5)},${result.lng.toFixed(5)}` : 'UNRESOLVED',
+      result?.method ?? '-',
+      (result?.matched ?? '-').slice(0, 40),
+      result?.planningArea ?? '-',
+      issues.join('; ').slice(0, 60),
+    ]);
+  }
+  return pass;
+}
+
+const passLog = (venues: number, p: GeocodePass) => ({
+  venues,
+  resolved: Object.keys(p.out).length,
+  unresolved: p.unresolved,
+  byMethod: Object.values(p.out).reduce<Record<string, number>>((m, g) => ((m[g.method] = (m[g.method] ?? 0) + 1), m), {}),
+  withPlanningArea: Object.values(p.out).filter((g) => g.planningArea).length,
+  reviewItems: p.review.length,
+});
+
+function printTable(rows: string[][], header: string[], widths: number[]): void {
+  const fmt = (r: string[]) => r.map((c, i) => (i < widths.length ? c.slice(0, widths[i]).padEnd(widths[i]!) : c)).join(' ');
+  console.log(fmt(header));
+  for (const r of rows) console.log(fmt(r));
+}
+
+/**
+ * Pilot venues -> venues.geocoded.json (+ review.json `geocode`), then, when fieldwork-2024b.json
+ * exists, the expanded survey's venues -> survey2-venues.geocoded.json (+ review.json `survey2Geocode`).
+ * Survey2 venues that `survey2:match` tied to an existing venue are geocoded too, so the table shows how
+ * far our geocode is from that venue; the seed uses the existing venue's coordinates for them.
+ */
 export async function runGeocode(mode: CacheMode = {}): Promise<{ log: Record<string, unknown> }> {
   const fieldwork = loadFieldwork();
   const overrides = loadOverrides();
@@ -216,59 +326,58 @@ export async function runGeocode(mode: CacheMode = {}): Promise<{ log: Record<st
   });
   const areas = await loadPlanningAreas(mode);
 
-  const out: Record<string, GeocodedVenue> = {};
-  const review: ReviewItem[] = [];
-  const rows: string[][] = [];
-  let unresolved = 0;
-  for (const venue of fieldwork.venues) {
-    const ov = overrides[venue.key];
-    const { result, issues } = await geocodeVenue(venue, ov, stations, mode);
-    if (result) {
-      result.planningArea = areas.lookup(result.lat, result.lng);
-      if (!result.planningArea) issues.push('no planning area polygon contains this point');
-      out[venue.key] = result;
-    } else {
-      unresolved++;
-    }
-    const resolution = ov ? `override in overrides.json${ov.reason ? `: ${ov.reason}` : ''}` : undefined;
-    if (issues.length || !result || ov)
-      review.push({
-        kind: result ? (ov ? 'geocode-overridden' : 'geocode-check') : 'geocode-failed',
-        key: venue.key,
-        message: `${venue.name}: ${issues.join('; ') || (result ? 'resolved via override' : 'unresolved')}`,
-        ...(resolution ? { resolution } : {}),
-        data: result ? { lat: result.lat, lng: result.lng, matched: result.matched } : undefined,
-      });
-    rows.push([
-      venue.key,
-      result ? `${result.lat.toFixed(5)},${result.lng.toFixed(5)}` : 'UNRESOLVED',
-      result?.method ?? '-',
-      (result?.matched ?? '-').slice(0, 40),
-      result?.planningArea ?? '-',
-      issues.join('; ').slice(0, 60),
-    ]);
-  }
+  // ── Pilot (March 2024)
+  const pilot = await geocodeList(fieldwork.venues, overrides, stations, areas, mode);
+  const survey2 = fs.existsSync(paths.fieldwork2024b) ? loadFieldwork2024b() : null;
+  const knownKeys = new Set([...fieldwork.venues.map((v) => v.key), ...(survey2?.venues.map((v) => v.key) ?? [])]);
   // Overrides for keys that no longer exist are worth flagging.
   for (const k of Object.keys(overrides))
-    if (!fieldwork.venues.some((v) => v.key === k))
-      review.push({ kind: 'override-orphan', key: k, message: `overrides.json has "${k}" but no such venue` });
+    if (!knownKeys.has(k)) pilot.review.push({ kind: 'override-orphan', key: k, message: `overrides.json has "${k}" but no such venue` });
+  writeJson(paths.geocoded, pilot.out);
+  writeJson(paths.review, { ...loadReview(), geocode: pilot.review });
+  printTable(pilot.rows, ['venue', 'lat,lng', 'method', 'matched', 'planning area', 'issues'], [38, 20, 9, 40, 22, 60]);
+  const log: Record<string, unknown> = { pilot: passLog(fieldwork.venues.length, pilot) };
 
-  writeJson(paths.geocoded, out);
-  writeJson(paths.review, { ...loadReview(), geocode: review });
+  // ── Expanded survey (Aug-Oct 2024)
+  let unresolved2 = 0;
+  if (survey2) {
+    const previous = loadGeocoded(paths.survey2Geocoded);
+    const s2 = await geocodeList(survey2.venues, overrides, stations, areas, mode, previous);
+    unresolved2 = s2.unresolved;
+    // Distance to the venue survey2:match picked (pilot venues, Wikidata stations, data.gov.sg / OSM points).
+    const matches = loadSurvey2Matches();
+    const pilotGeo = pilot.out;
+    const pilotByKey = new Map(fieldwork.venues.map((v) => [v.sourceKey, v.key]));
+    const rows = s2.rows.map((r) => {
+      const v = survey2.venues.find((x) => x.key === r[0])!;
+      const m = matches?.venues[v.key];
+      const target = m?.existingVenueSourceKey ?? null;
+      let dist = m?.distanceM ?? null;
+      const pk = target ? pilotByKey.get(target) : undefined;
+      const g = s2.out[v.key];
+      if (pk && g && pilotGeo[pk]) dist = Math.round(haversineM(g.lat, g.lng, pilotGeo[pk]!.lat, pilotGeo[pk]!.lng));
+      if (target && g && dist !== null && dist > 400 && v.type !== 'MRT_STATION')
+        s2.review.push({
+          kind: 'geocode-far-from-match',
+          key: v.key,
+          message: `${v.name}: our geocode is ${dist} m from the matched venue ${target}`,
+          resolution: 'check survey2-venue-matches.json (the seed uses the matched venue, not this geocode)',
+        });
+      return [r[0]!, v.type.slice(0, 11), v.name.slice(0, 36), ...r.slice(1, 5), target ?? 'NEW', dist === null ? '-' : String(dist), r[5]!];
+    });
+    writeJson(paths.survey2Geocoded, s2.out);
+    writeJson(paths.review, { ...loadReview(), survey2Geocode: s2.review });
+    console.log('\n  expanded survey (survey2) venues -> data/curated/survey2-venues.geocoded.json');
+    printTable(
+      rows,
+      ['code', 'type', 'name', 'lat,lng', 'method', 'matched', 'planning area', 'match', 'dist m', 'issues'],
+      [6, 11, 36, 20, 9, 34, 18, 44, 6],
+    );
+    log['survey2'] = passLog(survey2.venues.length, s2);
+  }
 
-  const widths = [38, 20, 9, 40, 22, 60];
-  const fmt = (r: string[]) => r.map((c, i) => c.padEnd(widths[i]!)).join(' ');
-  console.log(fmt(['venue', 'lat,lng', 'method', 'matched', 'planning area', 'issues']));
-  for (const r of rows) console.log(fmt(r));
-  const log = {
-    venues: fieldwork.venues.length,
-    resolved: Object.keys(out).length,
-    unresolved,
-    byMethod: Object.values(out).reduce<Record<string, number>>((m, g) => ((m[g.method] = (m[g.method] ?? 0) + 1), m), {}),
-    withPlanningArea: Object.values(out).filter((g) => g.planningArea).length,
-    reviewItems: review.length,
-  };
   console.log(JSON.stringify(log, null, 2));
+  const unresolved = pilot.unresolved + unresolved2;
   if (unresolved) throw new Error(`${unresolved} venue(s) unresolved: add overrides in data/curated/overrides.json`);
   return { log };
 }

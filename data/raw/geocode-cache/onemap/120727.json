@@ -1,0 +1,19 @@
+{
+  "query": "120727",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "727 CLEMENTI WEST STREET 2 SINGAPORE 120727",
+      "BLK_NO": "727",
+      "ROAD_NAME": "CLEMENTI WEST STREET 2",
+      "BUILDING": "NIL",
+      "ADDRESS": "727 CLEMENTI WEST STREET 2 SINGAPORE 120727",
+      "POSTAL": "120727",
+      "X": "20294.85527700279",
+      "Y": "31847.32806195877",
+      "LATITUDE": "1.304289479304296",
+      "LONGITUDE": "103.7640842854275"
+    }
+  ]
+}

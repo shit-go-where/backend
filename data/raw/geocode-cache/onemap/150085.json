@@ -1,0 +1,19 @@
+{
+  "query": "150085",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "REDHILL FOOD CENTRE",
+      "BLK_NO": "85",
+      "ROAD_NAME": "REDHILL LANE",
+      "BUILDING": "REDHILL FOOD CENTRE",
+      "ADDRESS": "85 REDHILL LANE REDHILL FOOD CENTRE SINGAPORE 150085",
+      "POSTAL": "150085",
+      "X": "26329.8044605162",
+      "Y": "29969.44892914779",
+      "LATITUDE": "1.287307515015534",
+      "LONGITUDE": "103.8183111953068"
+    }
+  ]
+}

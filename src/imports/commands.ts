@@ -6,6 +6,11 @@ import { runNormalise } from './sheet/normalise.js';
 import { runGeocode } from './geocode/geocode.js';
 import { runEnrichCheck } from './enrich.js';
 import { seedFieldwork } from './seed/fieldwork.js';
+import { seedFieldwork2024b } from './seed/fieldwork2024b.js';
+import { fetchSurvey2 } from './survey2/fetch.js';
+import { runSurvey2Normalise } from './survey2/normalise.js';
+import { runSurvey2Match } from './survey2/match.js';
+import { runSurvey2Photos } from './survey2/photos.js';
 import { importOsm } from './osm/import.js';
 import { importDatagov, DATAGOV_DATASET_NAMES, type DatagovDatasetName } from './datagov/import.js';
 import { importWikidata } from './wikidata/import.js';
@@ -49,8 +54,32 @@ export const COMMANDS: Record<string, Command> = {
       runNormalise();
     },
   },
+  'survey2:fetch': {
+    description: 'Download the expanded 2024 survey tabs (Raw Data, Location Code Index) to data/raw/survey-2024b/*.csv',
+    run: async () => {
+      await fetchSurvey2();
+    },
+  },
+  'survey2:normalise': {
+    description: 'Expanded survey CSVs -> data/curated/fieldwork-2024b.json (+ review.json survey2)',
+    run: async () => {
+      runSurvey2Normalise();
+    },
+  },
+  'survey2:match': {
+    description: "Expanded survey venues -> existing venue or new, men's rows -> pilot toilets: data/curated/survey2-venue-matches.json (offline)",
+    run: async () => {
+      runSurvey2Match();
+    },
+  },
+  'survey2:photos': {
+    description: 'Expanded survey Drive photos: --dry-run (default; reports what is shared) or --run (uploads and creates Photo rows)',
+    run: async (args) => {
+      await runSurvey2Photos({ run: flagBool(args.flags, 'run') && !flagBool(args.flags, 'dry-run') });
+    },
+  },
   geocode: {
-    description: 'Geocode curated venues (OneMap, Wikidata fallback, overrides.json) + planning areas. --refresh, --offline',
+    description: 'Geocode curated venues of both surveys (OneMap, Wikidata fallback, overrides.json) + planning areas. --refresh, --offline',
     run: async (args) => {
       await runGeocode(cacheMode(args));
     },
@@ -66,6 +95,14 @@ export const COMMANDS: Record<string, Command> = {
     run: async () => {
       const db = getDb();
       await withImportRun(db, 'FIELDWORK_2024', 'seed:fieldwork', () => seedFieldwork(db));
+      await recompute();
+    },
+  },
+  'seed:fieldwork-2024b': {
+    description: 'Upsert the expanded 2024 survey (fieldwork-2024b.json + survey2-venue-matches.json), then recompute scores. Run after seed:fieldwork',
+    run: async () => {
+      const db = getDb();
+      await withImportRun(db, 'FIELDWORK_2024_EXPANDED', 'seed:fieldwork-2024b', () => seedFieldwork2024b(db));
       await recompute();
     },
   },
@@ -114,16 +151,19 @@ export const COMMANDS: Record<string, Command> = {
   },
   all: {
     description:
-      'Whole pipeline from committed raw files (pass --refresh to re-download sources, --offline to forbid network)',
+      'Whole pipeline from committed raw files (both 2024 surveys, then OSM / Wikidata / data.gov.sg) (pass --refresh to re-download sources, --offline to forbid network)',
     run: async (outer) => {
       const offline = flagBool(outer.flags, 'offline');
       // Reproducible by default: use data/raw/* unless --refresh.
       const args: ParsedArgs = { ...outer, flags: { ...outer.flags, cached: !flagBool(outer.flags, 'refresh') } };
       const steps: [string, ParsedArgs][] = [
         ['sheet:normalise', args],
+        ['survey2:normalise', args],
         ['geocode', { ...args, flags: { ...args.flags, refresh: false } }],
         ['enrich', args],
         ['seed:fieldwork', args],
+        // The reviewed survey2-venue-matches.json is used as committed (survey2:match is not re-run here).
+        ['seed:fieldwork-2024b', args],
         ['import:osm', args],
         // Wikidata before data.gov so newly added stations also receive their LTA exits in one pass.
         ['import:wikidata', args],

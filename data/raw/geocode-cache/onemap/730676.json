@@ -1,0 +1,19 @@
+{
+  "query": "730676",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "KAMPUNG ADMIRALTY",
+      "BLK_NO": "676",
+      "ROAD_NAME": "WOODLANDS DRIVE 71",
+      "BUILDING": "KAMPUNG ADMIRALTY",
+      "ADDRESS": "676 WOODLANDS DRIVE 71 KAMPUNG ADMIRALTY SINGAPORE 730676",
+      "POSTAL": "730676",
+      "X": "24372.35981837008",
+      "Y": "46825.72998361848",
+      "LATITUDE": "1.439749517980793",
+      "LONGITUDE": "103.8007207116206"
+    }
+  ]
+}

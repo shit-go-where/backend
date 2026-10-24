@@ -1,0 +1,19 @@
+{
+  "query": "Yishun Integrated Transport Hub",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "YISHUN INTEGRATED TRANSPORT HUB",
+      "BLK_NO": "920",
+      "ROAD_NAME": "YISHUN AVENUE 2",
+      "BUILDING": "YISHUN INTEGRATED TRANSPORT HUB",
+      "ADDRESS": "920 YISHUN AVENUE 2 YISHUN INTEGRATED TRANSPORT HUB",
+      "POSTAL": "NIL",
+      "X": "28311.83636092674",
+      "Y": "45546.0250571575",
+      "LATITUDE": "1.428176563008062",
+      "LONGITUDE": "103.8361207167827"
+    }
+  ]
+}

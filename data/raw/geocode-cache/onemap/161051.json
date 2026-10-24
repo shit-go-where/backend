@@ -1,0 +1,19 @@
+{
+  "query": "161051",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "HAVELOCK VIEW",
+      "BLK_NO": "51",
+      "ROAD_NAME": "HAVELOCK ROAD",
+      "BUILDING": "HAVELOCK VIEW",
+      "ADDRESS": "51 HAVELOCK ROAD HAVELOCK VIEW SINGAPORE 161051",
+      "POSTAL": "161051",
+      "X": "27372.44312284701",
+      "Y": "30261.21516050212",
+      "LATITUDE": "1.289946184564526",
+      "LONGITUDE": "103.8276797204819"
+    }
+  ]
+}

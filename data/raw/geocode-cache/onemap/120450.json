@@ -1,0 +1,19 @@
+{
+  "query": "120450",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "450 CLEMENTI AVENUE 3 SINGAPORE 120450",
+      "BLK_NO": "450",
+      "ROAD_NAME": "CLEMENTI AVENUE 3",
+      "BUILDING": "NIL",
+      "ADDRESS": "450 CLEMENTI AVENUE 3 SINGAPORE 120450",
+      "POSTAL": "120450",
+      "X": "20449.80211013742",
+      "Y": "32870.07363681495",
+      "LATITUDE": "1.313538861280012",
+      "LONGITUDE": "103.7654763052033"
+    }
+  ]
+}

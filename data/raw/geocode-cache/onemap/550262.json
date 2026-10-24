@@ -1,0 +1,19 @@
+{
+  "query": "550262",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "262 SERANGOON CENTRAL DRIVE SINGAPORE 550262",
+      "BLK_NO": "262",
+      "ROAD_NAME": "SERANGOON CENTRAL DRIVE",
+      "BUILDING": "NIL",
+      "ADDRESS": "262 SERANGOON CENTRAL DRIVE SINGAPORE 550262",
+      "POSTAL": "550262",
+      "X": "32309.64996243548",
+      "Y": "37258.94177881256",
+      "LATITUDE": "1.353230845583577",
+      "LONGITUDE": "103.87204354837"
+    }
+  ]
+}

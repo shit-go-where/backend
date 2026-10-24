@@ -1,0 +1,19 @@
+{
+  "query": "330029",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BENDEMEER MARKET AND FOOD CENTRE",
+      "BLK_NO": "29",
+      "ROAD_NAME": "BENDEMEER ROAD",
+      "BUILDING": "BENDEMEER MARKET AND FOOD CENTRE",
+      "ADDRESS": "29 BENDEMEER ROAD BENDEMEER MARKET AND FOOD CENTRE SINGAPORE 330029",
+      "POSTAL": "330029",
+      "X": "31305.57937031705",
+      "Y": "33497.81472957693",
+      "LATITUDE": "1.319216678901136",
+      "LONGITUDE": "103.8630209225932"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "550304",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CHUAN VILLAGE",
+      "BLK_NO": "304",
+      "ROAD_NAME": "SERANGOON AVENUE 2",
+      "BUILDING": "CHUAN VILLAGE",
+      "ADDRESS": "304 SERANGOON AVENUE 2 CHUAN VILLAGE SINGAPORE 550304",
+      "POSTAL": "550304",
+      "X": "31834.38692498393",
+      "Y": "37323.35637648404",
+      "LATITUDE": "1.353813452969723",
+      "LONGITUDE": "103.8677730138757"
+    }
+  ]
+}

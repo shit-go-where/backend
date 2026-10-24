@@ -1,0 +1,19 @@
+{
+  "query": "310116",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TOA PAYOH VIEW",
+      "BLK_NO": "116",
+      "ROAD_NAME": "LORONG 2 TOA PAYOH",
+      "BUILDING": "TOA PAYOH VIEW",
+      "ADDRESS": "116 LORONG 2 TOA PAYOH TOA PAYOH VIEW SINGAPORE 310116",
+      "POSTAL": "310116",
+      "X": "29427.16612866521",
+      "Y": "35848.19966813177",
+      "LATITUDE": "1.340472872418055",
+      "LONGITUDE": "103.8461425163342"
+    }
+  ]
+}

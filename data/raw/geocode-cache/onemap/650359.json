@@ -1,0 +1,19 @@
+{
+  "query": "650359",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "359 BUKIT BATOK STREET 31 SINGAPORE 650359",
+      "BLK_NO": "359",
+      "ROAD_NAME": "BUKIT BATOK STREET 31",
+      "BUILDING": "NIL",
+      "ADDRESS": "359 BUKIT BATOK STREET 31 SINGAPORE 650359",
+      "POSTAL": "650359",
+      "X": "18864.57612114027",
+      "Y": "38156.14141732268",
+      "LATITUDE": "1.36134370379955",
+      "LONGITUDE": "103.7512306835501"
+    }
+  ]
+}

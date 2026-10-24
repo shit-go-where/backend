@@ -1,0 +1,19 @@
+{
+  "query": "120721",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "721 CLEMENTI WEST STREET 2 SINGAPORE 120721",
+      "BLK_NO": "721",
+      "ROAD_NAME": "CLEMENTI WEST STREET 2",
+      "BUILDING": "NIL",
+      "ADDRESS": "721 CLEMENTI WEST STREET 2 SINGAPORE 120721",
+      "POSTAL": "120721",
+      "X": "20347.26828618348",
+      "Y": "31645.25615747087",
+      "LATITUDE": "1.302462026494402",
+      "LONGITUDE": "103.7645552899374"
+    }
+  ]
+}

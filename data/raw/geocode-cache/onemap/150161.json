@@ -1,0 +1,19 @@
+{
+  "query": "150161",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "161 BUKIT MERAH CENTRAL SINGAPORE 150161",
+      "BLK_NO": "161",
+      "ROAD_NAME": "BUKIT MERAH CENTRAL",
+      "BUILDING": "NIL",
+      "ADDRESS": "161 BUKIT MERAH CENTRAL SINGAPORE 150161",
+      "POSTAL": "150161",
+      "X": "26073.2654706696",
+      "Y": "29594.02453330718",
+      "LATITUDE": "1.283912293974446",
+      "LONGITUDE": "103.8160061114411"
+    }
+  ]
+}

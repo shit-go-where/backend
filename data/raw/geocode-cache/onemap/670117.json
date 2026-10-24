@@ -1,0 +1,19 @@
+{
+  "query": "670117",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "117 PENDING ROAD SINGAPORE 670117",
+      "BLK_NO": "117",
+      "ROAD_NAME": "PENDING ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "117 PENDING ROAD SINGAPORE 670117",
+      "POSTAL": "670117",
+      "X": "20728.55450082198",
+      "Y": "39920.59321830422",
+      "LATITUDE": "1.377301280715473",
+      "LONGITUDE": "103.7679793359052"
+    }
+  ]
+}

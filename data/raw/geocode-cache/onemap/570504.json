@@ -1,0 +1,19 @@
+{
+  "query": "570504",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "504 BISHAN STREET 11 SINGAPORE 570504",
+      "BLK_NO": "504",
+      "ROAD_NAME": "BISHAN STREET 11",
+      "BUILDING": "NIL",
+      "ADDRESS": "504 BISHAN STREET 11 SINGAPORE 570504",
+      "POSTAL": "570504",
+      "X": "29687.82350144815",
+      "Y": "36824.26489911973",
+      "LATITUDE": "1.349300045848388",
+      "LONGITUDE": "103.8484847323989"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "150125",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "125 BUKIT MERAH LANE 1 SINGAPORE 150125",
+      "BLK_NO": "125",
+      "ROAD_NAME": "BUKIT MERAH LANE 1",
+      "BUILDING": "NIL",
+      "ADDRESS": "125 BUKIT MERAH LANE 1 SINGAPORE 150125",
+      "POSTAL": "150125",
+      "X": "24625.76619297452",
+      "Y": "29817.55108081736",
+      "LATITUDE": "1.28593366735428",
+      "LONGITUDE": "103.8029997379875"
+    }
+  ]
+}

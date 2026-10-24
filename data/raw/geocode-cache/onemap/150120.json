@@ -1,0 +1,19 @@
+{
+  "query": "150120",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ALEXANDRA VILLAGE FOOD CENTRE",
+      "BLK_NO": "120",
+      "ROAD_NAME": "BUKIT MERAH LANE 1",
+      "BUILDING": "ALEXANDRA VILLAGE FOOD CENTRE",
+      "ADDRESS": "120 BUKIT MERAH LANE 1 ALEXANDRA VILLAGE FOOD CENTRE SINGAPORE 150120",
+      "POSTAL": "150120",
+      "X": "24791.91393562686",
+      "Y": "29858.71345018223",
+      "LATITUDE": "1.286305942741363",
+      "LONGITUDE": "103.8044926376481"
+    }
+  ]
+}

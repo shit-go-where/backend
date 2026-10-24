@@ -1,0 +1,19 @@
+{
+  "query": "310111",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "TOA PAYOH NORTH",
+      "BLK_NO": "111",
+      "ROAD_NAME": "LORONG 1 TOA PAYOH",
+      "BUILDING": "TOA PAYOH NORTH",
+      "ADDRESS": "111 LORONG 1 TOA PAYOH TOA PAYOH NORTH SINGAPORE 310111",
+      "POSTAL": "310111",
+      "X": "29334.08572245762",
+      "Y": "35932.70781813376",
+      "LATITUDE": "1.341237138371954",
+      "LONGITUDE": "103.8453061371935"
+    }
+  ]
+}

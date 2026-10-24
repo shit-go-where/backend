@@ -1,0 +1,19 @@
+{
+  "query": "210043",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "43 CAMBRIDGE ROAD SINGAPORE 210043",
+      "BLK_NO": "43",
+      "ROAD_NAME": "CAMBRIDGE ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "43 CAMBRIDGE ROAD SINGAPORE 210043",
+      "POSTAL": "210043",
+      "X": "29793.5467536496",
+      "Y": "33071.68377294205",
+      "LATITUDE": "1.315363026997919",
+      "LONGITUDE": "103.8494345018241"
+    }
+  ]
+}

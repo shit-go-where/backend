@@ -1,0 +1,31 @@
+{
+  "query": "247792",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ZION RIVERSIDE FOOD CENTRE",
+      "BLK_NO": "70",
+      "ROAD_NAME": "ZION ROAD",
+      "BUILDING": "ZION RIVERSIDE FOOD CENTRE",
+      "ADDRESS": "70 ZION ROAD ZION RIVERSIDE FOOD CENTRE SINGAPORE 247792",
+      "POSTAL": "247792",
+      "X": "27762.99884696212",
+      "Y": "30526.15484762192",
+      "LATITUDE": "1.292342211420699",
+      "LONGITUDE": "103.8311890236229"
+    },
+    {
+      "SEARCHVAL": "70 ZION ROAD SINGAPORE 247792",
+      "BLK_NO": "70",
+      "ROAD_NAME": "ZION ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "70 ZION ROAD SINGAPORE 247792",
+      "POSTAL": "247792",
+      "X": "27738.99718337785",
+      "Y": "30522.72003683075",
+      "LATITUDE": "1.292311148006568",
+      "LONGITUDE": "103.8309733585482"
+    }
+  ]
+}

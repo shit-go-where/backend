@@ -1,0 +1,19 @@
+{
+  "query": "229495",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "NEWTON FOOD CENTRE",
+      "BLK_NO": "500",
+      "ROAD_NAME": "CLEMENCEAU AVENUE NORTH",
+      "BUILDING": "NEWTON FOOD CENTRE",
+      "ADDRESS": "500 CLEMENCEAU AVENUE NORTH NEWTON FOOD CENTRE SINGAPORE 229495",
+      "POSTAL": "229495",
+      "X": "28695.69359863736",
+      "Y": "32690.47129111178",
+      "LATITUDE": "1.311915520312747",
+      "LONGITUDE": "103.8395697287207"
+    }
+  ]
+}

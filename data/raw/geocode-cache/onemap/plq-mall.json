@@ -1,0 +1,19 @@
+{
+  "query": "PLQ Mall",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "PLQ MALL",
+      "BLK_NO": "10",
+      "ROAD_NAME": "PAYA LEBAR ROAD",
+      "BUILDING": "PLQ MALL",
+      "ADDRESS": "10 PAYA LEBAR ROAD PLQ MALL SINGAPORE 409057",
+      "POSTAL": "409057",
+      "X": "34623.78747709002",
+      "Y": "33314.81522645429",
+      "LATITUDE": "1.317561159209999",
+      "LONGITUDE": "103.8928366944319"
+    }
+  ]
+}

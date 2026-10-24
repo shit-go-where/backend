@@ -1,0 +1,19 @@
+{
+  "query": "560160",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "MAYFLOWER MARKET AND FOOD CENTRE",
+      "BLK_NO": "160",
+      "ROAD_NAME": "ANG MO KIO AVENUE 4",
+      "BUILDING": "MAYFLOWER MARKET AND FOOD CENTRE",
+      "ADDRESS": "160 ANG MO KIO AVENUE 4 MAYFLOWER MARKET AND FOOD CENTRE SINGAPORE 560160",
+      "POSTAL": "560160",
+      "X": "28651.86555821542",
+      "Y": "39613.81004138291",
+      "LATITUDE": "1.37452773784114",
+      "LONGITUDE": "103.8391760609051"
+    }
+  ]
+}

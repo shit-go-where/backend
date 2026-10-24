@@ -1,0 +1,19 @@
+{
+  "query": "150006",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ABC BRICKWORKS MARKET & FOOD CENTRE",
+      "BLK_NO": "6",
+      "ROAD_NAME": "JALAN BUKIT MERAH",
+      "BUILDING": "ABC BRICKWORKS MARKET & FOOD CENTRE",
+      "ADDRESS": "6 JALAN BUKIT MERAH ABC BRICKWORKS MARKET & FOOD CENTRE SINGAPORE 150006",
+      "POSTAL": "150006",
+      "X": "25196.86438636668",
+      "Y": "29922.51415260695",
+      "LATITUDE": "1.286882972614765",
+      "LONGITUDE": "103.8081312741608"
+    }
+  ]
+}

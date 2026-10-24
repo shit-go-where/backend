@@ -48,5 +48,46 @@
   },
   "mrt-harbourfront": {
     "name": "HarbourFront"
+  },
+  "M46": {
+    "query": "10 Tampines Central 1",
+    "name": "Tampines 1",
+    "reason": "survey2 M46: \"Tampines 1\" first matches a family centre at Tampines Plaza 1; the mall is 10 Tampines Central 1"
+  },
+  "M213": {
+    "name": "Orchard Gateway",
+    "reason": "survey2 M213: the index says \"Specialists' Shopping Centre / Orchard Gateway\"; Specialists' was rebuilt as orchardgateway (277 Orchard Road)"
+  },
+  "M112": {
+    "name": "Orchard Gateway @ Emerald",
+    "reason": "survey2 M112: index name \"Orchard Emerald / Orchard Gateway@Emerald\""
+  },
+  "M215": {
+    "name": "Ngee Ann City (Takashimaya)",
+    "reason": "survey2 M215: index name \"Takashimaya Shopping Centre/Ngee Ann City\""
+  },
+  "M89": {
+    "name": "Waterway Point",
+    "reason": "survey2 M89: capitalisation"
+  },
+  "M97": {
+    "name": "TripleOne Somerset",
+    "reason": "survey2 M97: index has it in capitals"
+  },
+  "M25": {
+    "name": "*SCAPE",
+    "reason": "survey2 M25: the mall writes its name *SCAPE"
+  },
+  "M62": {
+    "name": "NEX",
+    "reason": "survey2 M62: the mall writes its name NEX"
+  },
+  "M18": {
+    "name": "The Star Vista",
+    "reason": "survey2 M18: full name"
+  },
+  "M98": {
+    "name": "112 Katong",
+    "reason": "survey2 M98: the mall is called 112 Katong (index: 112 Katong Mall)"
   }
 }

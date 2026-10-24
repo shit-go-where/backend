@@ -82,6 +82,9 @@ Details, sources and licences: [`data/README.md`](data/README.md).
 | `geocode` | Resolve addresses to lat/lng via OneMap |
 | `enrich` | Attach venue, MRT exit and area data |
 | `seed:fieldwork` | Load the curated fieldwork toilets into the DB |
+| `survey2:fetch` / `survey2:normalise` / `survey2:match` | Expanded Aug-Oct 2024 survey: download, curate, match venues and pilot toilets (review the output) |
+| `seed:fieldwork-2024b` | Load the expanded survey into the DB (after `seed:fieldwork`) |
+| `survey2:photos [--dry-run\|--run]` | Expanded survey Drive photos; dry run by default (the links are not shared yet) |
 | `import:osm` | Import / refresh OpenStreetMap toilets (ODbL, attributed) |
 | `import:datagov --dataset <name\|all>` | Import data.gov.sg datasets (hawker centres, CCs, parks ...) |
 | `import:wikidata` | Import MRT/LRT stations from Wikidata |

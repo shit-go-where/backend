@@ -1,0 +1,31 @@
+{
+  "query": "Velocity@Novena Square",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "VELOCITY @ NOVENA SQUARE",
+      "BLK_NO": "238B",
+      "ROAD_NAME": "THOMSON ROAD",
+      "BUILDING": "VELOCITY @ NOVENA SQUARE",
+      "ADDRESS": "238B THOMSON ROAD VELOCITY @ NOVENA SQUARE",
+      "POSTAL": "NIL",
+      "X": "29210.03296628408",
+      "Y": "33506.50500064902",
+      "LATITUDE": "1.319295425019076",
+      "LONGITUDE": "103.8441913530767"
+    },
+    {
+      "SEARCHVAL": "VELOCITY @ NOVENA SQUARE",
+      "BLK_NO": "238",
+      "ROAD_NAME": "THOMSON ROAD",
+      "BUILDING": "VELOCITY @ NOVENA SQUARE",
+      "ADDRESS": "238 THOMSON ROAD VELOCITY @ NOVENA SQUARE",
+      "POSTAL": "NIL",
+      "X": "29192.47293499485",
+      "Y": "33561.13632008806",
+      "LATITUDE": "1.31978949204524",
+      "LONGITUDE": "103.8440335691985"
+    }
+  ]
+}

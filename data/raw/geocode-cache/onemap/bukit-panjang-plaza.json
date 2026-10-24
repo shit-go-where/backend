@@ -1,0 +1,31 @@
+{
+  "query": "Bukit Panjang Plaza",
+  "found": 2,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT PANJANG PLAZA",
+      "BLK_NO": "1",
+      "ROAD_NAME": "JELEBU ROAD",
+      "BUILDING": "BUKIT PANJANG PLAZA",
+      "ADDRESS": "1 JELEBU ROAD BUKIT PANJANG PLAZA SINGAPORE 677743",
+      "POSTAL": "677743",
+      "X": "20325.46180811804",
+      "Y": "40210.21941240691",
+      "LATITUDE": "1.379920451762434",
+      "LONGITUDE": "103.764357180314"
+    },
+    {
+      "SEARCHVAL": "BUKIT PANJANG PLAZA (CAR PARK ENTRANCE)",
+      "BLK_NO": "",
+      "ROAD_NAME": "NIL",
+      "BUILDING": "BUKIT PANJANG PLAZA (CAR PARK ENTRANCE)",
+      "ADDRESS": "BUKIT PANJANG PLAZA (CAR PARK ENTRANCE)",
+      "POSTAL": "NIL",
+      "X": "20372.51381255873",
+      "Y": "40157.42750860751",
+      "LATITUDE": "1.37944303332006",
+      "LONGITUDE": "103.7647799908155"
+    }
+  ]
+}

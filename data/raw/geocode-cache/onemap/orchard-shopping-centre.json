@@ -1,0 +1,19 @@
+{
+  "query": "Orchard Shopping Centre",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ORCHARD SHOPPING CENTRE",
+      "BLK_NO": "321",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "ORCHARD SHOPPING CENTRE",
+      "ADDRESS": "321 ORCHARD ROAD ORCHARD SHOPPING CENTRE SINGAPORE 238866",
+      "POSTAL": "238866",
+      "X": "28508.56384752877",
+      "Y": "31538.76797278598",
+      "LATITUDE": "1.301499925108524",
+      "LONGITUDE": "103.8378882570012"
+    }
+  ]
+}

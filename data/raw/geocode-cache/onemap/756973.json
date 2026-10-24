@@ -1,0 +1,19 @@
+{
+  "query": "756973",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT CANBERRA",
+      "BLK_NO": "21",
+      "ROAD_NAME": "CANBERRA LINK",
+      "BUILDING": "BUKIT CANBERRA",
+      "ADDRESS": "21 CANBERRA LINK BUKIT CANBERRA SINGAPORE 756973",
+      "POSTAL": "756973",
+      "X": "26825.40155969653",
+      "Y": "47767.12514614128",
+      "LATITUDE": "1.448263364101597",
+      "LONGITUDE": "103.8227636318894"
+    }
+  ]
+}

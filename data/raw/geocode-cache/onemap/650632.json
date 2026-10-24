@@ -1,0 +1,19 @@
+{
+  "query": "650632",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "632 BUKIT BATOK CENTRAL SINGAPORE 650632",
+      "BLK_NO": "632",
+      "ROAD_NAME": "BUKIT BATOK CENTRAL",
+      "BUILDING": "NIL",
+      "ADDRESS": "632 BUKIT BATOK CENTRAL SINGAPORE 650632",
+      "POSTAL": "650632",
+      "X": "18787.51680085808",
+      "Y": "36836.81600285508",
+      "LATITUDE": "1.349412183198476",
+      "LONGITUDE": "103.750538659696"
+    }
+  ]
+}

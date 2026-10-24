@@ -1,0 +1,19 @@
+{
+  "query": "Orchard Plaza",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ORCHARD PLAZA",
+      "BLK_NO": "150",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "ORCHARD PLAZA",
+      "ADDRESS": "150 ORCHARD ROAD ORCHARD PLAZA SINGAPORE 238841",
+      "POSTAL": "238841",
+      "X": "28871.58254702576",
+      "Y": "31511.93997568451",
+      "LATITUDE": "1.30125729409966",
+      "LONGITUDE": "103.8411501445833"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "query": "650373",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "373 BUKIT BATOK STREET 31 SINGAPORE 650373",
+      "BLK_NO": "373",
+      "ROAD_NAME": "BUKIT BATOK STREET 31",
+      "BUILDING": "NIL",
+      "ADDRESS": "373 BUKIT BATOK STREET 31 SINGAPORE 650373",
+      "POSTAL": "650373",
+      "X": "18771.80702114571",
+      "Y": "37888.64895872399",
+      "LATITUDE": "1.358924571181798",
+      "LONGITUDE": "103.7503971742911"
+    }
+  ]
+}

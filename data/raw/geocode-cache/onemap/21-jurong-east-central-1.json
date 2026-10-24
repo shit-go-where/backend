@@ -1,0 +1,19 @@
+{
+  "query": "21 Jurong East Central 1",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "JURONG LIBRARY",
+      "BLK_NO": "21",
+      "ROAD_NAME": "JURONG EAST CENTRAL 1",
+      "BUILDING": "JURONG LIBRARY",
+      "ADDRESS": "21 JURONG EAST CENTRAL 1 JURONG LIBRARY SINGAPORE 609732",
+      "POSTAL": "609732",
+      "X": "17557.87172945216",
+      "Y": "35009.34992220066",
+      "LATITUDE": "1.332884847312555",
+      "LONGITUDE": "103.7394901690766"
+    }
+  ]
+}

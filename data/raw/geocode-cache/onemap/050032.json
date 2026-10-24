@@ -1,0 +1,19 @@
+{
+  "query": "050032",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "32 NEW MARKET ROAD SINGAPORE 050032",
+      "BLK_NO": "32",
+      "ROAD_NAME": "NEW MARKET ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "32 NEW MARKET ROAD SINGAPORE 050032",
+      "POSTAL": "050032",
+      "X": "29030.58238425199",
+      "Y": "29698.6583802402",
+      "LATITUDE": "1.284858608026473",
+      "LONGITUDE": "103.8425787710541"
+    }
+  ]
+}

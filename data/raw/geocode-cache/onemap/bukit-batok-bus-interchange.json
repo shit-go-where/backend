@@ -1,0 +1,19 @@
+{
+  "query": "Bukit Batok Bus Interchange",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "BUKIT BATOK BUS INTERCHANGE",
+      "BLK_NO": "631",
+      "ROAD_NAME": "BUKIT BATOK CENTRAL",
+      "BUILDING": "BUKIT BATOK BUS INTERCHANGE",
+      "ADDRESS": "631 BUKIT BATOK CENTRAL BUKIT BATOK BUS INTERCHANGE SINGAPORE 650631",
+      "POSTAL": "650631",
+      "X": "18835.37184517458",
+      "Y": "36870.79375172965",
+      "LATITUDE": "1.349719480246419",
+      "LONGITUDE": "103.750968656542"
+    }
+  ]
+}

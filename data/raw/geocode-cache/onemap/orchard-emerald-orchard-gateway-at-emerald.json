@@ -1,0 +1,19 @@
+{
+  "query": "Orchard Emerald / Orchard Gateway@Emerald",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "ORCHARD GATEWAY @ EMERALD",
+      "BLK_NO": "218",
+      "ROAD_NAME": "ORCHARD ROAD",
+      "BUILDING": "ORCHARD GATEWAY @ EMERALD",
+      "ADDRESS": "218 ORCHARD ROAD ORCHARD GATEWAY @ EMERALD SINGAPORE 238851",
+      "POSTAL": "238851",
+      "X": "28617.69902792666",
+      "Y": "31549.96328272671",
+      "LATITUDE": "1.301601169575445",
+      "LONGITUDE": "103.8388688865187"
+    }
+  ]
+}

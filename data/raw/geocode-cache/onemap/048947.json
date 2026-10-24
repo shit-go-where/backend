@@ -1,0 +1,19 @@
+{
+  "query": "048947",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CAPITASPRING",
+      "BLK_NO": "86",
+      "ROAD_NAME": "MARKET STREET",
+      "BUILDING": "CAPITASPRING",
+      "ADDRESS": "86 MARKET STREET CAPITASPRING SINGAPORE 048947",
+      "POSTAL": "048947",
+      "X": "29857.16763398517",
+      "Y": "29592.6718268469",
+      "LATITUDE": "1.283900064952353",
+      "LONGITUDE": "103.8500059612046"
+    }
+  ]
+}

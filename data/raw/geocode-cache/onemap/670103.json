@@ -1,0 +1,19 @@
+{
+  "query": "670103",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "103 GANGSA ROAD SINGAPORE 670103",
+      "BLK_NO": "103",
+      "ROAD_NAME": "GANGSA ROAD",
+      "BUILDING": "NIL",
+      "ADDRESS": "103 GANGSA ROAD SINGAPORE 670103",
+      "POSTAL": "670103",
+      "X": "20790.7800876433",
+      "Y": "40072.01595009491",
+      "LATITUDE": "1.37867070821172",
+      "LONGITUDE": "103.7685384409562"
+    }
+  ]
+}

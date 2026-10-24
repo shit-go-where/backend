@@ -1,0 +1,19 @@
+{
+  "query": "050335",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "CHINATOWN COMPLEX",
+      "BLK_NO": "335",
+      "ROAD_NAME": "SMITH STREET",
+      "BUILDING": "CHINATOWN COMPLEX",
+      "ADDRESS": "335 SMITH STREET CHINATOWN COMPLEX SINGAPORE 050335",
+      "POSTAL": "050335",
+      "X": "29104.00785148051",
+      "Y": "29412.97226038016",
+      "LATITUDE": "1.28227496052711",
+      "LONGITUDE": "103.8432385180712"
+    }
+  ]
+}

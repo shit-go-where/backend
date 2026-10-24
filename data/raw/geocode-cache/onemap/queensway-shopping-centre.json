@@ -1,0 +1,19 @@
+{
+  "query": "Queensway Shopping Centre",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "QUEENSWAY SHOPPING CENTRE",
+      "BLK_NO": "1",
+      "ROAD_NAME": "QUEENSWAY",
+      "BUILDING": "QUEENSWAY SHOPPING CENTRE",
+      "ADDRESS": "1 QUEENSWAY QUEENSWAY SHOPPING CENTRE SINGAPORE 149053",
+      "POSTAL": "149053",
+      "X": "24670.0123250559",
+      "Y": "30001.27311097831",
+      "LATITUDE": "1.287595189398704",
+      "LONGITUDE": "103.8033972877883"
+    }
+  ]
+}

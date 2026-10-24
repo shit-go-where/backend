@@ -1,0 +1,19 @@
+{
+  "query": "600134",
+  "found": 1,
+  "totalNumPages": 1,
+  "results": [
+    {
+      "SEARCHVAL": "J CONNECT",
+      "BLK_NO": "134",
+      "ROAD_NAME": "JURONG GATEWAY ROAD",
+      "BUILDING": "J CONNECT",
+      "ADDRESS": "134 JURONG GATEWAY ROAD J CONNECT SINGAPORE 600134",
+      "POSTAL": "600134",
+      "X": "17483.19919102639",
+      "Y": "35132.01268175803",
+      "LATITUDE": "1.333994138497427",
+      "LONGITUDE": "103.7388191525179"
+    }
+  ]
+}
