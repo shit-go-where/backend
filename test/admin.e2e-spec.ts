@@ -74,7 +74,7 @@ describe('flags', () => {
         id: flag.id,
         reason: 'Door broken',
         toilet: { id: toilet.id, label: toilet.label, venueName: venue.name },
-        user: { handle: null },
+        user: { handle: user.me.handle },
       }),
     );
     await request(ctx.server).post(`/admin/flags/${flag.id}/resolve`).set('Cookie', mod.cookie).expect(200, { ok: true });

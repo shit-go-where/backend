@@ -30,16 +30,30 @@ describe('dev-login and /me', () => {
     expect(me).toMatchObject({
       email: e,
       displayName: 'Dev Person',
-      handle: null,
-      needsHandle: true,
+      // A random handle from the start (never the name or email), on the leaderboard by default.
+      handle: expect.stringMatching(/^[a-z]+_[a-z]+_\d{2}$/),
+      handleAuto: true,
+      needsHandle: false,
+      handleChangeableAt: null,
       role: 'USER',
       points: 0,
       badges: [],
-      // On by default; it shows once they pick a handle.
       leaderboardOptIn: true,
     });
+    expect(me.handle).not.toMatch(/dev/);
     const res = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
     expect(res.body.id).toBe(me.id);
+    // Signing in again keeps it.
+    const again = await login(ctx.server, e);
+    expect(again.me.handle).toBe(me.handle);
+  });
+
+  it('gives an older account with no handle one on its next sign-in', async () => {
+    const e = email('old');
+    const { me } = await login(ctx.server, e);
+    await ctx.prisma.user.update({ where: { id: me.id }, data: { handle: null, handleAuto: false } });
+    const again = await login(ctx.server, e);
+    expect(again.me).toMatchObject({ handle: expect.stringMatching(/^[a-z]+_[a-z]+_\d{2}$/), handleAuto: true });
   });
 
   it('401s when signed out', async () => {
@@ -82,7 +96,7 @@ describe('PATCH /me', () => {
       .set('Cookie', a.cookie)
       .send({ handle: handle.toUpperCase(), displayName: 'Ann', leaderboardOptIn: true })
       .expect(200);
-    expect(res.body).toMatchObject({ handle, displayName: 'Ann', leaderboardOptIn: true, needsHandle: false });
+    expect(res.body).toMatchObject({ handle, displayName: 'Ann', leaderboardOptIn: true, handleAuto: false });
 
     await request(ctx.server).patch('/me').set('Cookie', a.cookie).send({ handle }).expect(200);
     await request(ctx.server).patch('/me').set('Cookie', b.cookie).send({ handle }).expect(409);
@@ -118,7 +132,9 @@ describe('Me extras (PLAN.md §12 E5/E6)', () => {
   it('lets a handle change once every 30 days; the first handle is free', async () => {
     const { cookie } = await login(ctx.server, email('hc'));
     const h = () => `h${uid()}`;
-    await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(200);
+    // Replacing the random sign-up handle counts as choosing the first one.
+    const first = await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(200);
+    expect(first.body).toMatchObject({ handleAuto: false, handleChangeableAt: null });
     const changed = await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(200);
     expect(changed.body.handleChangeableAt).toEqual(expect.any(String));
     const again = await request(ctx.server).patch('/me').set('Cookie', cookie).send({ handle: h() }).expect(429);

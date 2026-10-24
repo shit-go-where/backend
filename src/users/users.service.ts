@@ -109,6 +109,7 @@ export class UsersService {
         awardedAt: ub.awardedAt.toISOString(),
       })),
       needsHandle: user.handle === null,
+      handleAuto: user.handleAuto,
       handleChangeableAt: nextHandleChange > Date.now() ? new Date(nextHandleChange).toISOString() : null,
       trust: { score: user.trustScore, threshold: TRUSTED_THRESHOLD, isTrusted: hasRole(user, Role.TRUSTED) },
       openSubmissions: { count: openCount, limit: MAX_OPEN_SUBMISSIONS },
@@ -197,10 +198,11 @@ export class UsersService {
     if (patch.handle !== undefined) {
       const current = await this.prisma.user.findUnique({
         where: { id: userId },
-        select: { handle: true, handleChangedAt: true },
+        select: { handle: true, handleChangedAt: true, handleAuto: true },
       });
-      // Choosing a first handle is free; changing one is allowed once every 30 days.
-      handleChanged = Boolean(current?.handle) && current?.handle !== patch.handle;
+      // Choosing a first handle (or replacing the random one from sign-up) is free; changing one
+      // you picked is allowed once every 30 days.
+      handleChanged = Boolean(current?.handle) && !current?.handleAuto && current?.handle !== patch.handle;
       if (handleChanged && current?.handleChangedAt) {
         const next = current.handleChangedAt.getTime() + HANDLE_CHANGE_INTERVAL_MS;
         if (next > Date.now()) {
@@ -228,6 +230,8 @@ export class UsersService {
         where: { id: userId },
         data: {
           handle: patch.handle,
+          // Sending a handle, even the random one, makes it yours.
+          ...(patch.handle !== undefined ? { handleAuto: false } : {}),
           displayName: patch.displayName,
           leaderboardOptIn: patch.leaderboardOptIn,
           verifierCredit: patch.verifierCredit,
@@ -269,6 +273,7 @@ export class UsersService {
           email: `deleted-${userId}@${DELETED_EMAIL_DOMAIN}`,
           googleSub: null,
           handle: null,
+          handleAuto: false,
           avatarUrl: null,
           displayName: 'Deleted user',
           leaderboardOptIn: false,

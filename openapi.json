@@ -2521,6 +2521,9 @@
           "needsHandle": {
             "type": "boolean"
           },
+          "handleAuto": {
+            "type": "boolean"
+          },
           "handleChangeableAt": {
             "anyOf": [
               {
@@ -2654,6 +2657,7 @@
           "points",
           "badges",
           "needsHandle",
+          "handleAuto",
           "handleChangeableAt",
           "trust",
           "openSubmissions",

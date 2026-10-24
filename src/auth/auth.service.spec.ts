@@ -126,9 +126,17 @@ describe('AuthService google flow', () => {
     const svc = new AuthService(prisma as never);
     const u = await svc.upsertGoogleUser({ sub: 's', email: 'boss@example.com', email_verified: true });
     expect(prisma.user.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ role: 'ADMIN', displayName: 'boss', googleSub: 's' }),
+      data: expect.objectContaining({
+        role: 'ADMIN',
+        displayName: 'boss',
+        googleSub: 's',
+        handle: expect.stringMatching(/^[a-z]+_[a-z]+_\d{2}$/),
+        handleAuto: true,
+      }),
     });
     expect(u.id).toBe('u1');
+    // The random handle never comes from the name or email.
+    expect(u.handle).not.toMatch(/boss/);
 
     prisma.user.findUnique
       .mockResolvedValueOnce(null as never)
@@ -139,5 +147,19 @@ describe('AuthService google flow', () => {
       where: { id: 'u2' },
       data: { googleSub: 's2', email: 'x@example.com', avatarUrl: 'p' },
     });
+
+    // An older account with no handle gets one on sign-in; a deleted one never does.
+    prisma.user.findUnique
+      .mockResolvedValueOnce({ id: 'u3', role: 'USER', avatarUrl: null } as never)
+      .mockResolvedValueOnce(null as never);
+    prisma.user.update
+      .mockResolvedValueOnce({ id: 'u3', handle: null, deletedAt: null } as never)
+      .mockResolvedValueOnce({ id: 'u3', handle: 'shiok_otter_42' } as never);
+    const old = await svc.upsertGoogleUser({ sub: 's3', email: 'old@example.com', email_verified: true });
+    expect(prisma.user.update).toHaveBeenLastCalledWith({
+      where: { id: 'u3' },
+      data: { handle: expect.stringMatching(/^[a-z]+_[a-z]+_\d{2}$/), handleAuto: true },
+    });
+    expect(old.handle).toBe('shiok_otter_42');
   });
 });

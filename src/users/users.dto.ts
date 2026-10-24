@@ -25,7 +25,10 @@ export const MeSchema = z.object({
   verifierCredit: z.boolean(),
   points: z.number().int(),
   badges: z.array(BadgeSchema),
+  /** No handle yet. Every live account now gets a random one at sign-up, so this is false in practice. */
   needsHandle: z.boolean(),
+  /** The handle was picked at random (sign-up default). Changing it is free and starts no 30-day wait. */
+  handleAuto: z.boolean(),
   /** When the handle can next be changed (once every 30 days); null = now. */
   handleChangeableAt: z.string().nullable(),
   /** Progress to Trusted: trust points (verified actions) against the threshold. */

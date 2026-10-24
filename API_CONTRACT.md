@@ -131,7 +131,8 @@ interface Badge { id: string; name: string; description: string; icon: string; a
 interface Me {
   id: string; email: string; handle: string | null; displayName: string; avatarUrl: string | null;
   role: Role; trustScore: number; leaderboardOptIn: boolean; points: number;   // leaderboardOptIn: true unless turned off
-  badges: Badge[]; needsHandle: boolean;
+  badges: Badge[]; needsHandle: boolean;   // false for every live account (each gets a random handle at sign-up)
+  handleAuto: boolean;                 // the handle is the random one from sign-up (adjective_noun_NN); changing it is free
   handleChangeableAt: string | null;   // when the handle can next be changed (once per 30 days); null = now
   trust: { score: number; threshold: 50; isTrusted: boolean };   // isTrusted = role TRUSTED or above
   openSubmissions: { count: number; limit: 10 };                 // open submissions from the last 14 days vs the cap
@@ -307,7 +308,8 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
 - `POST /auth/dev-login` `{ email, displayName? }` → `Me`. Only when `DEV_LOGIN_ENABLED=true` (404 otherwise).
 - `GET /me` → `Me` (401 if signed out).
 - `PATCH /me` `{ handle?: /^[a-z0-9_]{3,20}$/, displayName?: string 1-50, leaderboardOptIn?: boolean, verifierCredit?: boolean }` → `Me` (409 on handle taken or reserved, e.g. `admin`, `sgw`). Handle is trimmed and lowercased before validation.
-  This is also how a handle is changed: choosing the first handle is free, changing an existing one is allowed once every 30 days
+  This is also how a handle is changed: choosing the first handle, or replacing the random sign-up one (`handleAuto`), is free;
+  changing one you picked is allowed once every 30 days
   (429 "You can change your handle once every 30 days. You can change it again from 18 Nov 2026."). `Me.handleChangeableAt` says when.
 - `POST /me/activity/seen` → 200 `{ ok: true, seenAt: string }`. Sets `lastSeenActivityAt = now`, so `Me.unseen` drops to zeros.
   `Me.unseen` counts since then: `resolvedSubmissions` = own submissions APPROVED/REJECTED since (not auto-published ones),
@@ -432,6 +434,7 @@ interface CloseToiletPayload { status: 'CLOSED' | 'RENOVATION'; reason: string; 
   All MRT_STATION venues with toiletStatus HAS_TOILETS, by name. `stampedAt` = the user's earliest check-in at that station.
 - `GET /leaderboard/users?scope=week|all` (default `week` = last 7 days, optional auth) → `{ items: { rank, handle, avatarUrl, points }[]; me: { rank: number | null; points: number } | null }` (`avatarUrl` always null)
   Users with a handle and > 0 points who haven't turned the leaderboard off (`leaderboardOptIn`, on by default), top 100.
+  Every account gets a random pseudonymous handle at sign-up (never from its Google name or email), so all are listed by default.
   Ties share a rank (1, 2, 2, 4). `items` cached 5 min per scope.
   `me` is null when signed out; `me.rank` is null when the user has turned it off or has no handle.
 - `GET /leaderboard/toilets?area=` → `{ items: { rank: number; toilet: ToiletSummary; score: number }[]; areas: string[] }`

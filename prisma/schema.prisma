@@ -269,9 +269,11 @@ model User {
   avatarUrl          String?
   role               Role                 @default(USER)
   trustScore         Int                  @default(0)
-  // Listed on the leaderboard (handle and points) once they have a handle. Opt-out.
+  // Listed on the leaderboard (handle and points). Opt-out; every live account has a handle.
   leaderboardOptIn   Boolean              @default(true)
   handleChangedAt    DateTime?
+  // The handle was picked at random at sign-up (users/handle-gen.ts); changing away from it is free.
+  handleAuto         Boolean              @default(false)
   lastSeenActivityAt DateTime?
   // Show "Last checked by @handle" on toilets this person verified (GROWTH.md 1.7). Opt-out.
   verifierCredit     Boolean              @default(true)

@@ -8,6 +8,7 @@ import { env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Role } from '../generated/prisma/enums.js';
 import type { User } from '../generated/prisma/client.js';
+import { withRandomHandle } from '../users/handle-gen.js';
 
 export const OAUTH_STATE_COOKIE = 'sgw_oauth';
 export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
@@ -163,13 +164,13 @@ export class AuthService {
     };
   }
 
-  /** Find by googleSub, then by email (links the account), else create. */
+  /** Find by googleSub, then by email (links the account), else create with a random handle. */
   async upsertGoogleUser(p: GoogleProfile): Promise<User> {
     const admin = isAdminEmail(p.email);
     const bySub = await this.prisma.user.findUnique({ where: { googleSub: p.sub } });
     const existing = bySub ?? (await this.prisma.user.findUnique({ where: { email: p.email } }));
     if (existing) {
-      return this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id: existing.id },
         data: {
           googleSub: p.sub,
@@ -178,33 +179,61 @@ export class AuthService {
           ...(admin && existing.role !== Role.ADMIN ? { role: Role.ADMIN } : {}),
         },
       });
+      return this.ensureHandle(user);
     }
-    return this.prisma.user.create({
-      data: {
-        email: p.email,
-        googleSub: p.sub,
-        displayName: displayNameFrom(p.name, p.email),
-        avatarUrl: p.picture ?? null,
-        role: admin ? Role.ADMIN : Role.USER,
-      },
-    });
+    return this.withHandle((handle) =>
+      this.prisma.user.create({
+        data: {
+          email: p.email,
+          googleSub: p.sub,
+          displayName: displayNameFrom(p.name, p.email),
+          avatarUrl: p.picture ?? null,
+          role: admin ? Role.ADMIN : Role.USER,
+          handle,
+          handleAuto: true,
+        },
+      }),
+    );
   }
 
   async upsertDevUser(email: string, displayName?: string): Promise<User> {
     const e = email.toLowerCase();
     const admin = isAdminEmail(e);
-    return this.prisma.user.upsert({
-      where: { email: e },
-      create: {
-        email: e,
-        displayName: displayNameFrom(displayName, e),
-        role: admin ? Role.ADMIN : Role.USER,
-      },
-      update: {
-        ...(displayName ? { displayName } : {}),
-        ...(admin ? { role: Role.ADMIN } : {}),
-      },
-    });
+    const user = await this.withHandle((handle) =>
+      this.prisma.user.upsert({
+        where: { email: e },
+        create: {
+          email: e,
+          displayName: displayNameFrom(displayName, e),
+          role: admin ? Role.ADMIN : Role.USER,
+          handle,
+          handleAuto: true,
+        },
+        update: {
+          ...(displayName ? { displayName } : {}),
+          ...(admin ? { role: Role.ADMIN } : {}),
+        },
+      }),
+    );
+    return this.ensureHandle(user);
+  }
+
+  /**
+   * Every account is on the leaderboard under a random handle (never its name or email) until it
+   * picks its own or opts out. Accounts from before this have none yet: they get one on sign-in.
+   */
+  private async ensureHandle(user: User): Promise<User> {
+    if (user.handle !== null || user.deletedAt !== null) return user;
+    return this.withHandle((handle) =>
+      this.prisma.user.update({ where: { id: user.id }, data: { handle, handleAuto: true } }),
+    );
+  }
+
+  private withHandle(write: (handle: string) => Promise<User>): Promise<User> {
+    return withRandomHandle(
+      async (handle) => (await this.prisma.user.findUnique({ where: { handle }, select: { id: true } })) !== null,
+      write,
+    );
   }
 }
 
