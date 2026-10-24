@@ -95,6 +95,13 @@ describe('shouldReport', () => {
     expect(shouldReport(foreign(404))).toBe(false);
     expect(shouldReport(foreign(502))).toBe(true);
   });
+
+  it('skips 4xx http-errors from Express middleware (body-parser)', () => {
+    const httpError = (status: number) => Object.assign(new Error('x'), { status, statusCode: status, expose: status < 500 });
+    expect(shouldReport(httpError(400))).toBe(false);
+    expect(shouldReport(httpError(415))).toBe(false);
+    expect(shouldReport(httpError(500))).toBe(true);
+  });
 });
 
 describe('sentryOptions', () => {

@@ -62,7 +62,7 @@ export function scrubBreadcrumb(crumb: Breadcrumb): Breadcrumb {
 }
 
 /**
- * True for errors worth an alert: anything that is not an HttpException, plus 5xx HttpExceptions
+ * True for errors worth an alert: anything that is not an HttpException or 4xx http-error, plus 5xx
  * (DB down, upstream outage, serialisation bug). 4xx are the client's problem and not reported.
  */
 export function shouldReport(exception: unknown): boolean {
@@ -76,6 +76,16 @@ export function shouldReport(exception: unknown): boolean {
   ) {
     const status = Number((exception as { getStatus: () => unknown }).getStatus());
     return !Number.isFinite(status) || status >= 500;
+  }
+  // http-errors from Express middleware (body-parser: malformed JSON 400, compressed body 415,
+  // too large 413). `expose` is only set on 4xx, so a 5xx from there is still reported.
+  if (
+    typeof exception === 'object' &&
+    exception !== null &&
+    (exception as { expose?: unknown }).expose === true &&
+    typeof (exception as { status?: unknown }).status === 'number'
+  ) {
+    return (exception as { status: number }).status >= 500;
   }
   return true;
 }
