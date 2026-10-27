@@ -215,6 +215,13 @@ export async function seedFieldwork(db: PrismaClient): Promise<RunCounts & { log
     if (same(cur, data)) venueT.unchanged++;
     else {
       await db.venue.update({ where: { id: ex.id }, data });
+      // A geocode fix moves the expanded survey's toilets sitting on the old point too; seed:fieldwork-2024b only
+      // sees the new point and would take them for hand-placed.
+      if (ex.latitude !== data.latitude || ex.longitude !== data.longitude)
+        await db.toilet.updateMany({
+          where: { venueId: ex.id, source: 'FIELDWORK_2024_EXPANDED', latitude: ex.latitude, longitude: ex.longitude },
+          data: { latitude: data.latitude, longitude: data.longitude },
+        });
       venueT.updated++;
     }
   }

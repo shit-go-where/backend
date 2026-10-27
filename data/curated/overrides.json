@@ -46,6 +46,11 @@
     "query": "HDB Hub",
     "name": "HDB Hub (Toa Payoh)"
   },
+  "mrt-tan-kah-kee": {
+    "lat": 1.32545,
+    "lng": 103.80785,
+    "reason": "OneMap's station point sits on Bukit Timah Road; moved to the station at Exit A, south-east of taxi stand F66 (OSM node 10931147059)"
+  },
   "mrt-harbourfront": {
     "name": "HarbourFront"
   },

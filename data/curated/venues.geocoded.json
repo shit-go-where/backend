@@ -1608,13 +1608,13 @@
     "candidates": 1
   },
   "mrt-tan-kah-kee": {
-    "lat": 1.325974,
-    "lng": 103.807154,
+    "lat": 1.32545,
+    "lng": 103.80785,
     "name": null,
     "address": "651 Bukit Timah Road Tan Kah Kee MRT Station (Dt8) Singapore 266268",
     "postalCode": "266268",
     "planningArea": "Bukit Timah",
-    "method": "onemap",
+    "method": "override",
     "query": "Tan Kah Kee MRT STATION",
     "matched": "TAN KAH KEE MRT STATION",
     "candidates": 2
