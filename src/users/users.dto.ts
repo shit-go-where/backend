@@ -38,11 +38,23 @@ export const MeSchema = z.object({
   /** Since lastSeenActivityAt (or sign-up): submissions decided, badges earned, points earned. */
   unseen: z.object({
     resolvedSubmissions: z.number().int(),
+    /** Your reports (flags) a moderator resolved; the replies are in flagReplies. */
+    resolvedFlags: z.number().int(),
     badges: z.number().int(),
     points: z.number().int(),
     /** Routes other people started to toilets you helped, on Singapore days since your last visit. */
     routed: z.number().int(),
   }),
+  /** Your reports resolved since your last visit, newest first (at most 10), with the moderator's reply. */
+  flagReplies: z.array(
+    z.object({
+      id: z.string(),
+      toilet: z.object({ id: z.string(), label: z.string().nullable(), venueName: z.string() }),
+      reason: z.string(),
+      note: z.string().nullable(),
+      resolvedAt: z.string(),
+    }),
+  ),
   /**
    * What your contributions did (GROWTH.md 1.3). `toilets`: toilets you added, last verified, or
    * checked in at in the last 90 days. `routedWeek`: routes started to them in the last 7 days.

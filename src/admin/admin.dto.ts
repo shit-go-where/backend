@@ -20,12 +20,18 @@ export const AdminFlagListSchema = z.object({
       reason: z.string(),
       createdAt: z.string(),
       resolved: z.boolean(),
+      resolutionNote: z.string().nullable(),
       toilet: z.object({ id: z.string(), label: z.string().nullable(), venueName: z.string() }),
       user: z.object({ handle: z.string().nullable() }),
     }),
   ),
 });
 export class AdminFlagListDto extends createZodDto(AdminFlagListSchema) {}
+
+/** Optional reply to the reporter: shown in their /me and sent by the bot if they linked Telegram. */
+// A bodyless POST (no reply) arrives as undefined.
+export const ResolveFlagSchema = z.preprocess((v) => v ?? {}, z.object({ note: z.string().trim().max(500).optional() }));
+export class ResolveFlagDto extends createZodDto(ResolveFlagSchema) {}
 
 export const PendingPhotoListSchema = z.object({
   items: z.array(

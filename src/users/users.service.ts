@@ -75,7 +75,7 @@ export class UsersService {
     ]);
     if (!user) throw new NotFoundException('User not found');
     const since = user.lastSeenActivityAt ?? user.createdAt;
-    const [resolvedSubmissions, newPoints, impact] = await Promise.all([
+    const [resolvedSubmissions, flagReplies, newPoints, impact] = await Promise.all([
       this.prisma.submission.count({
         where: {
           submittedById: userId,
@@ -84,6 +84,12 @@ export class UsersService {
           // Going live at once is not news: the submitter saw it happen.
           OR: [{ resolution: null }, { resolution: { not: 'auto_on_site_photo' } }],
         },
+      }),
+      this.prisma.flag.findMany({
+        where: { userId, resolved: true, resolvedAt: { gt: since } },
+        orderBy: { resolvedAt: 'desc' },
+        take: 10,
+        include: { toilet: { select: { id: true, label: true, venue: { select: { name: true } } } } },
       }),
       this.prisma.pointsLedger.aggregate({ where: { userId, createdAt: { gt: since } }, _sum: { delta: true } }),
       this.impact(userId, since),
@@ -115,10 +121,18 @@ export class UsersService {
       openSubmissions: { count: openCount, limit: MAX_OPEN_SUBMISSIONS },
       unseen: {
         resolvedSubmissions,
+        resolvedFlags: flagReplies.length,
         badges: user.badges.filter((b) => b.awardedAt > since).length,
         points: newPoints._sum.delta ?? 0,
         routed: impact.routedSince,
       },
+      flagReplies: flagReplies.map((f) => ({
+        id: f.id,
+        toilet: { id: f.toilet.id, label: f.toilet.label, venueName: f.toilet.venue.name },
+        reason: f.reason,
+        note: f.resolutionNote,
+        resolvedAt: f.resolvedAt!.toISOString(),
+      })),
       impact: { toilets: impact.toilets, routedWeek: impact.routedWeek },
       lastSeenActivityAt: user.lastSeenActivityAt?.toISOString() ?? null,
       telegramLinked: user.telegramChat !== null,

@@ -7,7 +7,7 @@
  */
 
 /** utm_campaign values the bot uses (BOT.md §10): the command or flow that produced the link. */
-export type Campaign = 'start' | 'go' | 'near' | 'checkin' | 'search' | 'help' | 'privacy' | 'filters';
+export type Campaign = 'start' | 'go' | 'near' | 'checkin' | 'search' | 'help' | 'privacy' | 'filters' | 'flag-reply';
 
 export const UTM_SOURCE = 'telegram';
 export const UTM_MEDIUM = 'bot';

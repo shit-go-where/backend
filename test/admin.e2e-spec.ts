@@ -84,6 +84,40 @@ describe('flags', () => {
     const resolved = await request(ctx.server).get('/admin/flags?resolved=true').set('Cookie', mod.cookie).expect(200);
     expect(resolved.body.items.map((f: { id: string }) => f.id)).toContain(flag.id);
   });
+
+  it('shows the reply to the reporter in /me until they have seen it', async () => {
+    const { toilet, venue } = await makeToilet(ctx.prisma);
+    const reporter = await loginAs('USER');
+    await request(ctx.server).post('/me/activity/seen').set('Cookie', reporter.cookie).expect(200);
+    const flag = await ctx.prisma.flag.create({
+      data: { toiletId: toilet.id, userId: reporter.me.id, reason: 'Pin is on the road' },
+    });
+    await request(ctx.server)
+      .post(`/admin/flags/${flag.id}/resolve`)
+      .set('Cookie', mod.cookie)
+      .send({ note: '  Moved it to Exit A. Thanks!  ' })
+      .expect(200, { ok: true });
+    await request(ctx.server).post(`/admin/flags/${flag.id}/resolve`).set('Cookie', mod.cookie).send({ note: 'x'.repeat(501) }).expect(400);
+
+    const resolved = await request(ctx.server).get('/admin/flags?resolved=true').set('Cookie', mod.cookie).expect(200);
+    expect(resolved.body.items).toContainEqual(expect.objectContaining({ id: flag.id, resolutionNote: 'Moved it to Exit A. Thanks!' }));
+
+    let me = await request(ctx.server).get('/me').set('Cookie', reporter.cookie).expect(200);
+    expect(me.body.unseen.resolvedFlags).toBe(1);
+    expect(me.body.flagReplies).toEqual([
+      {
+        id: flag.id,
+        toilet: { id: toilet.id, label: toilet.label, venueName: venue.name },
+        reason: 'Pin is on the road',
+        note: 'Moved it to Exit A. Thanks!',
+        resolvedAt: expect.any(String),
+      },
+    ]);
+    await request(ctx.server).post('/me/activity/seen').set('Cookie', reporter.cookie).expect(200);
+    me = await request(ctx.server).get('/me').set('Cookie', reporter.cookie).expect(200);
+    expect(me.body.unseen.resolvedFlags).toBe(0);
+    expect(me.body.flagReplies).toEqual([]);
+  });
 });
 
 describe('photo moderation', () => {

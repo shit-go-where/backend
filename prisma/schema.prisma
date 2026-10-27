@@ -454,17 +454,20 @@ model PhotoApproval {
 }
 
 model Flag {
-  id         String    @id @default(cuid())
-  toiletId   String
-  toilet     Toilet    @relation(fields: [toiletId], references: [id], onDelete: Cascade)
-  userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  reason     String
-  resolved   Boolean   @default(false)
-  resolvedAt DateTime?
-  createdAt  DateTime  @default(now())
+  id             String    @id @default(cuid())
+  toiletId       String
+  toilet         Toilet    @relation(fields: [toiletId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  reason         String
+  resolved       Boolean   @default(false)
+  resolvedAt     DateTime?
+  /// The moderator's reply, shown to the reporter in /me (and sent by the bot if linked).
+  resolutionNote String?
+  createdAt      DateTime  @default(now())
 
   @@index([resolved, createdAt])
+  @@index([userId, resolvedAt])
   @@index([toiletId, resolved])
 }
 

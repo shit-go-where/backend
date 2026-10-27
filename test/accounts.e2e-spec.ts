@@ -113,7 +113,7 @@ describe('Me extras (PLAN.md §12 E5/E6)', () => {
     expect(res.body).toMatchObject({
       trust: { score: 0, threshold: 50, isTrusted: false },
       openSubmissions: { count: 0, limit: 10 },
-      unseen: { resolvedSubmissions: 0, badges: 0, points: 0, routed: 0 },
+      unseen: { resolvedSubmissions: 0, resolvedFlags: 0, badges: 0, points: 0, routed: 0 },
       lastSeenActivityAt: null,
       handleChangeableAt: null,
     });
@@ -124,7 +124,7 @@ describe('Me extras (PLAN.md §12 E5/E6)', () => {
     const seen = await request(ctx.server).post('/me/activity/seen').set('Cookie', cookie).expect(200);
     expect(seen.body).toMatchObject({ ok: true, seenAt: expect.any(String) });
     res = await request(ctx.server).get('/me').set('Cookie', cookie).expect(200);
-    expect(res.body.unseen).toEqual({ resolvedSubmissions: 0, badges: 0, points: 0, routed: 0 });
+    expect(res.body.unseen).toEqual({ resolvedSubmissions: 0, resolvedFlags: 0, badges: 0, points: 0, routed: 0 });
     expect(res.body.lastSeenActivityAt).toBe(seen.body.seenAt);
     await request(ctx.server).post('/me/activity/seen').expect(401);
   });

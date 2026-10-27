@@ -27,6 +27,7 @@ import {
   JobResultDto,
   AdminOkDto,
   PendingPhotoListDto,
+  ResolveFlagDto,
   PhotoApprovalDto,
   RolePatchDto,
   RoleResultDto,
@@ -63,8 +64,8 @@ export class AdminController {
   @Post('flags/:id/resolve')
   @HttpCode(200)
   @ZodResponse({ type: AdminOkDto })
-  resolveFlag(@Param('id') id: string) {
-    return this.admin.resolveFlag(id);
+  resolveFlag(@Param('id') id: string, @Body() body: ResolveFlagDto) {
+    return this.admin.resolveFlag(id, body.note);
   }
 
   @Get('photos/pending')

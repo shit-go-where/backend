@@ -1998,6 +1998,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveFlagDto"
+              }
+            }
+          }
+        },
         "responses": {
           "default": {
             "description": "",
@@ -2618,6 +2628,11 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
+              "resolvedFlags": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
               "badges": {
                 "type": "integer",
                 "minimum": -9007199254740991,
@@ -2636,11 +2651,66 @@
             },
             "required": [
               "resolvedSubmissions",
+              "resolvedFlags",
               "badges",
               "points",
               "routed"
             ],
             "additionalProperties": false
+          },
+          "flagReplies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "toilet": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "venueName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label",
+                    "venueName"
+                  ],
+                  "additionalProperties": false
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resolvedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "toilet",
+                "reason",
+                "note",
+                "resolvedAt"
+              ],
+              "additionalProperties": false
+            }
           },
           "impact": {
             "type": "object",
@@ -2694,6 +2764,7 @@
           "trust",
           "openSubmissions",
           "unseen",
+          "flagReplies",
           "impact",
           "lastSeenActivityAt",
           "telegramLinked"
@@ -8235,6 +8306,12 @@
                 "resolved": {
                   "type": "boolean"
                 },
+                "resolutionNote": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "toilet": {
                   "type": "object",
                   "properties": {
@@ -8279,6 +8356,7 @@
                 "reason",
                 "createdAt",
                 "resolved",
+                "resolutionNote",
                 "toilet",
                 "user"
               ],
@@ -8290,6 +8368,15 @@
           "items"
         ],
         "additionalProperties": false
+      },
+      "ResolveFlagDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
       },
       "AdminOkDto_Output": {
         "type": "object",

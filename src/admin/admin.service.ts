@@ -3,7 +3,9 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma, type User } from '../generated/prisma/client.js';
@@ -21,6 +23,9 @@ import { toPhotoRef } from '../media/photo-urls.js';
 import { recomputeAllScores } from '../toilets/scoring.js';
 import { MetricsService } from '../metrics/metrics.service.js';
 import { levelFields } from '../common/level.js';
+import { TelegramService } from '../integrations/telegram/telegram.service.js';
+import { env } from '../config/env.js';
+import { toiletUrl } from '../integrations/telegram/links.js';
 import type { JobName } from './admin.dto.js';
 
 /** TRUSTED approvals needed to publish a photo (a single MODERATOR+ approval publishes). */
@@ -40,10 +45,14 @@ export interface ToiletPatch {
 
 @Injectable()
 export class AdminService {
+  private readonly log = new Logger(AdminService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly media: MediaService,
     private readonly metrics: MetricsService,
+    // Only provided when TELEGRAM_BOT_TOKEN is set.
+    @Optional() private readonly telegram?: TelegramService,
   ) {}
 
   // ───────── flags ─────────
@@ -64,18 +73,40 @@ export class AdminService {
         reason: f.reason,
         createdAt: f.createdAt.toISOString(),
         resolved: f.resolved,
+        resolutionNote: f.resolutionNote,
         toilet: { id: f.toilet.id, label: f.toilet.label, venueName: f.toilet.venue.name },
         user: { handle: f.user.handle },
       })),
     };
   }
 
-  async resolveFlag(id: string) {
-    const r = await this.prisma.flag.updateMany({
+  /** The reporter sees it in /me ("since your last visit"); with a linked Telegram chat the bot tells them too. */
+  async resolveFlag(id: string, note?: string) {
+    const flag = await this.prisma.flag.findUnique({
       where: { id },
-      data: { resolved: true, resolvedAt: new Date() },
+      select: {
+        toiletId: true,
+        toilet: { select: { label: true, venue: { select: { name: true } } } },
+        user: { select: { telegramChat: { select: { chatId: true } } } },
+      },
     });
-    if (r.count === 0) throw new NotFoundException('Flag not found');
+    if (!flag) throw new NotFoundException('Flag not found');
+    const resolutionNote = note || null;
+    await this.prisma.flag.update({ where: { id }, data: { resolved: true, resolvedAt: new Date(), resolutionNote } });
+    const chatId = flag.user.telegramChat?.chatId;
+    if (this.telegram && chatId !== undefined) {
+      const place = [flag.toilet.venue.name, flag.toilet.label].filter(Boolean).join(', ');
+      const text = [
+        `Thanks for your report on ${place}. It's been sorted.`,
+        ...(resolutionNote ? ['', resolutionNote] : []),
+        '',
+        toiletUrl(env.PUBLIC_APP_URL, flag.toiletId, 'flag-reply'),
+      ].join('\n');
+      // Best effort: the reply is in /me either way.
+      await this.telegram.bot.api
+        .sendMessage(Number(chatId), text)
+        .catch((e: unknown) => this.log.warn(`flag reply to Telegram failed: ${String(e)}`));
+    }
     return { ok: true as const };
   }
 

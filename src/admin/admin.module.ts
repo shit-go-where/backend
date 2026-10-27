@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MediaModule } from '../media/media.module.js';
 import { MetricsModule } from '../metrics/metrics.module.js';
+import { TelegramModule } from '../integrations/telegram/telegram.module.js';
 import { AdminController, AdminJobsController } from './admin.controller.js';
 import { AdminService } from './admin.service.js';
 import { CronSecretGuard } from './cron-secret.guard.js';
 
 @Module({
-  imports: [MediaModule, MetricsModule],
+  imports: [MediaModule, MetricsModule, TelegramModule],
   controllers: [AdminJobsController, AdminController],
   providers: [AdminService, CronSecretGuard],
 })
